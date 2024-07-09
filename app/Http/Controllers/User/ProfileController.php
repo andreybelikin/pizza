@@ -1,12 +1,16 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\User;
 
-use App\Models\User;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
-abstract class UserController
+abstract class ProfileController
 {
-    public function show(string $id): User
+    public function update(string $id): JsonResponse
+    {
+
+    }
+    public function delete(string $id): JsonResponse
     {
 
     }
