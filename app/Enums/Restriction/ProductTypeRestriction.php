@@ -6,6 +6,7 @@ enum ProductTypeRestriction: int
 {
     case Pizza = 10;
     case Drink = 20;
+
     public static function getRestrictedTypeNames(): array
     {
         return array_column(self::cases(), 'name');
