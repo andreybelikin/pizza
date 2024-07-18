@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Dto\Response\InternalErrorResponseDto;
 use App\Http\Requests\RegisterRequest;
 use App\Services\Auth\AuthService;
+use Auth\Register\SuccessRegisterResponseDto;
 use Exception;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Response;
 
 class AuthController
 {
@@ -27,9 +28,12 @@ class AuthController
     public function register(RegisterRequest $request): JsonResponse
     {
         try {
-            $this->authService->saveNewUser($request);
+            $newUserToken = $this->authService->saveNewUser($request);
+            $response = new SuccessRegisterResponseDto($newUserToken);
         } catch (Exception) {
-            return response()->json('Internal error', Response::HTTP_INTERNAL_SERVER_ERROR);
+            $response = new InternalErrorResponseDto();
         }
+
+        return response()->json($response->toArray(), $response::STATUS);
     }
 }
