@@ -15,10 +15,10 @@ return new class extends Migration
             Schema::create('users', function (Blueprint $table) {
                 $table->increments('id');
                 $table->string('name');
-                $table->string('surname');
+                $table->string('surname')->nullable();
                 $table->string('phone')->unique();
                 $table->string('email')->unique();
-                $table->string('address');
+                $table->string('address')->nullable();
                 $table->string('default_address');
                 $table->boolean('is_admin');
                 $table->string('password_hash');

@@ -2,10 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Dto\Response\Validation\FailedValidationResponseDto;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Http\Exceptions\HttpResponseException;
-use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Http\JsonResponse;
 
 class RegisterRequest extends FormRequest
 {
@@ -21,12 +21,13 @@ class RegisterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'phone' => 'required|phone|unique:users,phone',
+            'phone' => 'required|regex:/^\d{4,15}$/',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:8|regex:/^.*(?=.{8,})(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[\d\x])(?=.*[!$#%]).*$/',
-            'password_confirmation' => 'required|same:password',
-            'name' => 'required',
-            'default_address' => 'required',
+            'password' => 'required|regex:/^.*(?=.{8,})(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[\d\x])(?=.*[!$#%]).*$/',
+            'password_confirmation' => 'required|required_with:password|same:password',
+            'name' => 'required|string|max:50',
+            'surname' => 'nullable|string|max:50',
+            'default_address' => 'required|string|max:255',
         ];
     }
 
@@ -35,8 +36,9 @@ class RegisterRequest extends FormRequest
         return [
             'email.unique' => 'A user with this email already exists.',
             'email.required' => 'A user email is required.',
+            'phone.required' => 'A user phone is required.',
+            'phone.regex' => 'A user phone must correspond to international phone number format.',
             'password.required' => 'A user password is required.',
-            'password.min' => 'A user password must be at least 8 characters.',
             'password.regex' => 'A user password must meet the following criteria:
                 At least 8 characters long
                 Contains at least one letter (uppercase or lowercase)
@@ -45,15 +47,14 @@ class RegisterRequest extends FormRequest
             ,
             'password_confirmation.required' => 'A user confirm password is required.',
             'name.required' => 'A user name is required.',
+            'surname.required' => 'A user surname is required.',
             'default_address' => 'A user default address is required'
         ];
     }
 
-    protected function failedValidation(Validator $validator): HttpResponseException
+    protected function failedValidation(Validator $validator): JsonResponse
     {
-        $errors = $validator->errors()->toArray();
-        return new HttpResponseException(
-            response()->json($errors, Response::HTTP_UNPROCESSABLE_ENTITY)
-        );
+        $responseDto = new FailedValidationResponseDto($validator->errors()->toArray());
+        return response()->json($responseDto->toArray(), $responseDto::STATUS);
     }
 }

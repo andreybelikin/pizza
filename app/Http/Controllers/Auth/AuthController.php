@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Dto\Response\Auth\SuccessRegisterResponseDto;
 use App\Dto\Response\InternalErrorResponseDto;
 use App\Http\Requests\RegisterRequest;
 use App\Services\Auth\AuthService;
-use Auth\Register\SuccessRegisterResponseDto;
 use Exception;
 use Illuminate\Http\JsonResponse;
 
@@ -30,10 +30,10 @@ class AuthController
         try {
             $newUserToken = $this->authService->saveNewUser($request);
             $response = new SuccessRegisterResponseDto($newUserToken);
-        } catch (Exception) {
+        } catch (Exception $exception) {
+            dd($exception);
             $response = new InternalErrorResponseDto();
         }
-
         return response()->json($response->toArray(), $response::STATUS);
     }
 }

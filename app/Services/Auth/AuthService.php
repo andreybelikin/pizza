@@ -9,12 +9,16 @@ class AuthService
 {
     public function saveNewUser(RegisterRequest $request): string
     {
-        $user = new User();
-        $user->name = $request->input('name');
-        $user->email = $request->input('email');
-        $user->phone = $request->input('phone');
-        $user->password_hash = bcrypt($request->input('password'));
-        $user->is_admin = false;
+        $user = new User([
+            'name' => $request->input('name'),
+            'surname' => $request->input('surname'),
+            'email' => $request->input('email'),
+            'phone' => $request->input('phone'),
+            'password_hash' => bcrypt($request->input('password')),
+            'default_address' => $request->input('default_address'),
+            'is_admin' => false,
+        ]);
+        $user->save();
 
         return auth()->login($user);
     }
