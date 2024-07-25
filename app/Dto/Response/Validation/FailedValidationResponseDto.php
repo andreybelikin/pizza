@@ -2,7 +2,6 @@
 
 namespace App\Dto\Response\Validation;
 
-
 use Illuminate\Http\Response;
 
 class FailedValidationResponseDto

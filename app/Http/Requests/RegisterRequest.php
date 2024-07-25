@@ -3,9 +3,11 @@
 namespace App\Http\Requests;
 
 use App\Dto\Response\Validation\FailedValidationResponseDto;
+use App\Models\User;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\ValidationException;
 
 class RegisterRequest extends FormRequest
 {
@@ -21,14 +23,21 @@ class RegisterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'phone' => 'required|regex:/^\d{4,15}$/',
-            'email' => 'required|email|unique:users,email',
+            'phone' => 'required|regex:/^\d{4,15}$/|unique:users,phone',
+            'email' => 'required|email',
             'password' => 'required|regex:/^.*(?=.{8,})(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[\d\x])(?=.*[!$#%]).*$/',
-            'password_confirmation' => 'required|required_with:password|same:password',
+            'password_confirmation' => 'required_with:password|same:password',
             'name' => 'required|string|max:50',
             'surname' => 'nullable|string|max:50',
             'default_address' => 'required|string|max:255',
         ];
+    }
+
+    protected function withValidator($validator): void
+    {
+        $validator->sometimes('email', 'unique:users,email', function ($input) {
+            return !User::query()->where('phone', $input->phone)->exists();
+        });
     }
 
     public function messages(): array
@@ -55,6 +64,8 @@ class RegisterRequest extends FormRequest
     protected function failedValidation(Validator $validator): JsonResponse
     {
         $responseDto = new FailedValidationResponseDto($validator->errors()->toArray());
-        return response()->json($responseDto->toArray(), $responseDto::STATUS);
+        $response = response()->json($responseDto->toArray(), $responseDto::STATUS);
+
+        throw new ValidationException($validator, $response);
     }
 }
