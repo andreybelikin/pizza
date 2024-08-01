@@ -9,7 +9,6 @@ use App\Http\Requests\RegisterRequest;
 use App\Services\Auth\AuthService;
 use Exception;
 use Illuminate\Foundation\Validation\ValidatesRequests;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -40,19 +39,8 @@ class AuthController
 
     public function register(RegisterRequest $request): Response
     {
-        $response = response();
+        $newUserToken = $this->authService->saveNewUser($request);
 
-        try {
-            $newUserToken = $this->authService->saveNewUser($request);
-            $response->header('Authorization', $newUserToken);
-        } catch (ValidationException $exception) {
-            return $exception->getResponse();
-        } catch (Exception) {
-            $responseDto = new InternalErrorResponseDto();
-
-            $response->json($responseDto->toArray(), $responseDto::STATUS);
-        }
-
-        return $response;
+        return response()->header('Authorization', $newUserToken);
     }
 }

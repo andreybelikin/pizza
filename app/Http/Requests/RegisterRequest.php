@@ -64,9 +64,6 @@ class RegisterRequest extends FormRequest
 
     protected function failedValidation(Validator $validator): JsonResponse
     {
-        $responseDto = new FailedValidationResponseDto($validator->errors()->toArray());
-        $response = response()->json($responseDto->toArray(), $responseDto::STATUS);
-
-        throw new ValidationException($validator, $response);
+        throw new ValidationException($validator);
     }
 }
