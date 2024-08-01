@@ -2,8 +2,11 @@
 
 namespace App\Services\Auth;
 
+use App\Exceptions\InvalidCredentialsException;
+use App\Http\Requests\AuthenticateRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Models\User;
+use Symfony\Component\HttpFoundation\Response;
 
 class AuthService
 {
@@ -21,5 +24,17 @@ class AuthService
         $user->save();
 
         return auth()->login($user);
+    }
+
+    public function authenticateUser(AuthenticateRequest $request): ?string
+    {
+        $credentials = $request->only('email', 'password');
+        $token = auth()->attempt($credentials);
+
+        if (is_null($token)) {
+            throw new InvalidCredentialsException('Invalid email or password', Response::HTTP_BAD_REQUEST);
+        }
+
+        return $token;
     }
 }

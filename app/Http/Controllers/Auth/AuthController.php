@@ -2,43 +2,57 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Dto\Response\Auth\SuccessRegisterResponseDto;
 use App\Dto\Response\InternalErrorResponseDto;
+use App\Exceptions\InvalidCredentialsException;
+use App\Http\Requests\AuthenticateRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Services\Auth\AuthService;
 use Exception;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpFoundation\Response;
 
 class AuthController
 {
     use ValidatesRequests;
     public function __construct(
-        private AuthService $authService
+        private readonly AuthService $authService
     ) {}
 
-    public function login(): JsonResponse
-    {
-
-    }
-
-    public function logout(): JsonResponse
-    {
-
-    }
-
-    public function register(RegisterRequest $request): JsonResponse
+    public function login(AuthenticateRequest $request): Response
     {
         try {
-            $newUserToken = $this->authService->saveNewUser($request);
-            $responseDto = new SuccessRegisterResponseDto($newUserToken);
-        } catch (ValidationException $e) {
-            return $e->getResponse();
-        } catch (Exception $e) {
+            $newToken = $this->authService->authenticateUser($request);
+            $response = response()->header('Authorization', $newToken);
+        } catch (ValidationException $exception) {
+            $response = $exception->getResponse();
+        } catch (InvalidCredentialsException $exception) {
+            $response = response()->json(['message' => $exception->getMessage()], $exception->getCode());
+        } catch (Exception) {
             $responseDto = new InternalErrorResponseDto();
+
+            $response = response()->json($responseDto->toArray(), $responseDto::STATUS);
         }
 
-        return response()->json($responseDto->toArray(), $responseDto::STATUS);
+        return $response;
+    }
+
+    public function register(RegisterRequest $request): Response
+    {
+        $response = response();
+
+        try {
+            $newUserToken = $this->authService->saveNewUser($request);
+            $response->header('Authorization', $newUserToken);
+        } catch (ValidationException $exception) {
+            return $exception->getResponse();
+        } catch (Exception) {
+            $responseDto = new InternalErrorResponseDto();
+
+            $response->json($responseDto->toArray(), $responseDto::STATUS);
+        }
+
+        return $response;
     }
 }

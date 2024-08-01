@@ -25,7 +25,7 @@ class RegisterRequest extends FormRequest
         return [
             'phone' => 'required|regex:/^\d{4,15}$/|unique:users,phone',
             'email' => 'required|email',
-            'password' => 'required|regex:/^.*(?=.{8,})(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[\d\x])(?=.*[!$#%]).*$/',
+            'password' => 'required|string|regex:/^.*(?=.{8,})(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[\d\x])(?=.*[!$#%]).*$/',
             'password_confirmation' => 'required_with:password|same:password',
             'name' => 'required|string|max:50',
             'surname' => 'nullable|string|max:50',
@@ -45,19 +45,20 @@ class RegisterRequest extends FormRequest
         return [
             'email.unique' => 'A user with this email already exists.',
             'email.required' => 'A user email is required.',
+            'email.email' => 'A user email must be a valid email address.',
             'phone.required' => 'A user phone is required.',
             'phone.regex' => 'A user phone must correspond to international phone number format.',
             'password.required' => 'A user password is required.',
-            'password.regex' => 'A user password must meet the following criteria:
-                At least 8 characters long
-                Contains at least one letter (uppercase or lowercase)
-                Contains at least one digit (0-9)
-                Contains at least one special character (!, $, #, or %)'
+            'password.regex' => 'A user password must meet the following criteria:' . PHP_EOL .
+                '    - At least 8 characters long' . PHP_EOL .
+                '    - Contains at least one letter (uppercase or lowercase)' . PHP_EOL .
+                '    - Contains at least one digit (0-9)' . PHP_EOL .
+                '    - Contains at least one special character (!, $, #, or %)'
             ,
             'password_confirmation.required' => 'A user confirm password is required.',
             'name.required' => 'A user name is required.',
             'surname.required' => 'A user surname is required.',
-            'default_address' => 'A user default address is required'
+            'default_address' => 'A user default address is required',
         ];
     }
 
