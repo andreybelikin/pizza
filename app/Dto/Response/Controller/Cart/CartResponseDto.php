@@ -1,6 +1,6 @@
 <?php
 
-namespace Cart;
+namespace App\Dto\Response\Controller\Cart;
 class CartResponseDto
 {
     private int $status;

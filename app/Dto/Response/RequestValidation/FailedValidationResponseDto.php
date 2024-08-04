@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Dto\Response\Validation;
+namespace App\Dto\Response\RequestValidation;
 
 use Illuminate\Http\Response;
 

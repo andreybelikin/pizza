@@ -37,4 +37,9 @@ class AuthService
 
         return $token;
     }
+
+    public function logoutUser(): void
+    {
+        auth()->logout();
+    }
 }

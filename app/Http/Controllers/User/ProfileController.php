@@ -10,6 +10,12 @@ abstract class ProfileController
     {
 
     }
+
+    public function add(): JsonResponse
+    {
+
+    }
+
     public function delete(string $id): JsonResponse
     {
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Dto\Response\Auth;
+namespace App\Dto\Response\Controller\Auth;
 
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Http\Response;

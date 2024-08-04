@@ -3,7 +3,7 @@
 namespace App\Exceptions;
 
 use App\Dto\Response\InternalErrorResponseDto;
-use App\Dto\Response\Validation\FailedValidationResponseDto;
+use App\Dto\Response\RequestValidation\FailedValidationResponseDto;
 use Exception;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Validation\ValidationException;

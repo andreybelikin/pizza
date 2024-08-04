@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Product;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
 
@@ -14,7 +14,7 @@ class AdminProductController
     {
 
     }
-    public function add(): JsonResponse
+    public function store(): JsonResponse
     {
 
     }

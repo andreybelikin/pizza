@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests;
 
-use App\Dto\Response\Validation\FailedValidationResponseDto;
+use App\Dto\Response\RequestValidation\FailedValidationResponseDto;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\JsonResponse;
