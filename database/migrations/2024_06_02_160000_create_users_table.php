@@ -21,7 +21,7 @@ return new class extends Migration
                 $table->string('address')->nullable();
                 $table->string('default_address');
                 $table->boolean('is_admin');
-                $table->string('password_hash');
+                $table->string('password');
                 $table->timestamps();
             });
         }

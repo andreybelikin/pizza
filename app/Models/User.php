@@ -20,7 +20,7 @@ class User extends Authenticatable implements JWTSubject
         'default_address',
         'address',
         'is_admin',
-        'password_hash',
+        'password',
     ];
     public function products(): BelongsToMany
     {

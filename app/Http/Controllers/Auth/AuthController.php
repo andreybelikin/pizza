@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Dto\Response\Controller\Auth\LogoutResponseDto;
 use App\Exceptions\InvalidCredentialsException;
 use App\Http\Requests\AuthenticateRequest;
 use App\Http\Requests\RegisterRequest;
@@ -20,7 +21,7 @@ class AuthController
     {
         try {
             $newToken = $this->authService->authenticateUser($request);
-            $response = response()->header('Authorization', $newToken);
+            $response = response('', 200, ['Authorization' => 'Bearer ' . $newToken]);
         } catch (InvalidCredentialsException $exception) {
             $response = response()->json(['message' => $exception->getMessage()], $exception->getCode());
         }
@@ -31,14 +32,15 @@ class AuthController
     public function logout(): Response
     {
         $this->authService->logoutUser();
+        $response = new LogoutResponseDto();
 
-        return response();
+        return response()->json($response->toArray(), $response::STATUS);
     }
 
     public function register(RegisterRequest $request): Response
     {
         $newUserToken = $this->authService->saveNewUser($request);
 
-        return response()->header('Authorization', $newUserToken);
+        return response('', 200, ['Authorization' => 'Bearer ' . $newUserToken]);
     }
 }

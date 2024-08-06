@@ -17,7 +17,7 @@ class AuthService
             'surname' => $request->input('surname'),
             'email' => $request->input('email'),
             'phone' => $request->input('phone'),
-            'password_hash' => bcrypt($request->input('password')),
+            'password' => bcrypt($request->input('password')),
             'default_address' => $request->input('default_address'),
             'is_admin' => false,
         ]);
@@ -31,8 +31,11 @@ class AuthService
         $credentials = $request->only('email', 'password');
         $token = auth()->attempt($credentials);
 
-        if (is_null($token)) {
-            throw new InvalidCredentialsException('Invalid email or password', Response::HTTP_BAD_REQUEST);
+        if (!$token) {
+            throw new InvalidCredentialsException(
+                'Invalid email or password',
+                Response::HTTP_BAD_REQUEST
+            );
         }
 
         return $token;

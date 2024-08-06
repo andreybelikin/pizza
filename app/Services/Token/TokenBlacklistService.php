@@ -8,7 +8,7 @@ use Carbon\Carbon;
 
 class TokenBlacklistService implements Storage
 {
-    protected $table = 'blacklist';
+    protected $table = 'token_blacklist';
 
     public function add($key, $value, $minutes = null): void
     {

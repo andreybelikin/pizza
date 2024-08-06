@@ -18,10 +18,8 @@ class EnsureTokenIsValid
      */
     public function handle(Request $request, Closure $next): Response
     {
-        try {
-            auth()->requireToken();
-        } catch (JWTException $exception) {
-            $response = new TokenErrorResponseDto($exception->getMessage());
+        if (empty($request->bearerToken())) {
+            $response = new TokenErrorResponseDto('Authentication header has no bearer token');
 
             return response()->json($response->toArray(), $response::STATUS);
         }
