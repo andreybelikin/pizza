@@ -2,12 +2,11 @@
 
 namespace App\Http\Middleware\BeforeRequest;
 
-use App\Dto\Response\HttpMiddleware\TokenErrorResponseDto;
+use App\Exceptions\TokenException;
+use App\Services\Middleware\RequestTokenHandler;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Tymon\JWTAuth\Exceptions\JWTException;
-use Tymon\JWTAuth\Exceptions\UserNotDefinedException;
 
 class EnsureTokenIsValid
 {
@@ -18,20 +17,12 @@ class EnsureTokenIsValid
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (empty($request->bearerToken())) {
-            $response = new TokenErrorResponseDto('Authentication header has no bearer token');
-
-            return response()->json($response->toArray(), $response::STATUS);
-        }
-
         try {
-            auth()->userOrFail();
-        } catch (UserNotDefinedException) {
-            $response = new TokenErrorResponseDto('User not defined');
+            RequestTokenHandler::check($request);
 
-            return response()->json($response->toArray(), $response::STATUS);
+            return $next($request);
+        } catch (TokenException $exception) {
+            return $exception->getResponse();
         }
-
-        return $next($request);
     }
 }
