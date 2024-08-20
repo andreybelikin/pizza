@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Dto\Response\Controller\Auth\LogoutResponseDto;
+use App\Dto\Response\Controller\Auth\TokensResponseDto;
 use App\Exceptions\InvalidCredentialsException;
 use App\Http\Requests\AuthenticateRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Services\Auth\AuthService;
 use Illuminate\Foundation\Validation\ValidatesRequests;
+use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class AuthController
@@ -20,8 +22,9 @@ class AuthController
     public function login(AuthenticateRequest $request): Response
     {
         try {
-            $newToken = $this->authService->authenticateUser($request);
-            $response = response('', 200, ['Authorization' => 'Bearer ' . $newToken]);
+            [$accessToken, $refreshToken] = $this->authService->authenticateUser($request);
+            $responseDto = new TokensResponseDto($accessToken, $refreshToken);
+            $response = response($responseDto->toArray(), $responseDto::STATUS);
         } catch (InvalidCredentialsException $exception) {
             $response = response()->json(['message' => $exception->getMessage()], $exception->getCode());
         }
@@ -39,8 +42,17 @@ class AuthController
 
     public function register(RegisterRequest $request): Response
     {
-        $newUserToken = $this->authService->saveNewUser($request);
+        [$accessToken, $refreshToken] = $this->authService->saveNewUser($request);
+        $responseDto = new TokensResponseDto($accessToken, $refreshToken);
 
-        return response('', 200, ['Authorization' => 'Bearer ' . $newUserToken]);
+        return response($responseDto->toArray(), $responseDto::STATUS);
+    }
+
+    public function refresh(Request $request): Response
+    {
+        [$accessToken, $refreshToken] = $this->authService->refreshToken($request->bearerToken());
+        $response = new TokensResponseDto($accessToken, $refreshToken);
+
+        return response()->json($response->toArray(), $response::STATUS);
     }
 }

@@ -4,7 +4,7 @@ namespace App\Dto\Response\HttpMiddleware;
 
 use Illuminate\Http\Response;
 
-class TokenErrorResponseDto
+class TokenExceptionResponseDto
 {
     public const STATUS = Response::HTTP_UNAUTHORIZED;
 
