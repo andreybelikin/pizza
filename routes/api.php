@@ -6,11 +6,12 @@ use App\Http\Controllers\User\OrderController;
 use App\Http\Controllers\User\ProfileController;
 use App\Http\Middleware\BeforeRequest\EnsureAdminUser;
 use App\Http\Middleware\BeforeRequest\EnsureTokenIsValid;
+use App\Http\Middleware\BeforeRequest\EnsureTokenIsValidLogout;
 use Illuminate\Support\Facades\Route;
 
 Route::controller(AuthController::class)->group(function () {
     Route::post('/login', 'login');
-    Route::post('/logout', 'logout')->middleware(EnsureTokenIsValid::class);
+    Route::post('/logout', 'logout')->middleware(EnsureTokenIsValidLogout::class);
     Route::post('/refresh', 'refresh')->middleware(EnsureTokenIsValid::class);
     Route::post('/register', 'register');
 });

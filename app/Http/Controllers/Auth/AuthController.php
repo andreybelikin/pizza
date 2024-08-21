@@ -32,9 +32,9 @@ class AuthController
         return $response;
     }
 
-    public function logout(): Response
+    public function logout(Request $request): Response
     {
-        $this->authService->logoutUser();
+        $this->authService->logoutUser($request);
         $response = new LogoutResponseDto();
 
         return response()->json($response->toArray(), $response::STATUS);
@@ -48,9 +48,9 @@ class AuthController
         return response($responseDto->toArray(), $responseDto::STATUS);
     }
 
-    public function refresh(Request $request): Response
+    public function refresh(): Response
     {
-        [$accessToken, $refreshToken] = $this->authService->refreshToken($request->bearerToken());
+        [$accessToken, $refreshToken] = $this->authService->refreshToken();
         $response = new TokensResponseDto($accessToken, $refreshToken);
 
         return response()->json($response->toArray(), $response::STATUS);

@@ -20,7 +20,7 @@ class EnsureTokenIsValid
     public function handle(Request $request, Closure $next): Response
     {
         try {
-            $this->requestTokenService->checkHeaderToken($request);
+            $this->requestTokenService->checkToken($request);
 
             return $next($request);
         } catch (TokenException $exception) {

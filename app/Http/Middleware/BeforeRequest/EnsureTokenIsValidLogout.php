@@ -19,14 +19,14 @@ class EnsureTokenIsValidLogout
     public function handle(Request $request, Closure $next): Response
     {
         try {
-            $this->requestTokenService->checkBodyTokens($request);
+            if (!$this->requestTokenService->checkLogoutTokens($request)) {
+                $responseDto = new LogoutResponseDto();
+
+                return response()->json($responseDto->toArray(), $responseDto::STATUS);
+            }
 
             return $next($request);
-        } catch (TokenHasExpiredException) {
-            $responseDto = new LogoutResponseDto();
-
-            return response()->json($responseDto->toArray(), $responseDto::STATUS);
-        } catch (TokenAbsenceException | UserNotDefinedException $exception) {
+        } catch (TokenAbsenceException $exception) {
             return $exception->getResponse();
         }
     }

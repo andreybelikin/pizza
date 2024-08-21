@@ -11,26 +11,28 @@ use Tymon\JWTAuth\Exceptions\UserNotDefinedException;
 
 class RequestTokenService
 {
-    public function checkHeaderToken(Request $request): void
+    public function checkToken(Request $request): void
     {
-        $this->checkRequestHeader($request);
+        $this->checkHeaderToken($request);
         $this->validateToken();
     }
 
-    public function checkBodyTokens(Request $request): void
+    public function checkLogoutTokens(Request $request): bool
     {
-        $this->checkRequestBody($request);
-        $this->validateBodyTokens($request);
+        $this->checkBodyTokens($request);
+        $this->removeInvalidBodyTokens($request);
+
+        return $request->filled('accessToken') || $request->filled('refreshToken');
     }
 
-    private function checkRequestHeader(Request $request): void
+    private function checkHeaderToken(Request $request): void
     {
         if (is_null($request->bearerToken())) {
             throw new TokenAbsenceException();
         }
     }
 
-    private function checkRequestBody(Request $request): void
+    private function checkBodyTokens(Request $request): void
     {
         if (!$request->filled(['accessToken', 'refreshToken'])) {
             throw new TokenAbsenceException();
@@ -48,13 +50,21 @@ class RequestTokenService
         }
     }
 
-    private function validateBodyTokens(Request $request): void
+    private function removeInvalidBodyTokens(Request $request): void
     {
-        $tokens = $request->input(['accessToken', 'refreshToken']);
+        $tokens = [
+            'accessToken' => $request->input('accessToken'),
+            'refreshToken' => $request->input('refreshToken'),
+        ];
 
-        array_walk($tokens, function ($token) use ($request) {
+        array_walk($tokens, function ($token, $tokenName) use ($request) {
             auth()->setToken($token);
-            $this->validateToken();
+
+            try {
+                auth()->userOrFail();
+            } catch (UserNotDefinedException | TokenExpiredException) {
+                $request->request->remove($tokenName);
+            }
         });
     }
 }

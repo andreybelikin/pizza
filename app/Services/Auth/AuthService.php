@@ -7,6 +7,7 @@ use App\Http\Requests\AuthenticateRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Models\User;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class AuthService
@@ -46,10 +47,10 @@ class AuthService
         return [$accessToken, $refreshToken];
     }
 
-    public function refreshToken(string $requestRefreshToken): array
+    public function refreshToken(): array
     {
         $authenticatedUser = auth()->user();
-        auth()->invalidate(true);
+        auth()->invalidate();
 
         $accessToken = $this->loginUser($authenticatedUser);
         $refreshToken = $this->generateRefreshToken();
@@ -57,9 +58,18 @@ class AuthService
         return [$accessToken, $refreshToken];
     }
 
-    public function logoutUser(): void
+    public function logoutUser(Request $request): void
     {
-        auth()->logout();
+        $tokens = [
+            $request->input('accessToken'),
+            $request->input('refreshToken'),
+        ];
+        array_filter($tokens);
+
+        array_walk($tokens, function ($token) {
+            auth()->setToken($token);
+            auth()->logout();
+        });
     }
 
     private function generateRefreshToken(): string
