@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Tymon\JWTAuth\Exceptions\TokenBlacklistedException;
 
 class AuthService
 {
@@ -60,11 +61,10 @@ class AuthService
 
     public function logoutUser(Request $request): void
     {
-        $tokens = [
-            $request->input('accessToken'),
-            $request->input('refreshToken'),
-        ];
-        array_filter($tokens);
+        $tokens = array_filter([
+            $request->header('authorization'),
+            $request->header('x-refresh-token')
+        ]);
 
         array_walk($tokens, function ($token) {
             auth()->setToken($token);

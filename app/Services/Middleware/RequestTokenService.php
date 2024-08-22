@@ -3,38 +3,45 @@
 namespace App\Services\Middleware;
 
 use App\Exceptions\Token\TokenAbsenceException;
+use App\Exceptions\Token\TokenBlacklistedException;
 use App\Exceptions\Token\TokenHasExpiredException;
 use App\Exceptions\Token\TokenUserNotDefinedException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use Tymon\JWTAuth\Exceptions\UserNotDefinedException;
 
 class RequestTokenService
 {
-    public function checkToken(Request $request): void
+    public function checkAuthorizationToken(Request $request): void
     {
-        $this->checkHeaderToken($request);
+        $this->checkAuthorizationTokenPresence($request);
+        $this->isTokenBlackListed($request->bearerToken());
         $this->validateToken();
     }
 
-    public function checkLogoutTokens(Request $request): bool
+    public function checkTokensPair(Request $request): bool
     {
-        $this->checkBodyTokens($request);
-        $this->removeInvalidBodyTokens($request);
+        $this->checkAuthorizationTokenPresence($request);
+        $this->checkRefreshTokenPresence($request);
+        $this->removeInvalidTokens($request);
 
-        return $request->filled('accessToken') || $request->filled('refreshToken');
+        return empty($request->header('authorization'))
+            && empty($request->header('x-refresh-token'))
+            ? false
+            : true;
     }
 
-    private function checkHeaderToken(Request $request): void
+    private function checkAuthorizationTokenPresence(Request $request): void
     {
         if (is_null($request->bearerToken())) {
             throw new TokenAbsenceException();
         }
     }
 
-    private function checkBodyTokens(Request $request): void
+    private function checkRefreshTokenPresence(Request $request): void
     {
-        if (!$request->filled(['accessToken', 'refreshToken'])) {
+        if (!$request->hasHeader('x-refresh-token') || empty($request->header('x-refresh-token'))) {
             throw new TokenAbsenceException();
         }
     }
@@ -50,21 +57,31 @@ class RequestTokenService
         }
     }
 
-    private function removeInvalidBodyTokens(Request $request): void
+    private function removeInvalidTokens(Request $request): void
     {
         $tokens = [
-            'accessToken' => $request->input('accessToken'),
-            'refreshToken' => $request->input('refreshToken'),
+            'authorization' => $request->header('authorization'),
+            'x-refresh-token' => $request->header('x-refresh-token'),
         ];
 
         array_walk($tokens, function ($token, $tokenName) use ($request) {
             auth()->setToken($token);
 
             try {
+                $this->isTokenBlackListed($token);
                 auth()->userOrFail();
-            } catch (UserNotDefinedException | TokenExpiredException) {
-                $request->request->remove($tokenName);
+            } catch (UserNotDefinedException | TokenExpiredException | TokenBlacklistedException) {
+                $request->headers->set($tokenName, '');
             }
         });
+    }
+
+    private function isTokenBlackListed(string $token): void
+    {
+        $hashedToken = hash('sha256', $token);
+
+        if (DB::table('token_blacklist')->where('token', $hashedToken)->exists()) {
+            throw new TokenBlacklistedException();
+        }
     }
 }
