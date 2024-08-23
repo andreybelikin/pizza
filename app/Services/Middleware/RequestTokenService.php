@@ -13,40 +13,41 @@ use Tymon\JWTAuth\Exceptions\UserNotDefinedException;
 
 class RequestTokenService
 {
-    public function checkAuthorizationToken(Request $request): void
+    public function __construct(private Request $request)
+    {}
+    public function checkAuthorizationToken(): void
     {
-        $this->checkAuthorizationTokenPresence($request);
-        $this->isTokenBlackListed($request->bearerToken());
-        $this->validateToken();
+        $this->checkAuthorizationTokenPresence();
+        $this->isTokenBlackListed($this->request->bearerToken());
+        $this->validateAuthorizationToken();
     }
 
-    public function checkTokensPair(Request $request): bool
+    public function checkTokensPair(): bool
     {
-        $this->checkAuthorizationTokenPresence($request);
-        $this->checkRefreshTokenPresence($request);
-        $this->removeInvalidTokens($request);
+        $this->checkAuthorizationTokenPresence();
+        $this->checkRefreshTokenPresence();
+        $this->removeInvalidTokens();
 
-        return empty($request->header('authorization'))
-            && empty($request->header('x-refresh-token'))
-            ? false
-            : true;
+        return $this->isTokensEmpty();
     }
 
-    private function checkAuthorizationTokenPresence(Request $request): void
+    private function checkAuthorizationTokenPresence(): void
     {
-        if (is_null($request->bearerToken())) {
+        if (is_null($this->request->bearerToken())) {
             throw new TokenAbsenceException();
         }
     }
 
-    private function checkRefreshTokenPresence(Request $request): void
+    private function checkRefreshTokenPresence(): void
     {
-        if (!$request->hasHeader('x-refresh-token') || empty($request->header('x-refresh-token'))) {
+        if (!$this->request->hasHeader('x-refresh-token')
+            || empty($this->request->header('x-refresh-token'))
+        ) {
             throw new TokenAbsenceException();
         }
     }
 
-    private function validateToken(): void
+    private function validateAuthorizationToken(): void
     {
         try {
             auth()->userOrFail();
@@ -57,23 +58,31 @@ class RequestTokenService
         }
     }
 
-    private function removeInvalidTokens(Request $request): void
+    private function removeInvalidTokens(): void
     {
         $tokens = [
-            'authorization' => $request->header('authorization'),
-            'x-refresh-token' => $request->header('x-refresh-token'),
+            'authorization' => $this->request->bearerToken(),
+            'x-refresh-token' => $this->request->header('x-refresh-token'),
         ];
 
-        array_walk($tokens, function ($token, $tokenName) use ($request) {
+        array_walk($tokens, function ($token, $tokenName) {
             auth()->setToken($token);
 
             try {
                 $this->isTokenBlackListed($token);
                 auth()->userOrFail();
             } catch (UserNotDefinedException | TokenExpiredException | TokenBlacklistedException) {
-                $request->headers->set($tokenName, '');
+                $this->request->headers->set($tokenName, '');
             }
         });
+    }
+
+    private function isTokensEmpty(): bool
+    {
+        return empty($this->request->bearerToken())
+        && empty($this->request->header('x-refresh-token'))
+            ? false
+            : true;
     }
 
     private function isTokenBlackListed(string $token): void

@@ -17,7 +17,7 @@ class EnsureTokenIsValidLogout
     public function handle(Request $request, Closure $next): Response
     {
         try {
-            if (!$this->requestTokenService->checkTokensPair($request)) {
+            if (!$this->requestTokenService->checkTokensPair()) {
                 $responseDto = new LogoutResponseDto();
 
                 return response()->json($responseDto->toArray(), $responseDto::STATUS);

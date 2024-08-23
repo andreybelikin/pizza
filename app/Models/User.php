@@ -26,14 +26,22 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->belongsToMany(Product::class, 'cart_product');
     }
+
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
     }
+
+    public function isAdmin(): bool
+    {
+        return $this->is_admin === 1;
+    }
+
     public function getJWTIdentifier()
     {
         return $this->getKey();
     }
+
     public function getJWTCustomClaims(): array
     {
         return [];

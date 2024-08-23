@@ -30,10 +30,10 @@ Route::middleware(EnsureTokenIsValid::class)->group(function () {
 
     Route::middleware(EnsureAdminUser::class)->group(function () {
         Route::controller(AdminProductController::class)->group(function () {
-            Route::get('/products/{id}','get');
-            Route::post('/products/',  'add');
-            Route::post('/products/{id}', 'update');
-            Route::post('/products/{id}','delete');
+            Route::get('/admin/products/{id}','get');
+            Route::post('/admin/products/',  'add');
+            Route::post('/admin/products/{id}', 'update');
+            Route::post('/admin/products/{id}','delete');
         });
     });
 });

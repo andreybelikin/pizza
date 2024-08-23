@@ -13,7 +13,7 @@ use Tymon\JWTAuth\Exceptions\TokenBlacklistedException;
 
 class AuthService
 {
-    public function saveNewUser(RegisterRequest $request): array
+    public function saveNewUser(RegisterRequest $request): void
     {
         $user = new User([
             'name' => $request->input('name'),
@@ -25,11 +25,6 @@ class AuthService
             'is_admin' => false,
         ]);
         $user->save();
-
-        $accessToken = $this->loginUser($user);
-        $refreshToken = $this->generateRefreshToken();
-
-        return [$accessToken, $refreshToken];
     }
 
     public function authenticateUser(AuthenticateRequest $request): array
@@ -62,7 +57,7 @@ class AuthService
     public function logoutUser(Request $request): void
     {
         $tokens = array_filter([
-            $request->header('authorization'),
+            $request->bearerToken(),
             $request->header('x-refresh-token')
         ]);
 

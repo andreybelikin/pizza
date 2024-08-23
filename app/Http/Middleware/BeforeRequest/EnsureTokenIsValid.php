@@ -16,7 +16,7 @@ class EnsureTokenIsValid
     public function handle(Request $request, Closure $next): Response
     {
         try {
-            $this->requestTokenService->checkAuthorizationToken($request);
+            $this->requestTokenService->checkAuthorizationToken();
 
             return $next($request);
         } catch (TokenException $exception) {

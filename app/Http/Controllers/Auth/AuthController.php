@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Dto\Response\Controller\Auth\LogoutResponseDto;
+use App\Dto\Response\Controller\Auth\RegisterResponceDto;
 use App\Dto\Response\Controller\Auth\TokensResponseDto;
 use App\Exceptions\InvalidCredentialsException;
 use App\Http\Requests\AuthenticateRequest;
@@ -42,8 +43,8 @@ class AuthController
 
     public function register(RegisterRequest $request): Response
     {
-        [$accessToken, $refreshToken] = $this->authService->saveNewUser($request);
-        $responseDto = new TokensResponseDto($accessToken, $refreshToken);
+        $this->authService->saveNewUser($request);
+        $responseDto = new RegisterResponceDto();
 
         return response($responseDto->toArray(), $responseDto::STATUS);
     }
