@@ -8,9 +8,8 @@ class FailedValidationResponseDto
 {
     private const MESSAGE = 'The given data failed to pass validation';
     public const STATUS = Response::HTTP_BAD_REQUEST;
-    public function __construct(
-        private array $errors
-    ) {}
+
+    public function __construct(private array $errors) {}
 
     public function toArray(): array
     {

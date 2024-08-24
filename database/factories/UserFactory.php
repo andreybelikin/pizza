@@ -29,7 +29,7 @@ class UserFactory extends Factory
             'phone' => fake()->unique()->phoneNumber(),
             'email' => fake()->unique()->safeEmail(),
             'is_admin' => fake()->boolean(),
-            'password_hash' => static::$password ??= Hash::make('password'),
+            'password' => static::$password ??= Hash::make('password'),
             'default_address' => fake()->unique()->address(),
             'address' => fake()->unique()->address(),
         ];
