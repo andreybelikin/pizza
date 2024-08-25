@@ -3,7 +3,7 @@
 namespace App\Services\Auth;
 
 use App\Exceptions\InvalidCredentialsException;
-use App\Http\Requests\AuthenticateRequest;
+use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Models\User;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -22,23 +22,21 @@ class AuthService
             'phone' => $request->input('phone'),
             'password' => bcrypt($request->input('password')),
             'default_address' => $request->input('default_address'),
-            'is_admin' => false,
+            'is_admin' => 0,
         ]);
         $user->save();
     }
 
-    public function authenticateUser(AuthenticateRequest $request): array
+    public function authenticateUser(LoginRequest $request): array
     {
         $credentials = $request->only('email', 'password');
         $accessToken = auth()->attempt($credentials);
-        $refreshToken = $this->generateRefreshToken();
 
         if (!$accessToken) {
-            throw new InvalidCredentialsException(
-                'Invalid email or password',
-                Response::HTTP_BAD_REQUEST
-            );
+            throw new InvalidCredentialsException();
         }
+
+        $refreshToken = $this->generateRefreshToken();
 
         return [$accessToken, $refreshToken];
     }

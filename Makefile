@@ -19,6 +19,7 @@ up:
 
 prepare_tests:
 	$(APP_SERVICE) php artisan --env=testing key:generate
+	$(APP_SERVICE) php artisan --env=testing jwt:secret
 	$(APP_SERVICE) php artisan --env=testing migrate --seed
 
 .PHONY: tests
