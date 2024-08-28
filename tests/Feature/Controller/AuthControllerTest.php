@@ -5,12 +5,15 @@ namespace Tests\Feature\Controller;
 use App\Models\User;
 use Closure;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Testing\Assert;
 use Illuminate\Testing\AssertableJsonString;
 use Illuminate\Testing\TestResponse;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Illuminate\Http\Response;
 use Tests\TestCase;
+use Tests\TestData\TestUser;
+use Tests\TestData\Tokens;
 
 class AuthControllerTest extends TestCase
 {
@@ -68,7 +71,7 @@ class AuthControllerTest extends TestCase
     #[DataProvider('loginProvider')]
     public function testLogin(array $requestData, Closure $assertions): void
     {
-        $this->createRegisteredUser();
+        TestUser::createUserWithCredentials($requestData);
 
         $response = $this->postJson('/api/login', $requestData);
         $decodedResponse = $response->decodeResponseJson();
@@ -124,11 +127,9 @@ class AuthControllerTest extends TestCase
     }
 
     #[DataProvider('logoutProvider')]
-    public function testLogout(array $requestData, Closure $assertions): void
+    public function testLogout(Closure $tokens, Closure $assertions): void
     {
-        $this->createRegisteredUser();
-
-        $response = $this->postJson('/api/logout', $requestData);
+        $response = $this->post('/api/logout')->withHeaders($tokens());
         $decodedResponse = $response->decodeResponseJson();
 
         $assertions($response, $decodedResponse);
@@ -138,16 +139,20 @@ class AuthControllerTest extends TestCase
     {
         return [
             'logoutWithValidTokensShouldSuccess' => [
-                [
-                    'email' => 'test2233@email.com',
-                    'password' => 'keK48!>O04780',
-                ],
+                function () {
+                    $user = TestUser::createUserForToken();
+                    $accessToken = Tokens::generateAccessToken($user->email, TestUser::$plainPassword);
+                    $refreshToken = Tokens::generateRefreshToken();
+
+                    return [
+                        'authorization' => sprintf('Bearer %s', $accessToken),
+                        'x-refresh-token' => $refreshToken,
+                    ];
+                },
                 function (TestResponse $response, AssertableJsonString $decodedResponse) {
                     $response->assertStatus(Response::HTTP_OK);
-                    Assert::assertArrayHasKey('accessToken', $decodedResponse);
-                    Assert::assertArrayHasKey('refreshToken', $decodedResponse);
-                    Assert::assertNotEmpty($decodedResponse['accessToken']);
-                    Assert::assertNotEmpty($decodedResponse['accessToken']);
+                    Assert::assertArrayHasKey('message', $decodedResponse);
+                    Assert::assertSame('Successfully logged out', $decodedResponse['message']);
                 },
             ],
             'loginWithInvalidCredentialsShouldFail' => [
@@ -179,19 +184,5 @@ class AuthControllerTest extends TestCase
                 },
             ],
         ];
-    }
-
-    private function createRegisteredUser(): void
-    {
-        $user = new User([
-            'name' => 'andrey',
-            'surname' => 'prostoandrey',
-            'email' => 'test2233@email.com',
-            'phone' => '79987871698',
-            'password' => bcrypt('keK48!>O04780'),
-            'default_address' => 'г. Москва',
-            'is_admin' => 0,
-        ]);
-        $user->save();
     }
 }
