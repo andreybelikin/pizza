@@ -12,11 +12,6 @@ use Illuminate\Support\Str;
 class UserFactory extends Factory
 {
     /**
-     * The current password being used by the factory.
-     */
-    protected static ?string $password;
-
-    /**
      * Define the model's default state.
      *
      * @return array<string, mixed>
@@ -29,7 +24,7 @@ class UserFactory extends Factory
             'phone' => fake()->unique()->phoneNumber(),
             'email' => fake()->unique()->safeEmail(),
             'is_admin' => fake()->boolean(),
-            'password' => static::$password ??= bcrypt('password'),
+            'password' => bcrypt(fake()->password()),
             'default_address' => fake()->unique()->address(),
             'address' => fake()->unique()->address(),
         ];

@@ -69,8 +69,8 @@ class RequestTokenService
             auth()->setToken($token);
 
             try {
-                $this->isTokenBlackListed($token);
                 auth()->userOrFail();
+                $this->isTokenBlackListed($token);
             } catch (UserNotDefinedException | TokenExpiredException | TokenBlacklistedException) {
                 $this->request->headers->set($tokenName, '');
             }

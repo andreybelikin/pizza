@@ -69,11 +69,11 @@ class AuthControllerTest extends TestCase
     }
 
     #[DataProvider('loginProvider')]
-    public function testLogin(array $requestData, Closure $assertions): void
+    public function testLogin(array $credentials, Closure $assertions): void
     {
-        TestUser::createUserWithCredentials($requestData);
+        TestUser::createUserWithCredentials($credentials);
 
-        $response = $this->postJson('/api/login', $requestData);
+        $response = $this->postJson('/api/login', $credentials);
         $decodedResponse = $response->decodeResponseJson();
 
         $assertions($response, $decodedResponse);
@@ -129,7 +129,7 @@ class AuthControllerTest extends TestCase
     #[DataProvider('logoutProvider')]
     public function testLogout(Closure $tokens, Closure $assertions): void
     {
-        $response = $this->post('/api/logout')->withHeaders($tokens());
+        $response = $this->postJson('/api/logout', [], $tokens());
         $decodedResponse = $response->decodeResponseJson();
 
         $assertions($response, $decodedResponse);
@@ -138,7 +138,7 @@ class AuthControllerTest extends TestCase
     public static function logoutProvider(): array
     {
         return [
-            'logoutWithValidTokensShouldSuccess' => [
+            'logoutWithValidTokensShouldReturnSuccessControllerResponse' => [
                 function () {
                     $user = TestUser::createUserForToken();
                     $accessToken = Tokens::generateAccessToken($user->email, TestUser::$plainPassword);
@@ -155,30 +155,41 @@ class AuthControllerTest extends TestCase
                     Assert::assertSame('Successfully logged out', $decodedResponse['message']);
                 },
             ],
-            'loginWithInvalidCredentialsShouldFail' => [
-                [
-                    'email' => 2233,
-                    'password' => 'keK48!>O04780',
-                ],
+            'logoutWithTokenUserNotDefinedReturnSuccessMiddlewareResponse' => [
+                function () {
+                    $user = TestUser::createUserForToken();
+                    $accessToken = Tokens::generateAccessToken($user->email, TestUser::$plainPassword);
+                    $refreshToken = Tokens::generateRefreshToken();
+
+                    $user->delete();
+                    auth()->logout();
+
+                    return [
+                        'authorization' => sprintf('Bearer %s', $accessToken),
+                        'x-refresh-token' => $refreshToken,
+                    ];
+                },
                 function (TestResponse $response, AssertableJsonString $decodedResponse) {
-                    $response->assertStatus(Response::HTTP_BAD_REQUEST);
+                    $response->assertStatus(Response::HTTP_OK);
                     Assert::assertArrayHasKey('message', $decodedResponse);
                     Assert::assertSame(
-                        'The given data failed to pass validation',
+                        'Successfully logged out',
                         $decodedResponse['message']
                     );
                 },
             ],
-            'loginWithMismatchedCredentialsShouldFail' => [
-                [
-                    'email' => 'test2233@email.RU',
-                    'password' => 'keK48!>O04780',
-                ],
+            'logoutWithTokenNotDefinedReturnFailedMiddlewareResponse' => [
+                function () {
+                    return [
+                        'authorization' => '',
+                        'x-refresh-token' => '',
+                    ];
+                },
                 function (TestResponse $response, AssertableJsonString $decodedResponse) {
-                    $response->assertStatus(Response::HTTP_UNAUTHORIZED);
+                    $response->assertStatus(Response::HTTP_BAD_REQUEST);
                     Assert::assertArrayHasKey('message', $decodedResponse);
                     Assert::assertSame(
-                        'User with these credentials is not exist',
+                        'Nor access or refresh token passed',
                         $decodedResponse['message']
                     );
                 },

@@ -8,20 +8,23 @@ class TestUser
 {
     public static string $plainPassword;
 
-    private static function createPassword(): void
+    private static function createPassword(): string
     {
         self::$plainPassword = fake()->password();
+
+        return self::$plainPassword;
     }
 
     public static function createUserForToken(): User
     {
-        self::createPassword();
+        $password = self::createPassword();
 
-        return User::factory()->setPassword(self::$plainPassword)->create();
+        return User::factory()->setPassword($password)->create();
     }
 
     public static function createUserWithCredentials(array $credentials): void
     {
+        $credentials['password'] = bcrypt($credentials['password']);
         User::factory()->create($credentials);
     }
 

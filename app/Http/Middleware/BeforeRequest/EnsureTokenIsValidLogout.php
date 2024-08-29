@@ -19,7 +19,6 @@ class EnsureTokenIsValidLogout
         try {
             if (!$this->requestTokenService->checkTokensPair()) {
                 $responseDto = new LogoutResponseDto();
-
                 return response()->json($responseDto->toArray(), $responseDto::STATUS);
             }
 
