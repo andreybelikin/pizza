@@ -3,8 +3,10 @@
 namespace Tests\Feature\Controller;
 
 use App\Models\User;
+use App\Services\Token\TokenBlacklistService;
 use Closure;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Testing\Assert;
 use Illuminate\Testing\AssertableJsonString;
@@ -178,20 +180,26 @@ class AuthControllerTest extends TestCase
                     );
                 },
             ],
-            'logoutWithTokenNotDefinedReturnFailedMiddlewareResponse' => [
+            'logoutWithBlacklistedAccessTokenReturnSuccessControllerResponse' => [
                 function () {
+                    $user = TestUser::createUserForToken();
+                    $accessToken = Tokens::generateAccessToken($user->email, TestUser::$plainPassword);
+                    $refreshToken = Tokens::generateRefreshToken();
+
+                    $tokenBlacklistService = app(TokenBlacklistService::class);
+
+                    $hashedToken = hash('sha256', $accessToken);
+                    $tokenBlacklistService->add($hashedToken);
+
                     return [
-                        'authorization' => '',
-                        'x-refresh-token' => '',
+                        'authorization' => sprintf('Bearer %s', $accessToken),
+                        'x-refresh-token' => $refreshToken,
                     ];
                 },
                 function (TestResponse $response, AssertableJsonString $decodedResponse) {
-                    $response->assertStatus(Response::HTTP_BAD_REQUEST);
+                    $response->assertStatus(Response::HTTP_OK);
                     Assert::assertArrayHasKey('message', $decodedResponse);
-                    Assert::assertSame(
-                        'Nor access or refresh token passed',
-                        $decodedResponse['message']
-                    );
+                    Assert::assertSame('Successfully logged out', $decodedResponse['message']);
                 },
             ],
         ];

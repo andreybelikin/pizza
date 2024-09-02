@@ -2,7 +2,6 @@
 
 namespace App\Exceptions\Token;
 
-use App\Exceptions\Token\TokenException;
 use Symfony\Component\HttpFoundation\Response;
 
 class TokenBlacklistedException extends TokenException

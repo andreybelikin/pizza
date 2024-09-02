@@ -10,7 +10,7 @@ class TokenBlacklistService implements Storage
 {
     protected $table = 'token_blacklist';
 
-    public function add($key, $value, $minutes = null): void
+    public function add($key, $value = null, $minutes = null): void
     {
         $expiresAt = Carbon::now()->addSeconds($minutes);
 
