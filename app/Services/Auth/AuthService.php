@@ -41,8 +41,9 @@ class AuthService
         return [$accessToken, $refreshToken];
     }
 
-    public function refreshToken(): array
+    public function refreshToken(Request $request): array
     {
+        auth()->setToken($request->header('x-refresh-token'));
         $authenticatedUser = auth()->user();
         auth()->invalidate();
 

@@ -19,7 +19,14 @@ class RequestTokenService
     {
         $this->checkAuthorizationTokenPresence();
         $this->isTokenBlackListed($this->request->bearerToken());
-        $this->validateAuthorizationToken();
+        $this->validateSingleToken($this->request->bearerToken());
+    }
+
+    public function checkRefreshToken(): void
+    {
+        $this->checkRefreshTokenPresence();
+        $this->isTokenBlackListed($this->request->header('x-refresh-token'));
+        $this->validateSingleToken($this->request->header('x-refresh-token'));
     }
 
     public function checkTokensPair(): bool
@@ -47,8 +54,10 @@ class RequestTokenService
         }
     }
 
-    private function validateAuthorizationToken(): void
+    private function validateSingleToken(string $token): void
     {
+        auth()->setToken($token);
+
         try {
             auth()->userOrFail();
         } catch (UserNotDefinedException) {

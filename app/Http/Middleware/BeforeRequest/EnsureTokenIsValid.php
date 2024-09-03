@@ -16,7 +16,11 @@ class EnsureTokenIsValid
     public function handle(Request $request, Closure $next): Response
     {
         try {
-            $this->requestTokenService->checkAuthorizationToken();
+            if (str_contains($request->path(), 'api/refresh')) {
+                $this->requestTokenService->checkRefreshToken();
+            } else {
+                $this->requestTokenService->checkAuthorizationToken();
+            }
 
             return $next($request);
         } catch (TokenException $exception) {

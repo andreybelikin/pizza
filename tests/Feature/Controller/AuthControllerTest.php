@@ -204,4 +204,38 @@ class AuthControllerTest extends TestCase
             ],
         ];
     }
+
+    #[DataProvider('refreshProvider')]
+    public function testRefresh(Closure $createTokens, Closure $requestTokensAssertions, Closure $responseAssertions)
+    {
+        $requestTokens = $createTokens();
+        $response = $this->postJson('/api/refresh', [], $requestTokens);
+        $decodedResponse = $response->decodeResponseJson();
+
+        $responseAssertions($response, $decodedResponse);
+        $requestTokensAssertions($requestTokens);
+    }
+
+    public static function refreshProvider(): array
+    {
+        return [
+            'refreshWithValidTokenShouldBlacklistRequestTokenAndReturnSuccessControllerResponse' => [
+                function () {
+                    $user = TestUser::createUserForToken();
+                    Tokens::generateAccessToken($user->email, TestUser::$plainPassword);
+                    $refreshToken = Tokens::generateRefreshToken();
+
+                    return ['x-refresh-token' => $refreshToken];
+                },
+                function () {
+                    Assert::assertEquals(1, count(DB::table('token_blacklist')->get()));
+                },
+                function (TestResponse $response, AssertableJsonString $decodedResponse) {
+                    $response->assertStatus(Response::HTTP_OK);
+                    Assert::assertArrayHasKey('accessToken', $decodedResponse);
+                    Assert::assertArrayHasKey('refreshToken', $decodedResponse);
+                },
+            ],
+        ];
+    }
 }

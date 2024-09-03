@@ -51,9 +51,9 @@ class AuthController
         return response($responseDto->toArray(), $responseDto::STATUS);
     }
 
-    public function refresh(): Response
+    public function refresh(Request $request): Response
     {
-        [$accessToken, $refreshToken] = $this->authService->refreshToken();
+        [$accessToken, $refreshToken] = $this->authService->refreshToken($request);
         $response = new TokensResponseDto($accessToken, $refreshToken);
 
         return response()->json($response->toArray(), $response::STATUS);
