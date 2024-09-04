@@ -1,10 +1,10 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Order\OrderController;
 use App\Http\Controllers\Product\AdminProductController;
-use App\Http\Controllers\Profile\AdminProfileController;
-use App\Http\Controllers\Profile\OrderController;
-use App\Http\Controllers\Profile\ProfileController;
+use App\Http\Controllers\User\AdminUserController;
+use App\Http\Controllers\User\UserController;
 use App\Http\Middleware\BeforeRequest\EnsureAdminUser;
 use App\Http\Middleware\BeforeRequest\EnsureTokenIsValid;
 use App\Http\Middleware\BeforeRequest\EnsureTokenIsValidLogout;
@@ -22,11 +22,10 @@ Route::middleware(EnsureTokenIsValid::class)->group(function () {
 
     });
 
-    Route::controller(ProfileController::class)->group(function () {
-        Route::get('/profile/{id}', 'get');
-        Route::post('/profile/', 'add');
-        Route::put('/profile/{id}', 'update');
-        Route::delete('/profile/{id}', 'delete');
+    Route::controller(UserController::class)->group(function () {
+        Route::get('/user/{id}', 'get');
+        Route::put('/user/{id}', 'update');
+        Route::delete('/user/{id}', 'delete');
     });
 
     Route::middleware(EnsureAdminUser::class)->group(function () {
@@ -37,7 +36,7 @@ Route::middleware(EnsureTokenIsValid::class)->group(function () {
             Route::post('/admin/products/{id}','delete');
         });
 
-        Route::post('/admin/profile/{id}', [AdminProfileController::class, 'update']);
+        Route::put('/admin/user/{id}', [AdminUserController::class, 'update']);
     });
 });
 

@@ -236,6 +236,17 @@ class AuthControllerTest extends TestCase
                     Assert::assertArrayHasKey('refreshToken', $decodedResponse);
                 },
             ],
+            'refreshWithEmptyTokenShouldFail' => [
+                function () {
+                    return ['x-refresh-token' => ''];
+                },
+                function () {},
+                function (TestResponse $response, AssertableJsonString $decodedResponse) {
+                    $response->assertStatus(Response::HTTP_BAD_REQUEST);
+                    Assert::assertArrayHasKey('message', $decodedResponse);
+                    Assert::assertSame('Nor access or refresh token passed', $decodedResponse['message']);
+                },
+            ],
         ];
     }
 }

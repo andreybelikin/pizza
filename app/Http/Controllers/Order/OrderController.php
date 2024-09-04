@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Profile;
+namespace App\Http\Controllers\Order;
 
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
