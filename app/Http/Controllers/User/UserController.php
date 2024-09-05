@@ -2,21 +2,23 @@
 
 namespace App\Http\Controllers\User;
 
-use App\Services\User\UserService;
+use App\Http\Resources\UserResource;
+use App\Services\UserService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
-abstract class UserController
+class UserController
 {
-    public function __construct(private UserService $userService)
+    public function __construct(private readonly UserService $userService)
     {}
 
     public function get(string $userId): JsonResponse
     {
         $user = $this->userService->getUser($userId);
 
-        if (is_null($user)) {
-            // Вернуть json resource response?
-        }
+        return response()
+            ->json(new UserResource($user))
+            ->setEncodingOptions(JSON_UNESCAPED_UNICODE)
+        ;
     }
 
     public function update(string $userId): JsonResponse

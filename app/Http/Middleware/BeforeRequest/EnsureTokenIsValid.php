@@ -3,7 +3,7 @@
 namespace App\Http\Middleware\BeforeRequest;
 
 use App\Exceptions\Token\TokenException;
-use App\Services\Middleware\RequestTokenService;
+use App\Services\RequestTokenService;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;

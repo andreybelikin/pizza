@@ -4,7 +4,7 @@ namespace App\Http\Middleware\BeforeRequest;
 
 use App\Dto\Response\Controller\Auth\LogoutResponseDto;
 use App\Exceptions\Token\TokenAbsenceException;
-use App\Services\Middleware\RequestTokenService;
+use App\Services\RequestTokenService;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;

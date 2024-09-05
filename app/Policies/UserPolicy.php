@@ -23,6 +23,6 @@ class UserPolicy
 
     private function isOwner(User $authorizedUser, User $requestedUser): bool
     {
-        return $authorizedUser === $requestedUser;
+        return $authorizedUser->is($requestedUser);
     }
 }

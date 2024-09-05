@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Auth;
+namespace App\Services;
 
 use App\Exceptions\InvalidCredentialsException;
 use App\Http\Requests\LoginRequest;
@@ -8,8 +8,6 @@ use App\Http\Requests\RegisterRequest;
 use App\Models\User;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Tymon\JWTAuth\Exceptions\TokenBlacklistedException;
 
 class AuthService
 {

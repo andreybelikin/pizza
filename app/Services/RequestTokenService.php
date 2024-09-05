@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Middleware;
+namespace App\Services;
 
 use App\Exceptions\Token\TokenAbsenceException;
 use App\Exceptions\Token\TokenBlacklistedException;

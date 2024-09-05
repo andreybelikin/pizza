@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Services\Token;
+namespace App\Services;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Tymon\JWTAuth\Contracts\Providers\Storage;
-use Carbon\Carbon;
 
 class TokenBlacklistService implements Storage
 {

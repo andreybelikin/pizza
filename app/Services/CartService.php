@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Cart;
+namespace App\Services;
 
 use App\Enums\ProductType;
 use App\Enums\Restriction\ProductTypeRestriction;

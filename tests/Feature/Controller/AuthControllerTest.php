@@ -2,17 +2,15 @@
 
 namespace Tests\Feature\Controller;
 
-use App\Models\User;
-use App\Services\Token\TokenBlacklistService;
+use App\Services\TokenBlacklistService;
 use Closure;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Testing\Assert;
 use Illuminate\Testing\AssertableJsonString;
 use Illuminate\Testing\TestResponse;
 use PHPUnit\Framework\Attributes\DataProvider;
-use Illuminate\Http\Response;
 use Tests\TestCase;
 use Tests\TestData\TestUser;
 use Tests\TestData\Tokens;
