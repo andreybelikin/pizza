@@ -24,6 +24,7 @@ class Handler extends ExceptionHandler
         });
 
         $this->renderable(function (Exception $exception) {
+            dd($exception);
             $responseDto = new InternalErrorResponseDto();
 
             return response()->json($responseDto->toArray(), $responseDto::STATUS);

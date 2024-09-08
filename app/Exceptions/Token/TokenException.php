@@ -7,7 +7,7 @@ use Illuminate\Http\JsonResponse;
 
 class TokenException extends \Exception
 {
-    public function __construct($message, private readonly int $status = 0)
+    public function __construct($message, private readonly ?int $status = null)
     {
         parent::__construct($message, $status);
     }

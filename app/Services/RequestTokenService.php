@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Exceptions\Token\TokenAbsenceException;
 use App\Exceptions\Token\TokenBlacklistedException;
+use App\Exceptions\Token\TokenException;
 use App\Exceptions\Token\TokenHasExpiredException;
 use App\Exceptions\Token\TokenUserNotDefinedException;
 use Illuminate\Http\Request;
@@ -15,18 +16,17 @@ class RequestTokenService
 {
     public function __construct(private Request $request)
     {}
+
     public function checkAuthorizationToken(): void
     {
         $this->checkAuthorizationTokenPresence();
-        $this->isTokenBlackListed($this->request->bearerToken());
-        $this->validateSingleToken($this->request->bearerToken());
+        $this->checkSingleToken($this->request->bearerToken());
     }
 
     public function checkRefreshToken(): void
     {
         $this->checkRefreshTokenPresence();
-        $this->isTokenBlackListed($this->request->header('x-refresh-token'));
-        $this->validateSingleToken($this->request->header('x-refresh-token'));
+        $this->checkSingleToken($this->request->header('x-refresh-token'));
     }
 
     public function checkTokensPair(): bool
@@ -52,19 +52,26 @@ class RequestTokenService
         ) {
             throw new TokenAbsenceException();
         }
+
+        $this->checkRefreshTokenType();
     }
 
-    private function validateSingleToken(string $token): void
+    private function checkRefreshTokenType(): void
+    {
+        auth()->setToken($this->request->header('x-refresh-token'));
+
+        if (auth()->getPayload()->matches(['typ' => 'refresh'])) {
+            throw new TokenAbsenceException();
+        }
+    }
+
+    private function checkSingleToken(string $token): void
     {
         auth()->setToken($token);
 
-        try {
-            auth()->userOrFail();
-        } catch (UserNotDefinedException) {
-            throw new TokenUserNotDefinedException();
-        } catch (TokenExpiredException) {
-            throw new TokenHasExpiredException();
-        }
+        $this->isTokenBlackListed();
+        $this->validateToken();
+        $this->validateTokenUser();
     }
 
     private function removeInvalidTokens(): void
@@ -75,12 +82,9 @@ class RequestTokenService
         ];
 
         array_walk($tokens, function ($token, $tokenName) {
-            auth()->setToken($token);
-
             try {
-                auth()->userOrFail();
-                $this->isTokenBlackListed($token);
-            } catch (UserNotDefinedException | TokenExpiredException | TokenBlacklistedException $e) {
+                $this->checkSingleToken($token);
+            } catch (TokenException) {
                 $this->request->headers->set($tokenName, '');
             }
         });
@@ -94,9 +98,27 @@ class RequestTokenService
             : true;
     }
 
-    private function isTokenBlackListed(string $token): void
+    private function validateToken(): void
     {
-        $hashedToken = hash('sha256', $token);
+        try {
+            auth()->getPayload();
+        } catch (TokenExpiredException) {
+            throw new TokenHasExpiredException();
+        }
+    }
+
+    private function validateTokenUser(): void
+    {
+        try {
+            auth()->userOrFail();
+        }catch (UserNotDefinedException) {
+            throw new TokenUserNotDefinedException();
+        }
+    }
+
+    private function isTokenBlackListed(): void
+    {
+        $hashedToken = hash('sha256', auth()->getToken());
 
         if (DB::table('token_blacklist')->where('token', $hashedToken)->exists()) {
             throw new TokenBlacklistedException();

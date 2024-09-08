@@ -6,7 +6,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class TokenBlacklistedException extends TokenException
 {
-    private CONST MESSAGE = 'Passed token is in blacklist';
+    private CONST MESSAGE = 'The token has been blacklisted';
     private CONST STATUS = Response::HTTP_UNAUTHORIZED;
     public function __construct()
     {
