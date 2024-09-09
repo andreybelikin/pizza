@@ -4,6 +4,8 @@ namespace App\Exceptions;
 
 use App\Dto\Response\InternalErrorResponseDto;
 use App\Dto\Response\RequestValidation\FailedValidationResponseDto;
+use App\Exceptions\Resource\ResourceException;
+use App\Exceptions\Resource\ResourceNotFoundException;
 use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
@@ -19,8 +21,8 @@ class Handler extends ExceptionHandler
             return response()->json($responseDto->toArray(), $responseDto::STATUS);
         });
 
-        $this->renderable(function (AuthorizationException $exception) {
-            return $exception->response();
+        $this->renderable(function (ResourceException $exception) {
+            return $exception->getResponse();
         });
 
         $this->renderable(function (Exception $exception) {

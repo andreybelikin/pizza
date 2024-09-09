@@ -14,7 +14,7 @@ use Tymon\JWTAuth\Exceptions\UserNotDefinedException;
 
 class RequestTokenService
 {
-    public function __construct(private Request $request)
+    public function __construct(private Request $request, private TokenBlacklistService $blacklistService)
     {}
 
     public function checkAuthorizationToken(): void
@@ -60,7 +60,7 @@ class RequestTokenService
     {
         auth()->setToken($this->request->header('x-refresh-token'));
 
-        if (auth()->getPayload()->matches(['typ' => 'refresh'])) {
+        if (!auth()->getPayload()->matches(['typ' => 'refresh'])) {
             throw new TokenAbsenceException();
         }
     }
@@ -111,16 +111,14 @@ class RequestTokenService
     {
         try {
             auth()->userOrFail();
-        }catch (UserNotDefinedException) {
+        } catch (UserNotDefinedException) {
             throw new TokenUserNotDefinedException();
         }
     }
 
     private function isTokenBlackListed(): void
     {
-        $hashedToken = hash('sha256', auth()->getToken());
-
-        if (DB::table('token_blacklist')->where('token', $hashedToken)->exists()) {
+        if ($this->blacklistService->isTokenBlacklisted()) {
             throw new TokenBlacklistedException();
         }
     }

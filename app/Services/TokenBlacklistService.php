@@ -43,6 +43,13 @@ class TokenBlacklistService implements Storage
         return null;
     }
 
+    public function isTokenBlacklisted(): bool
+    {
+        $jwtId = auth()->getPayload()->getClaims()->get('jti')->getValue();
+
+        return DB::table($this->table)->where('token', $jwtId)->exists();
+    }
+
     public function destroy($key): void
     {
         DB::table($this->table)->where('token', $key)->delete();
