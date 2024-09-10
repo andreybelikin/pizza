@@ -45,7 +45,7 @@ class AuthController
 
     public function register(RegisterRequest $request): Response
     {
-        $this->authService->saveNewUser($request);
+        $this->authService->registerUser($request);
         $responseDto = new RegisterResponceDto();
 
         return response($responseDto->toArray(), $responseDto::STATUS);

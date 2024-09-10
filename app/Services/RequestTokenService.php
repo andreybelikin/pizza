@@ -8,14 +8,15 @@ use App\Exceptions\Token\TokenException;
 use App\Exceptions\Token\TokenHasExpiredException;
 use App\Exceptions\Token\TokenUserNotDefinedException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use Tymon\JWTAuth\Exceptions\UserNotDefinedException;
 
 class RequestTokenService
 {
-    public function __construct(private Request $request, private TokenBlacklistService $blacklistService)
-    {}
+    public function __construct(
+        private Request $request,
+        private TokenBlacklistService $blacklistService
+    ) {}
 
     public function checkAuthorizationToken(): void
     {
@@ -69,8 +70,8 @@ class RequestTokenService
     {
         auth()->setToken($token);
 
-        $this->isTokenBlackListed();
         $this->validateToken();
+        $this->isTokenBlackListed();
         $this->validateTokenUser();
     }
 

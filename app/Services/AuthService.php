@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 
 class AuthService
 {
-    public function saveNewUser(RegisterRequest $request): void
+    public function registerUser(RegisterRequest $request): void
     {
         $user = new User([
             'name' => $request->input('name'),

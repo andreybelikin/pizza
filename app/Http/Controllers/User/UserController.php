@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\User;
 
+use App\Dto\Response\Controller\User\UserDeletedResponseDto;
+use App\Http\Requests\UserDeleteRequest;
 use App\Http\Requests\UserUpdateRequest;
 use App\Http\Resources\UserResource;
 use App\Services\UserResourceService;
@@ -32,8 +34,11 @@ class UserController
         ;
     }
 
-    public function delete(string $userId): JsonResponse
+    public function delete(UserDeleteRequest $request): JsonResponse
     {
-        
+        $this->userService->deleteUser($request);
+        $deletedUserResponseDto = new UserDeletedResponseDto();
+
+        return response()->json($deletedUserResponseDto->toArray(), $deletedUserResponseDto::STATUS);
     }
 }
