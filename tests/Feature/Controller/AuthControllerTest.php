@@ -71,7 +71,7 @@ class AuthControllerTest extends TestCase
     #[DataProvider('loginProvider')]
     public function testLogin(array $credentials, Closure $assertions): void
     {
-        TestUser::createUserWithCredentials($credentials);
+        TestUser::createUserWithCredentials();
 
         $response = $this->postJson('/api/login', $credentials);
         $decodedResponse = $response->decodeResponseJson();

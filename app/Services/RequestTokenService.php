@@ -6,9 +6,11 @@ use App\Exceptions\Token\TokenAbsenceException;
 use App\Exceptions\Token\TokenBlacklistedException;
 use App\Exceptions\Token\TokenException;
 use App\Exceptions\Token\TokenHasExpiredException;
+use App\Exceptions\Token\TokenIsInvalidException;
 use App\Exceptions\Token\TokenUserNotDefinedException;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
+use Tymon\JWTAuth\Exceptions\TokenInvalidException;
 use Tymon\JWTAuth\Exceptions\UserNotDefinedException;
 
 class RequestTokenService
@@ -105,6 +107,8 @@ class RequestTokenService
             auth()->getPayload();
         } catch (TokenExpiredException) {
             throw new TokenHasExpiredException();
+        } catch (TokenInvalidException $exception) {
+            throw new TokenIsInvalidException($exception->getMessage());
         }
     }
 

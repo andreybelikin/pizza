@@ -24,7 +24,7 @@ Route::middleware(EnsureTokenIsValid::class)->group(function () {
 
     Route::controller(UserController::class)->group(function () {
         Route::get('/user/{id}', 'get');
-        Route::put('/user/{id}', 'update');
+        Route::patch('/user/{id}', 'update');
         Route::delete('/user/{id}', 'delete');
     });
 
@@ -32,11 +32,11 @@ Route::middleware(EnsureTokenIsValid::class)->group(function () {
         Route::controller(AdminProductController::class)->group(function () {
             Route::get('/admin/products/{id}','get');
             Route::post('/admin/products/',  'add');
-            Route::post('/admin/products/{id}', 'update');
+            Route::patch('/admin/products/{id}', 'update');
             Route::post('/admin/products/{id}','delete');
         });
 
-        Route::put('/admin/user/{id}', [AdminUserController::class, 'update']);
+        Route::patch('/admin/user/{id}', [AdminUserController::class, 'update']);
     });
 });
 

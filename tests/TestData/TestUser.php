@@ -22,9 +22,13 @@ class TestUser
         return User::factory()->setPassword($password)->create();
     }
 
-    public static function createUserWithCredentials(array $credentials): void
+    public static function createUserWithCredentials(): void
     {
-        $credentials['password'] = bcrypt($credentials['password']);
+        $credentials = [
+            'email' => 'test2233@email.com',
+            'password' => bcrypt('keK48!>O04780'),
+        ];
+
         User::factory()->create($credentials);
     }
 
