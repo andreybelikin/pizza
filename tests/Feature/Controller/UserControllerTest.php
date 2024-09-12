@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Controller;
 
-use App\Models\User;
 use Closure;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Testing\TestResponse;
@@ -16,15 +15,17 @@ class UserControllerTest extends TestCase
 {
     use DatabaseTransactions;
 
-    private const ROUTE = '/api/user/';
-
+    private const CONTROLLER_ROUTE = '/api/user/';
 
     public function testGetUserSuccess(): void
     {
         $user = TestUser::createUserForToken();
         $accessToken = Tokens::generateAccessToken($user->email, TestUser::$plainPassword);
 
-        $response = $this->getJson(self::ROUTE . $user->getKey(), ['authorization' => 'Bearer ' . $accessToken]);
+        $response = $this->getJson(
+            self::CONTROLLER_ROUTE . $user->getKey(),
+            ['authorization' => 'Bearer ' . $accessToken]
+        );
 
         $response->assertOk();
         $response->assertJson([
@@ -41,14 +42,16 @@ class UserControllerTest extends TestCase
         bool $anotherUserId,
         ?string $token,
         Closure $assertions
-    ): void
-    {
+    ): void {
         $user = TestUser::createUserForToken();
         $userId = $anotherUserId ? $user->getKey() + 1 : $user->getKey();
 
         $accessToken = $token ?? Tokens::generateAccessToken($user->email, TestUser::$plainPassword);
 
-        $response = $this->getJson(self::ROUTE . $userId, ['authorization' => 'Bearer ' . $accessToken]);
+        $response = $this->getJson(
+            self::CONTROLLER_ROUTE . $userId,
+            ['authorization' => 'Bearer ' . $accessToken]
+        );
 
         $assertions($response);
     }
@@ -86,21 +89,89 @@ class UserControllerTest extends TestCase
         $user = TestUser::createUserForToken();
         $accessToken = Tokens::generateAccessToken($user->email, TestUser::$plainPassword);
 
-        $newUserData = [
+        $updateUserData = [
             'name' => 'testName',
             'email' => 'shvartznigger@gmail.com',
             'default_address' => 'г. Магнитогорск',
         ];
 
-        $response = $this->patchJson(self::ROUTE . $user->getKey(), $newUserData, ['authorization' => 'Bearer ' . $accessToken]);
+        $response = $this->patchJson(
+            self::CONTROLLER_ROUTE . $user->getKey(),
+            $updateUserData,
+            ['authorization' => 'Bearer ' . $accessToken]
+        );
 
         $response->assertOk();
         $response->assertJson([
-            'name' => $newUserData['name'],
+            'name' => $updateUserData['name'],
             'surname' => $user->surname,
-            'email' => $newUserData['email'],
+            'email' => $updateUserData['email'],
             'phone' => $user->phone,
-            'default_address' => $newUserData['default_address'],
+            'default_address' => $updateUserData['default_address'],
         ]);
+    }
+
+    #[DataProvider('userUpdateFailureProvider')]
+    public function testUpdateUserFailure(
+        array $updateUserData,
+        bool $anotherUserId,
+        ?string $token,
+        Closure $assertions,
+    ): void {
+        $user = TestUser::createUserForToken();
+        $userId = $anotherUserId ? $user->getKey() + 1 : $user->getKey();
+
+        $accessToken = $token ?? Tokens::generateAccessToken($user->email, TestUser::$plainPassword);
+
+        $response = $this->patchJson(
+            self::CONTROLLER_ROUTE . $userId,
+            $updateUserData,
+            ['authorization' => 'Bearer ' . $accessToken]
+        );
+
+        $assertions($response);
+    }
+
+    public static function userUpdateFailureProvider(): array
+    {
+        return [
+            'invalidRequest' => [
+                'updateUserData' => [
+                    'phone' => 'invalid phone number',
+                    'name' => 'shvartznigger@gmail.com',
+                ],
+                'anotherUserId' => false,
+                'token' => null,
+                'assertions' => function (TestResponse $response) {
+                    $response->assertStatus(Response::HTTP_BAD_REQUEST);
+                    $decodedResponse = $response->decodeResponseJson();
+
+                    static::assertArrayHasKey('message', $decodedResponse);
+                    static::assertSame('The given data failed to pass validation', $decodedResponse['message']);
+                },
+            ],
+            'accessPolicyViolation' => [
+                'anotherUserId' => true,
+                'token' => null,
+                'assertions' => function (TestResponse $response) {
+                    $response->assertStatus(Response::HTTP_NOT_FOUND);
+                    $decodedResponse = $response->decodeResponseJson();
+
+                    static::assertArrayHasKey('message', $decodedResponse);
+                    static::assertSame('Resource is not exist', $decodedResponse['message']);
+                },
+            ],
+            'invalidToken' => [
+                'anotherUserId' => false,
+                'token' => 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
+                'assertions' => function (TestResponse $response) {
+                    $response->assertStatus(Response::HTTP_UNAUTHORIZED);
+                    $decodedResponse = $response->decodeResponseJson();
+
+                    static::assertArrayHasKey('message', $decodedResponse);
+                    static::assertSame('Token Signature could not be verified.', $decodedResponse['message']);
+                },
+            ],
+        ];
     }
 }

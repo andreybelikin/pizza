@@ -20,9 +20,7 @@ class OrderSeeder extends Seeder
         $orders = Order::factory(10)->create();
 
         foreach ($orders as $order) {
-            $order->products()
-                ->attach($products->random(random_int(1, 3)));
-            ;
+            $order->products()->attach($products->random(random_int(1, 3)));
         }
     }
 }
