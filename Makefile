@@ -8,19 +8,19 @@ build:
 
 install: deps prepare
 
-prepare:
+prepare: prepare_tests
 	cp -n .env.example .env
 	$(APP_SERVICE) php artisan jwt:secret
 	$(APP_SERVICE) php artisan key:generate
 	$(APP_SERVICE) php artisan migrate
 
-up:
-	docker compose up -d
-
 prepare_tests:
 	$(APP_SERVICE) php artisan --env=testing key:generate
 	$(APP_SERVICE) php artisan --env=testing jwt:secret
-	$(APP_SERVICE) php artisan --env=testing migrate --seed
+	$(APP_SERVICE) php artisan --env=testing migrate
+
+up:
+	docker compose up -d
 
 .PHONY: tests
 
@@ -28,4 +28,4 @@ tests:
 	$(APP_SERVICE) php artisan test --env=testing
 
 recreate_test_db:
-	$(APP_SERVICE) php artisan --env=testing migrate:refresh --seed
+	$(APP_SERVICE) php artisan --env=testing migrate:refresh

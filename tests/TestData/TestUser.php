@@ -8,18 +8,11 @@ class TestUser
 {
     public static string $plainPassword;
 
-    private static function createPassword(): string
+    public static function createAuthorizedUser(): void
     {
-        self::$plainPassword = fake()->password();
-
-        return self::$plainPassword;
-    }
-
-    public static function createUserForToken(): User
-    {
-        $password = self::createPassword();
-
-        return User::factory()->setPassword($password)->create();
+        $password = fake()->password();
+        $user = User::factory()->setPassword($password)->create();
+        Tokens::generateAccessToken($user->email, $password);
     }
 
     public static function createUserWithCredentials(): void
@@ -32,8 +25,8 @@ class TestUser
         User::factory()->create($credentials);
     }
 
-    public static function createManyUsers(): void
+    public static function createAnotherUser(): User
     {
-        User::factory(3)->create();
+        return User::factory()->create();
     }
 }
