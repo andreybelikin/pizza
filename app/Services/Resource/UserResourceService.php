@@ -1,12 +1,13 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Resource;
 
-use App\Exceptions\Resource\ResourceNotFoundException;
 use App\Exceptions\Resource\ResourceAccessException;
+use App\Exceptions\Resource\ResourceNotFoundException;
 use App\Http\Requests\UserDeleteRequest;
 use App\Http\Requests\UserUpdateRequest;
 use App\Models\User;
+use App\Services\Auth\AuthService;
 
 class UserResourceService
 {

@@ -37,7 +37,7 @@ class DeleteTest extends TestCase
     }
 
     #[DataProvider('userDeleteFailureProvider')]
-    public function testUpdateUserFailure(
+    public function testDeleteUserFailure(
         ?Closure $anotherUserId,
         ?string  $invalidToken,
         Closure  $assertions,

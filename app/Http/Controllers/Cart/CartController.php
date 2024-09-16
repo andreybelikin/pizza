@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers\Cart;
 
-use App\Services\CartService;
+use App\Services\Resource\CartResourceService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class CartController
 {
     public function __construct(
-        private CartService $cartService
+        private CartResourceService $cartService
     ) {}
 
     public function create(Request $request): JsonResponse

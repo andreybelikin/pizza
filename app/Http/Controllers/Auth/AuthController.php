@@ -9,7 +9,7 @@ use App\Dto\Response\Controller\Auth\TokensResponseDto;
 use App\Exceptions\InvalidCredentialsException;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
-use App\Services\AuthService;
+use App\Services\Auth\AuthService;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;

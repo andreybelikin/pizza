@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Auth;
 
 use App\Exceptions\InvalidCredentialsException;
 use App\Http\Requests\LoginRequest;

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Resource;
 
 use App\Enums\ProductType;
 use App\Enums\Restriction\ProductTypeRestriction;
@@ -9,7 +9,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class CartService
+class CartResourceService
 {
     private Authenticatable $user;
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Middleware;
 
 use App\Exceptions\Token\TokenAbsenceException;
 use App\Exceptions\Token\TokenBlacklistedException;
@@ -8,6 +8,7 @@ use App\Exceptions\Token\TokenException;
 use App\Exceptions\Token\TokenHasExpiredException;
 use App\Exceptions\Token\TokenIsInvalidException;
 use App\Exceptions\Token\TokenUserNotDefinedException;
+use App\Services\TokenBlacklistService;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use Tymon\JWTAuth\Exceptions\TokenInvalidException;

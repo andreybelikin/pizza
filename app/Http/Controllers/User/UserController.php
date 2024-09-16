@@ -6,7 +6,7 @@ use App\Dto\Response\Controller\User\UserDeletedResponseDto;
 use App\Http\Requests\UserDeleteRequest;
 use App\Http\Requests\UserUpdateRequest;
 use App\Http\Resources\UserResource;
-use App\Services\UserResourceService;
+use App\Services\Resource\UserResourceService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 class UserController
