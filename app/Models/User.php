@@ -22,6 +22,7 @@ class User extends Authenticatable implements JWTSubject
         'is_admin',
         'password',
     ];
+
     public function products(): BelongsToMany
     {
         return $this->belongsToMany(Product::class, 'cart_product');

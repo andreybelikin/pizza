@@ -11,8 +11,10 @@ use App\Services\Auth\AuthService;
 
 class UserResourceService
 {
-    public function __construct(private AuthService $authService)
-    {}
+    public function __construct(
+        private AuthService $authService,
+        private CachedResourceService $cachedResourceService
+    ) {}
 
     public function getUser(string $requestedUserId): User
     {
@@ -38,8 +40,10 @@ class UserResourceService
         );
 
         $requestedUserResource->update($newData);
+        $requestedUserResource->refresh();
+        $this->cachedResourceService->update($requestedUserResource);
 
-        return $requestedUserResource->refresh();
+        return $requestedUserResource;
     }
 
     public function deleteUser(UserDeleteRequest $request): void
@@ -48,15 +52,22 @@ class UserResourceService
         $this->checkActionPermission('delete', $requestedUserResource);
 
         $requestedUserResource->delete();
+        $this->cachedResourceService->delete('user', $request->input('id'));
         $this->authService->logoutUser($request);
     }
 
     private function getRequestedUser(string $userId): User
     {
-        $requestedUser = User::query()->find($userId);
+        $requestedUser = $this->cachedResourceService->get('user', $userId);
+
+        if (is_null($requestedUser)) {
+            $requestedUser = User::query()->find($userId);
+        }
 
         if (is_null($requestedUser)) {
             throw new ResourceNotFoundException();
+        } else {
+            $this->cachedResourceService->add($requestedUser);
         }
 
         return $requestedUser;
