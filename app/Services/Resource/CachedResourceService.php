@@ -7,50 +7,79 @@ use App\Models\Product;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Redis;
 
+/**
+ * @method void addUser(Model $resourceModel)
+ * @method Model|null getUser(string $resourceId)
+ * @method void updateUser(Model $resourceModel)
+ * @method void deleteUser(string $resourceId)
+ * @method void addOrder(Model $resourceModel)
+ * @method Model|null getOrder(string $resourceId)
+ * @method void updateOrder(Model $resourceModel)
+ * @method void deleteOrder(string $resourceId)
+ * @method void addProduct(Model $resourceModel)
+ * @method Model|null getProduct(string $resourceId)
+ * @method void updateProduct(Model $resourceModel)
+ * @method void deleteProduct(string $resourceId)
+ */
 class CachedResourceService
 {
-    private const MODEL_RESOURCE_TYPE_MAPPING = [
-        User::class => 'user',
-        Product::class => 'product',
-        Order::class => 'order',
-    ];
-
-    private const RESOURCE_TYPE_MODEL_MAPPING = [
-        'user' => User::class,
-        'product' => Product::class,
-        'order' => Order::class,
-    ];
-
-    public function add(Model $resourceModel): void
+    public function __call(string $name, array $arguments): void
     {
-        $resourceType = self::MODEL_RESOURCE_TYPE_MAPPING[$resourceModel::class];
-        $resourceEntryKey = sprintf('%s:%s', $resourceType, $resourceModel->getKey());
+        [$methodAction, $resourceName] = $this->getCalledMethod($name);
 
-        Cache::add($resourceEntryKey, serialize($resourceModel));
+        $resourceId = $arguments[0] instanceof Model ? $arguments[0]->getKey() : $arguments[0];
+        $entryPrefixKey = sprintf('%s:%s', strtolower($resourceName), $resourceId);
+
+        $resourceData = $arguments[0] instanceof Model ?: serialize($arguments[0]->toArray());
+        $resourceModelClass = $arguments[0] instanceof Model ?: serialize($arguments[0]->getMorphClass());
+
+        match ($methodAction) {
+            'add', 'update' => $this->{$methodAction}($entryPrefixKey, $resourceData),
+            'get' => $this->{$methodAction}($entryPrefixKey, $resourceId, $resourceModelClass),
+            'delete' => $this->{$methodAction}($entryPrefixKey)
+        };
     }
 
-    public function get(string $resourceType, string $resourceId): ?Model
+    public function add(string $entryPrefixKey, array $resourceData): void
     {
-        $resourceEntryKey = sprintf('%s:%s', $resourceType, $resourceId);
-        $resourceData = Cache::get($resourceEntryKey);
+        Cache::add($entryPrefixKey, $resourceData);
+    }
 
-        if (empty($resourceData)) {
+    public function get(string $entryPrefixKey, string $resourceId, string $modelClass): ?Model
+    {
+        $resourceData = unserialize(Cache::get($entryPrefixKey));
+
+        if (is_null($resourceData)) {
             return null;
         }
 
-        return unserialize($resourceData);
+        /** @var Model $resourceModel */
+        $resourceModel = new $modelClass();
+        $resourceModel->setAttribute('id', $resourceId);
+        $resourceModel->exists = true;
+        $resourceModel->fill($resourceData);
+
+        return $resourceModel;
     }
 
-    public function update(Model $resourceModel): void
+    public function update(string $entryPrefixKey, array $resourceData): void
     {
-        $this->add($resourceModel);
+        Cache::put($entryPrefixKey, $resourceData);
     }
 
-    public function delete(string $resourceType, string $resourceId): void
+    public function delete(string $entryPrefixKey): void
     {
-        $resourceEntryKey = sprintf('%s:%s', $resourceType, $resourceId);
-        Cache::delete($resourceEntryKey);
+        Cache::delete($entryPrefixKey);
+    }
+
+    private function getCalledMethod(string $name): array
+    {
+        return preg_split(
+            '/(get|add|update|delete)/',
+            $name,
+            -1,
+            PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY
+        );
     }
 }

@@ -41,7 +41,7 @@ class UserResourceService
 
         $requestedUserResource->update($newData);
         $requestedUserResource->refresh();
-        $this->cachedResourceService->update($requestedUserResource);
+        $this->cachedResourceService->updateUser($requestedUserResource);
 
         return $requestedUserResource;
     }
@@ -58,7 +58,7 @@ class UserResourceService
 
     private function getRequestedUser(string $userId): User
     {
-        $requestedUser = $this->cachedResourceService->get('user', $userId);
+        $requestedUser = $this->cachedResourceService->getUser($userId);
 
         if (is_null($requestedUser)) {
             $requestedUser = User::query()->find($userId);
@@ -67,7 +67,7 @@ class UserResourceService
         if (is_null($requestedUser)) {
             throw new ResourceNotFoundException();
         } else {
-            $this->cachedResourceService->add($requestedUser);
+            $this->cachedResourceService->addUser($requestedUser);
         }
 
         return $requestedUser;
