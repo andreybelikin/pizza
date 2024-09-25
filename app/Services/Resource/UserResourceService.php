@@ -4,10 +4,12 @@ namespace App\Services\Resource;
 
 use App\Exceptions\Resource\ResourceAccessException;
 use App\Exceptions\Resource\ResourceNotFoundException;
-use App\Http\Requests\UserDeleteRequest;
-use App\Http\Requests\UserUpdateRequest;
+use App\Http\Requests\User\UserDeleteRequest;
+use App\Http\Requests\User\UserUpdateRequest;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Services\Auth\AuthService;
+use Illuminate\Http\Resources\Json\JsonResource;
 
 class UserResourceService
 {
@@ -16,15 +18,15 @@ class UserResourceService
         private CachedResourceService $cachedResourceService
     ) {}
 
-    public function getUser(string $requestedUserId): User
+    public function getUser(string $requestedUserId): JsonResource
     {
         $requestedUserResource = $this->getRequestedUser($requestedUserId);
         $this->checkActionPermission('get', $requestedUserResource);
 
-        return $requestedUserResource;
+        return new UserResource($requestedUserResource);
     }
 
-    public function updateUser(UserUpdateRequest $request): User
+    public function updateUser(UserUpdateRequest $request): JsonResource
     {
         $requestedUserResource = $this->getRequestedUser($request->input('id'));
         $this->checkActionPermission('update', $requestedUserResource);
@@ -43,7 +45,7 @@ class UserResourceService
         $requestedUserResource->refresh();
         $this->cachedResourceService->updateUser($requestedUserResource);
 
-        return $requestedUserResource;
+        return new UserResource($requestedUserResource);
     }
 
     public function deleteUser(UserDeleteRequest $request): void
@@ -52,7 +54,7 @@ class UserResourceService
         $this->checkActionPermission('delete', $requestedUserResource);
 
         $requestedUserResource->delete();
-        $this->cachedResourceService->delete('user', $request->input('id'));
+        $this->cachedResourceService->deleteUser($request->input('id'));
         $this->authService->logoutUser($request);
     }
 

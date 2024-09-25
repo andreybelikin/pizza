@@ -1,14 +1,13 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Auth;
 
-use App\Models\User;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
 
-class UserDeleteRequest extends FormRequest
+class LoginRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,21 +24,19 @@ class UserDeleteRequest extends FormRequest
      */
     public function rules(): array
     {
-        return ['id' => 'required|string|max:36'];
-    }
-
-    protected function prepareForValidation(): void
-    {
-        $this->merge([
-            'id' => $this->route('id'),
-        ]);
+        return [
+            'email' => 'required|email',
+            'password' => 'required|string|max:50',
+        ];
     }
 
     public function messages(): array
     {
         return [
-            'id.required' => 'A user id is required',
-            'id.max' => 'A user id is only 36 char long',
+            'email.required' => 'A user email is required.',
+            'email.email' => 'A user email must be a valid email address.',
+            'password.required' => 'A user password is required.',
+            'password.max' => 'A password must not be longer than 50 characters.',
         ];
     }
 

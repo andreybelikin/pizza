@@ -2,9 +2,6 @@
 
 namespace App\Services\Resource;
 
-use App\Models\Order;
-use App\Models\Product;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 
@@ -24,6 +21,7 @@ use Illuminate\Support\Facades\Cache;
  */
 class CachedResourceService
 {
+    private const MODELS_DIRECTORY = '\App\Models\\';
     public function __call(string $name, array $arguments): void
     {
         [$methodAction, $resourceName] = $this->getCalledMethod($name);
@@ -31,8 +29,8 @@ class CachedResourceService
         $resourceId = $arguments[0] instanceof Model ? $arguments[0]->getKey() : $arguments[0];
         $entryPrefixKey = sprintf('%s:%s', strtolower($resourceName), $resourceId);
 
-        $resourceData = $arguments[0] instanceof Model ?: serialize($arguments[0]->toArray());
-        $resourceModelClass = $arguments[0] instanceof Model ?: serialize($arguments[0]->getMorphClass());
+        $resourceData = $arguments[0] instanceof Model ? serialize($arguments[0]->toArray()) : null;
+        $resourceModelClass = self::MODELS_DIRECTORY . $resourceName;
 
         match ($methodAction) {
             'add', 'update' => $this->{$methodAction}($entryPrefixKey, $resourceData),
@@ -41,7 +39,7 @@ class CachedResourceService
         };
     }
 
-    public function add(string $entryPrefixKey, array $resourceData): void
+    public function add(string $entryPrefixKey, string $resourceData): void
     {
         Cache::add($entryPrefixKey, $resourceData);
     }
@@ -63,7 +61,7 @@ class CachedResourceService
         return $resourceModel;
     }
 
-    public function update(string $entryPrefixKey, array $resourceData): void
+    public function update(string $entryPrefixKey, string $resourceData): void
     {
         Cache::put($entryPrefixKey, $resourceData);
     }

@@ -2,27 +2,42 @@
 
 namespace App\Http\Controllers\Product;
 
-use App\Models\Product;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
+use App\Services\Resource\ProductResourceService;
+use Illuminate\Http\Client\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 class ProductController
 {
-    public function index(): JsonResponse
+    public function __construct(private ProductResourceService $productResourceService)
+    {}
+
+    public function index(Request $request): JsonResponse
     {
-        return response()->json(Product::all());
+        $products = $this->productResourceService->getProducts($request);
+
+        return response()
+            ->json($products)
+            ->setEncodingOptions(JSON_UNESCAPED_UNICODE)
+        ;
     }
+
     public function get(string $id): JsonResponse
     {
-        try {
-            $product = response()->json(Product::query()->find($id));
-        } catch (ModelNotFoundException) {
-            response()
-                ->json(['error' => sprintf('Product № %s in not found', $id)])
-                ->setStatusCode(404)
-            ;
-        }
+        $product = $this->productResourceService->getProduct($id);
 
-        return $product;
+        return response()
+            ->json($product)
+            ->setEncodingOptions(JSON_UNESCAPED_UNICODE)
+        ;
+    }
+
+    public function update(string $id)
+    {
+        $product = $this->productResourceService->getProduct($id);
+
+        return response()
+            ->json($product)
+            ->setEncodingOptions(JSON_UNESCAPED_UNICODE)
+            ;
     }
 }

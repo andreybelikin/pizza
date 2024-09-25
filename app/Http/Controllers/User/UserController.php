@@ -3,9 +3,8 @@
 namespace App\Http\Controllers\User;
 
 use App\Dto\Response\Controller\User\UserDeletedResponseDto;
-use App\Http\Requests\UserDeleteRequest;
-use App\Http\Requests\UserUpdateRequest;
-use App\Http\Resources\UserResource;
+use App\Http\Requests\User\UserDeleteRequest;
+use App\Http\Requests\User\UserUpdateRequest;
 use App\Services\Resource\UserResourceService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
@@ -19,7 +18,7 @@ class UserController
         $user = $this->userService->getUser($userId);
 
         return response()
-            ->json(new UserResource($user))
+            ->json($user)
             ->setEncodingOptions(JSON_UNESCAPED_UNICODE)
         ;
     }
@@ -29,7 +28,7 @@ class UserController
         $updatedUser = $this->userService->updateUser($request);
 
         return response()
-            ->json(new UserResource($updatedUser))
+            ->json($updatedUser)
             ->setEncodingOptions(JSON_UNESCAPED_UNICODE)
         ;
     }

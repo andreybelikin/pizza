@@ -6,11 +6,23 @@ use App\Models\User;
 
 class ProductPolicy
 {
-    /**
-     * Create a new policy instance.
-     */
-    public function __construct()
+    public function add(User $authorizedUser): bool
     {
-        //
+        return $this->isAdmin($authorizedUser);
+    }
+
+    public function update(User $authorizedUser): bool
+    {
+        return $this->isAdmin($authorizedUser);
+    }
+
+    public function delete(User $authorizedUser): bool
+    {
+        return $this->isAdmin($authorizedUser);
+    }
+
+    private function isAdmin(User $authorizedUser): bool
+    {
+        return $authorizedUser->isAdmin();
     }
 }

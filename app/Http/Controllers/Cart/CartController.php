@@ -8,9 +8,7 @@ use Illuminate\Http\Request;
 
 class CartController
 {
-    public function __construct(
-        private CartResourceService $cartService
-    ) {}
+    public function __construct(private CartResourceService $cartService) {}
 
     public function create(Request $request): JsonResponse
     {
