@@ -5,43 +5,43 @@ namespace App\Services\Resource;
 use App\Exceptions\Resource\ResourceAccessException;
 use App\Exceptions\Resource\ResourceNotFoundException;
 use App\Http\Requests\Product\ProductAddRequest;
+use App\Http\Requests\Product\ProductDeleteRequest;
 use App\Http\Requests\Product\ProductUpdateRequest;
 use App\Http\Resources\ProductResource;
 use App\Http\Resources\ProductsCollection;
 use App\Models\Product;
 use App\Models\User;
-use App\Policies\ProductPolicy;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Http\Client\Request;
+use App\Services\Resource\Abstract\ResourceServiceAbstract;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
-class ProductResourceService
+class ProductResourceService extends ResourceServiceAbstract
 {
-    public function getProduct(string $id): JsonResource
+    public function __construct(private CachedResourceService $cachedResourceService) {
+        parent::__construct($this->cachedResourceService);
+        parent::setResourceModel(User::class);
+    }
+    public function getProduct(string $requestedProductId): JsonResource
     {
-        $product = Product::query()->find($id);
+        $this->checkActionPermission('get');
+        /** @var Product $requestedProductResource */
+        $requestedProductResource = $this->getRequestedResource($requestedProductId);
 
-        if (is_null($product)) {
-            throw new ResourceNotFoundException();
-        }
-
-        return new ProductResource($product);
+        return new ProductResource($requestedProductResource);
     }
 
     public function getProducts(Request $request): ResourceCollection
     {
-        return new ProductsCollection(Product::paginate(15));
+        $filters = $this->getProductsFilters($request);
+
+        return new ProductsCollection(Product::filter($filters)->paginate(15));
     }
 
     public function addProduct(ProductAddRequest $request): void
     {
-        $productData = $request->only([
-            'title',
-            'description',
-            'type',
-            'price',
-        ]);
+        $productData = $this->getProductData($request);
 
         $this->checkActionPermission('add');
 
@@ -51,30 +51,25 @@ class ProductResourceService
 
     public function updateProduct(ProductUpdateRequest $request): JsonResource
     {
+        $requestedProductResource = $this->getRequestedResource($request->input('id'));
+        $this->checkActionPermission('update');
+
+        $newData = $this->getProductData($request);
+        $this->updateResource($requestedProductResource, $newData);
+
+        return new JsonResource($requestedProductResource);
+    }
+
+    public function deleteProduct(ProductDeleteRequest $request): void
+    {
         $requestedProduct = Product::query()->find($request->input('id'));
 
         if (is_null($requestedProduct)) {
             throw new ResourceNotFoundException();
         }
 
-        $this->checkActionPermission('update');
-
-        $newData = array_filter(
-            $request->only([
-                'title',
-                'description',
-                'type',
-                'price',
-            ])
-        );
-        $requestedProduct->update($newData);
-
-        return $requestedProduct->refresh();
-    }
-
-    public function delete(Request $request)
-    {
-
+        $this->checkActionPermission('delete');
+        $requestedProduct->delete();
     }
 
     private function checkActionPermission(string $resourceAction): void
@@ -86,4 +81,27 @@ class ProductResourceService
         }
     }
 
+    private function getProductData(FormRequest $request): array
+    {
+        return array_filter(
+            $request->only([
+                'title',
+                'description',
+                'type',
+                'price',
+            ])
+        );
+    }
+
+    private function getProductsFilters(Request $request): array
+    {
+        return array_filter(
+            $request->only([
+                'title',
+                'type',
+                'minPrice',
+                'maxPrice',
+            ])
+        );
+    }
 }

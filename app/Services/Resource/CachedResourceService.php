@@ -4,80 +4,70 @@ namespace App\Services\Resource;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
+use ReflectionClass;
 
-/**
- * @method void addUser(Model $resourceModel)
- * @method Model|null getUser(string $resourceId)
- * @method void updateUser(Model $resourceModel)
- * @method void deleteUser(string $resourceId)
- * @method void addOrder(Model $resourceModel)
- * @method Model|null getOrder(string $resourceId)
- * @method void updateOrder(Model $resourceModel)
- * @method void deleteOrder(string $resourceId)
- * @method void addProduct(Model $resourceModel)
- * @method Model|null getProduct(string $resourceId)
- * @method void updateProduct(Model $resourceModel)
- * @method void deleteProduct(string $resourceId)
- */
 class CachedResourceService
 {
-    private const MODELS_DIRECTORY = '\App\Models\\';
-    public function __call(string $name, array $arguments): void
+    private string $modelClass;
+    private string $resourceName;
+
+    public function setResourceData(string $className): void
     {
-        [$methodAction, $resourceName] = $this->getCalledMethod($name);
-
-        $resourceId = $arguments[0] instanceof Model ? $arguments[0]->getKey() : $arguments[0];
-        $entryPrefixKey = sprintf('%s:%s', strtolower($resourceName), $resourceId);
-
-        $resourceData = $arguments[0] instanceof Model ? serialize($arguments[0]->toArray()) : null;
-        $resourceModelClass = self::MODELS_DIRECTORY . $resourceName;
-
-        match ($methodAction) {
-            'add', 'update' => $this->{$methodAction}($entryPrefixKey, $resourceData),
-            'get' => $this->{$methodAction}($entryPrefixKey, $resourceId, $resourceModelClass),
-            'delete' => $this->{$methodAction}($entryPrefixKey)
-        };
+        $this->modelClass = $className;
+        $name = $this->getResourceName($className);
+        $this->resourceName = strtolower($name);
     }
 
-    public function add(string $entryPrefixKey, string $resourceData): void
+    public function add(array $resourceData): void
     {
-        Cache::add($entryPrefixKey, $resourceData);
+        $entryPrefixKey = $this->getEntryPrefixKey($resourceData['id']);
+        Cache::add($entryPrefixKey, serialize($resourceData));
     }
 
-    public function get(string $entryPrefixKey, string $resourceId, string $modelClass): ?Model
+    public function get(string $resourceId): ?Model
     {
+        $entryPrefixKey = $this->getEntryPrefixKey($resourceId);
         $resourceData = unserialize(Cache::get($entryPrefixKey));
 
         if (is_null($resourceData)) {
             return null;
         }
 
+        return $this->getModel($resourceId, $resourceData);
+    }
+
+    public function update(array $resourceData): void
+    {
+        $entryPrefixKey = $this->getEntryPrefixKey($resourceData['id']);
+        Cache::put($entryPrefixKey, serialize($resourceData));
+    }
+
+    public function delete(string $resourceId): void
+    {
+        $entryPrefixKey = $this->getEntryPrefixKey($resourceId);
+        Cache::delete($entryPrefixKey);
+    }
+
+    private function getResourceName(string $resourceModelClass): string
+    {
+        $name = (new ReflectionClass($resourceModelClass))->getShortName();
+
+        return strtolower($name);
+    }
+
+    private function getEntryPrefixKey(string $resourceId): string
+    {
+        return sprintf('%s:%s', strtolower($this->resourceName), $resourceId);
+    }
+
+    private function getModel(string $resourceId, array $resourceData): Model
+    {
         /** @var Model $resourceModel */
-        $resourceModel = new $modelClass();
+        $resourceModel = new $this->modelClass();
         $resourceModel->setAttribute('id', $resourceId);
         $resourceModel->exists = true;
         $resourceModel->fill($resourceData);
 
         return $resourceModel;
-    }
-
-    public function update(string $entryPrefixKey, string $resourceData): void
-    {
-        Cache::put($entryPrefixKey, $resourceData);
-    }
-
-    public function delete(string $entryPrefixKey): void
-    {
-        Cache::delete($entryPrefixKey);
-    }
-
-    private function getCalledMethod(string $name): array
-    {
-        return preg_split(
-            '/(get|add|update|delete)/',
-            $name,
-            -1,
-            PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY
-        );
     }
 }
