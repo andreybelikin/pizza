@@ -31,7 +31,7 @@ Route::middleware(EnsureTokenIsValid::class)->group(function () {
         Route::get('/product/{id}','get');
         Route::post('/product/',  'add');
         Route::patch('/product/{id}', 'update');
-        Route::post('/product/{id}','delete');
+        Route::delete('/product/{id}','delete');
     });
 });
 

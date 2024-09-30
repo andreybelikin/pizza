@@ -40,6 +40,14 @@ class UserUpdateRequest extends FormRequest
         $validator->sometimes('email', 'unique:users,email', function ($input) {
             return !User::query()->where('phone', $input->phone)->exists();
         });
+
+        $fields = ['name', 'surname', 'phone', 'email', 'default_address'];
+
+        $validator->after(function ($validator) use ($fields) {
+            if (!$this->anyFilled($fields) || !$this->hasAny($fields)) {
+                $validator->errors()->add('fields', 'At least one field must be provided.');
+            }
+        });
     }
 
     protected function prepareForValidation(): void

@@ -10,7 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\Rules\Enum;
 use Illuminate\Validation\ValidationException;
 
-class ProductUpdateRequest extends FormRequest
+class ProductIndexRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -28,9 +28,9 @@ class ProductUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'id' => 'required|string|max:36',
-            'title' => 'string|max:50|unique:products',
-            'description' => 'string|max:250|unique:products',
+            'page' => 'max:10',
+            'title' => 'string|max:50',
+            'description' => 'string|max:250',
             'type' => [new Enum(ProductType::class)],
             'price' => 'integer|max:8000',
         ];
@@ -39,34 +39,20 @@ class ProductUpdateRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'id' => $this->route('id'),
+            'page' => $this->route('page'),
         ]);
-    }
-
-    protected function withValidator($validator)
-    {
-        $fields = ['title', 'description', 'type', 'price'];
-
-        $validator->after(function ($validator) use ($fields) {
-            if (!$this->anyFilled($fields) || !$this->hasAny($fields)) {
-                $validator->errors()->add('fields', 'At least one field must be provided.');
-            }
-        });
     }
 
     public function messages(): array
     {
         return [
-            'id.required' => 'A product id is required',
-            'id.string' => 'A product id must be a string',
-            'id.max' => 'A product id is only 36 char long',
-            'title.unique' => 'A product title must be unique',
+            'title.string' => 'A product title must be a string',
+            'title.max' => 'A product title is only 50 char long',
+            'page.max' => 'A page number is only 10 char long',
             'price.max' => 'A product price is 8000 max',
             'price.integer' => 'A product price must be an integer',
             'description.string' => 'A product description must be a string',
             'description.max' => 'A product description is only 250 char long',
-            'description.unique' => 'A product description must be unique',
-            'type.in_enum' => 'A product type is invalid',
         ];
     }
 

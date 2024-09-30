@@ -16,11 +16,20 @@ class ProductsCollection extends ResourceCollection
     public function toArray(Request $request): array
     {
         return [
-            'name' => $this->name,
-            'surname' => $this->surname,
-            'email' => $this->email,
-            'phone' => $this->phone,
-            'default_address' => $this->default_address,
+            'data' => $this->collection->transform(function ($product) {
+                return [
+                    'title' => $product->title,
+                    'description' => $product->description,
+                    'type' => $product->type,
+                    'price' => $product->price,
+                ];
+            }),
+            'pagination' => [
+                'perPage' => $this->resource->perPage(),
+                'total' => $this->resource->total(),
+                'currentPage' => $this->resource->currentPage(),
+                'totalPages' => $this->resource->lastPage(),
+            ],
         ];
     }
 }

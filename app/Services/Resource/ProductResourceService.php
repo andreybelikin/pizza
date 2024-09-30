@@ -15,9 +15,12 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class ProductResourceService extends ResourceServiceAbstract
 {
+    private const PRODUCTS_PER_PAGE = 15;
+
     public function __construct(private CachedResourceService $cachedResourceService) {
         parent::__construct($this->cachedResourceService);
         parent::setResourceModel(Product::class);
@@ -33,12 +36,10 @@ class ProductResourceService extends ResourceServiceAbstract
 
     public function getProducts(Request $request): ResourceCollection
     {
-        $filters = $this->getProductsFilters($request);
+        $products = $this->getFilteredProducts($request);
 
-        if (empty($filters)) {
-            $products = Product::query()->paginate(15);
-        } else {
-            $products = Product::filter($filters)->paginate(15);
+        if (is_null($products)) {
+            $products = $this->getProductsAsIs();
         }
 
         return new ProductsCollection($products);
@@ -93,11 +94,28 @@ class ProductResourceService extends ResourceServiceAbstract
         );
     }
 
+    private function getFilteredProducts(Request $request): ?LengthAwarePaginator
+    {
+        $filters = $this->getProductsFilters($request);
+
+        if (!empty($filters)) {
+            return Product::filter($filters)->paginate(self::PRODUCTS_PER_PAGE);
+        }
+
+        return null;
+    }
+
+    private function getProductsAsIs(): LengthAwarePaginator
+    {
+        return Product::query()->paginate(self::PRODUCTS_PER_PAGE);
+    }
+
     private function getProductsFilters(Request $request): array
     {
         return array_filter(
             $request->only([
                 'title',
+                'description',
                 'type',
                 'minPrice',
                 'maxPrice',

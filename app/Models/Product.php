@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Eloquent\Builder;
 
 class Product extends Model
 {
@@ -28,13 +28,24 @@ class Product extends Model
 
     public function scopeFilter(Builder $query, array $filters): Builder
     {
-        $query->when(!empty($filters['title']), fn ($q, $title) => $q->where('price', 'like', `%{$title}%`));
+        $query->when(($filters['title']) ?? null, fn ($q, $title) => $q->where('title', 'like', "%{$title}%"));
 
-        $query->when(!empty($filters['type']), fn ($q, $type) => $q->where('type', '=', $type));
+        $query->when(
+            !empty($filters['description']),
+            fn ($q, $description) => $q->where('description', 'like', "%{$description}%")
+        );
 
-        $query->when(!empty($filters['minPrice']), fn ($q, $minPrice) => $q->where('price', '>=', $minPrice));
+        $query->when($filters['type'] ?? null, fn ($q, $type) => $q->where('type', '=', $type));
 
-        $query->when(!empty($filters['maxPrice']), fn ($q, $maxPrice) => $q->where('price', '<=', $maxPrice));
+        $query->when(
+            $filters['minPrice'] ?? null,
+            fn ($q, $minPrice) => $q->where('price', '>=', (float) $minPrice)
+        );
+
+        $query->when(
+            $filters['maxPrice'] ?? null,
+            fn ($q, $maxPrice) => $q->where('price', '<=', (float) $maxPrice)
+        );
 
         return $query;
     }
