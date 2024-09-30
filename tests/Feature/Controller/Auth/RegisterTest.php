@@ -2,18 +2,11 @@
 
 namespace Tests\Feature\Controller\Auth;
 
-use App\Services\TokenBlacklistService;
-use Closure;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Testing\Assert;
-use Illuminate\Testing\AssertableJsonString;
-use Illuminate\Testing\TestResponse;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 use Tests\TestData\TestUser;
-use Tests\TestData\Tokens;
 
 class RegisterTest extends TestCase
 {

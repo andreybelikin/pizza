@@ -83,7 +83,9 @@ abstract class ResourceServiceAbstract
 
     private function ensureResourceFound(?Model $resource): void
     {
-        (is_null($resource)) ?: throw new ResourceNotFoundException();
+        if (is_null($resource)) {
+            throw new ResourceNotFoundException();
+        }
     }
 
     private function cacheIfNeeded(Model $requestedModel): void

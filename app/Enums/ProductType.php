@@ -4,12 +4,12 @@ namespace App\Enums;
 
 use App\Enums\Restriction\ProductTypeRestriction;
 
-enum ProductType
+enum ProductType: string
 {
-    case Pizza;
-    case Drink;
-    case Fries;
-    case Chips;
+    case Pizza = 'pizza';
+    case Drink = 'drink';
+    case Fries = 'fries';
+    case Chips = 'chips';
     public static function getTypes(): array
     {
         return array_column(self::cases(), 'name');

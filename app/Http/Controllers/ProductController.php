@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Product;
+namespace App\Http\Controllers;
 
 use App\Dto\Response\Resourse\CreatedResourceDto;
 use App\Dto\Response\Resourse\DeletedResourceDto;
@@ -8,7 +8,7 @@ use App\Http\Requests\Product\ProductAddRequest;
 use App\Http\Requests\Product\ProductDeleteRequest;
 use App\Http\Requests\Product\ProductUpdateRequest;
 use App\Services\Resource\ProductResourceService;
-use Illuminate\Http\Client\Request;
+use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 class ProductController

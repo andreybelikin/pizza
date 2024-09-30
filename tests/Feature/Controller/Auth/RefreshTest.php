@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Controller\Auth;
 
-use App\Services\TokenBlacklistService;
 use Closure;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\Response;

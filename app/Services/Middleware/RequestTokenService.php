@@ -8,7 +8,7 @@ use App\Exceptions\Token\TokenException;
 use App\Exceptions\Token\TokenHasExpiredException;
 use App\Exceptions\Token\TokenIsInvalidException;
 use App\Exceptions\Token\TokenUserNotDefinedException;
-use App\Services\TokenBlacklistService;
+use App\Services\Auth\TokenBlacklistService;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use Tymon\JWTAuth\Exceptions\TokenInvalidException;

@@ -3,7 +3,6 @@
 namespace App\Services\Resource;
 
 use App\Exceptions\Resource\ResourceAccessException;
-use App\Exceptions\Resource\ResourceNotFoundException;
 use App\Http\Requests\Product\ProductAddRequest;
 use App\Http\Requests\Product\ProductDeleteRequest;
 use App\Http\Requests\Product\ProductUpdateRequest;
@@ -21,11 +20,11 @@ class ProductResourceService extends ResourceServiceAbstract
 {
     public function __construct(private CachedResourceService $cachedResourceService) {
         parent::__construct($this->cachedResourceService);
-        parent::setResourceModel(User::class);
+        parent::setResourceModel(Product::class);
     }
+
     public function getProduct(string $requestedProductId): JsonResource
     {
-        $this->checkActionPermission('get');
         /** @var Product $requestedProductResource */
         $requestedProductResource = $this->getRequestedResource($requestedProductId);
 
@@ -36,7 +35,13 @@ class ProductResourceService extends ResourceServiceAbstract
     {
         $filters = $this->getProductsFilters($request);
 
-        return new ProductsCollection(Product::filter($filters)->paginate(15));
+        if (empty($filters)) {
+            $products = Product::query()->paginate(15);
+        } else {
+            $products = Product::filter($filters)->paginate(15);
+        }
+
+        return new ProductsCollection($products);
     }
 
     public function addProduct(ProductAddRequest $request): void
@@ -62,14 +67,9 @@ class ProductResourceService extends ResourceServiceAbstract
 
     public function deleteProduct(ProductDeleteRequest $request): void
     {
-        $requestedProduct = Product::query()->find($request->input('id'));
-
-        if (is_null($requestedProduct)) {
-            throw new ResourceNotFoundException();
-        }
-
+        $requestedProductResource = $this->getRequestedResource($request->input('id'));
         $this->checkActionPermission('delete');
-        $requestedProduct->delete();
+        $this->deleteResource($requestedProductResource);
     }
 
     private function checkActionPermission(string $resourceAction): void

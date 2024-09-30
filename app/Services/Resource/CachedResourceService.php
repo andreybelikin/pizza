@@ -29,7 +29,7 @@ class CachedResourceService
         $entryPrefixKey = $this->getEntryPrefixKey($resourceId);
         $resourceData = unserialize(Cache::get($entryPrefixKey));
 
-        if (is_null($resourceData)) {
+        if (!$resourceData) {
             return null;
         }
 

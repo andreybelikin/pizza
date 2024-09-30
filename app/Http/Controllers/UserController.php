@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\User;
+namespace App\Http\Controllers;
 
 use App\Dto\Response\Controller\User\UserDeletedResponseDto;
 use App\Http\Requests\User\UserDeleteRequest;

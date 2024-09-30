@@ -2,11 +2,10 @@
 
 namespace Tests\Feature\Controller\Auth;
 
-use App\Services\TokenBlacklistService;
+use App\Services\Auth\TokenBlacklistService;
 use Closure;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Testing\Assert;
 use Illuminate\Testing\AssertableJsonString;
 use Illuminate\Testing\TestResponse;

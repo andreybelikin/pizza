@@ -26,7 +26,7 @@ class Product extends Model
         return $this->belongsToMany(Order::class);
     }
 
-    public static function scopeFilter(Builder $query, array $filters): Builder
+    public function scopeFilter(Builder $query, array $filters): Builder
     {
         $query->when(!empty($filters['title']), fn ($q, $title) => $q->where('price', 'like', `%{$title}%`));
 

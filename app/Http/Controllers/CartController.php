@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Cart;
+namespace App\Http\Controllers;
 
 use App\Services\Resource\CartResourceService;
 use Illuminate\Http\JsonResponse;

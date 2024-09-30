@@ -1,11 +1,9 @@
 <?php
 
-use App\Http\Controllers\Auth\AuthController;
-use App\Http\Controllers\Order\OrderController;
-use App\Http\Controllers\Product\AdminProductController;
-use App\Http\Controllers\User\AdminUserController;
-use App\Http\Controllers\User\UserController;
-use App\Http\Middleware\BeforeRequest\EnsureAdminUser;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\UserController;
 use App\Http\Middleware\BeforeRequest\EnsureTokenIsValid;
 use App\Http\Middleware\BeforeRequest\EnsureTokenIsValidLogout;
 use Illuminate\Support\Facades\Route;
@@ -28,15 +26,12 @@ Route::middleware(EnsureTokenIsValid::class)->group(function () {
         Route::delete('/user/{id}', 'delete');
     });
 
-    Route::middleware(EnsureAdminUser::class)->group(function () {
-        Route::controller(AdminProductController::class)->group(function () {
-            Route::get('/admin/products/{id}','get');
-            Route::post('/admin/products/',  'add');
-            Route::patch('/admin/products/{id}', 'update');
-            Route::post('/admin/products/{id}','delete');
-        });
-
-        Route::patch('/admin/user/{id}', [AdminUserController::class, 'update']);
+    Route::controller(ProductController::class)->group(function () {
+        Route::get('/product/','index');
+        Route::get('/product/{id}','get');
+        Route::post('/product/',  'add');
+        Route::patch('/product/{id}', 'update');
+        Route::post('/product/{id}','delete');
     });
 });
 

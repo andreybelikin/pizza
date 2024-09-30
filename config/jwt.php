@@ -294,7 +294,7 @@ return [
         |
         */
 
-        'storage' => \App\Services\TokenBlacklistService::class,
+        'storage' => \App\Services\Auth\TokenBlacklistService::class,
 
     ],
 

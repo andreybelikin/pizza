@@ -2,10 +2,11 @@
 
 namespace App\Http\Requests\Product;
 
-use App\Models\User;
+use App\Enums\ProductType;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\Rules\Enum;
 use Illuminate\Validation\ValidationException;
 
 class ProductAddRequest extends FormRequest
@@ -26,19 +27,11 @@ class ProductAddRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'id' => 'required|string|max:36',
-            'title' => 'required|unique:products|string|max:50',
-            'description' => 'required|string|max:250',
-            'type' => 'required|string|max:25',
+            'title' => 'required|string|max:50|unique:products',
+            'description' => 'required|string|max:250|unique:products',
+            'type' => ['required', new Enum(ProductType::class)],
             'price' => 'required|integer|max:8000',
         ];
-    }
-
-    protected function prepareForValidation(): void
-    {
-        $this->merge([
-            'id' => $this->route('id'),
-        ]);
     }
 
     public function messages(): array
@@ -54,9 +47,9 @@ class ProductAddRequest extends FormRequest
             'title.unique' => 'A product title must be unique',
             'description.required' => 'A product description is required',
             'description.string' => 'A product description must be a string',
+            'description.unique' => 'A product description must be unique',
             'description.max' => 'A product description is only 250 char long',
-            'type.string' => 'A product type must be a string',
-            'type.max' => 'A product type is only 25 char long',
+            'type.in_enum' => 'A product type is invalid',
             'type.required' => 'A product type is required',
         ];
     }
