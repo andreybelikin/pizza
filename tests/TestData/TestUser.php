@@ -8,10 +8,10 @@ class TestUser
 {
     public static string $plainPassword;
 
-    public static function createAuthorizedUser(): void
+    public static function createAdminAuthorizedUser(): void
     {
         $password = fake()->password();
-        $user = User::factory()->setPassword($password)->create();
+        $user = User::factory()->setPassword($password)->create(['is_admin' => true]);
         Tokens::generateAccessToken($user->email, $password);
     }
 

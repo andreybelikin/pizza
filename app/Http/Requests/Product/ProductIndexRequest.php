@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Product;
 
 use App\Enums\ProductType;
-use App\Rules\AtLeastOneFieldRequired;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\JsonResponse;
@@ -28,19 +27,13 @@ class ProductIndexRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'page' => 'max:10',
+            'page' => 'string|max:10',
             'title' => 'string|max:50',
             'description' => 'string|max:250',
             'type' => [new Enum(ProductType::class)],
-            'price' => 'integer|max:8000',
+            'minPrice' => 'string|max:7',
+            'maxPrice' => 'string|max:7',
         ];
-    }
-
-    protected function prepareForValidation(): void
-    {
-        $this->merge([
-            'page' => $this->route('page'),
-        ]);
     }
 
     public function messages(): array
@@ -49,10 +42,13 @@ class ProductIndexRequest extends FormRequest
             'title.string' => 'A product title must be a string',
             'title.max' => 'A product title is only 50 char long',
             'page.max' => 'A page number is only 10 char long',
-            'price.max' => 'A product price is 8000 max',
-            'price.integer' => 'A product price must be an integer',
+            'minPrice.max' => 'A product price is 8000 max',
+            'maxPrice.max' => 'A product price is 8000 max',
+            'minPrice.integer' => 'A product price must be an integer',
+            'maxPrice.integer' => 'A product price must be an integer',
             'description.string' => 'A product description must be a string',
             'description.max' => 'A product description is only 250 char long',
+            'type.in_enum' => 'A product type is invalid',
         ];
     }
 
