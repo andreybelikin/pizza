@@ -49,4 +49,18 @@ class Product extends Model
 
         return $query;
     }
+
+    public function getProductsQuantityByType(array $ids, string $type): int
+    {
+        return $this->query()
+            ->whereIn('id', $ids)
+            ->where('type', $type)
+            ->count()
+        ;
+    }
+
+    public function getProductsQuantity()
+    {
+        
+    }
 }

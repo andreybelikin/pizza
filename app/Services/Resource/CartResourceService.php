@@ -2,9 +2,11 @@
 
 namespace App\Services\Resource;
 
+use App\Enums\Limit\Cart\ProductTypeLimit;
 use App\Enums\ProductType;
-use App\Enums\Restriction\ProductTypeRestriction;
+use App\Http\Requests\Cart\CartAddRequest;
 use App\Models\Product;
+use App\Services\Limit\CartLimitService;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,8 +15,12 @@ class CartResourceService
 {
     private Authenticatable $user;
 
-    public function createItems(Request $request): array
+    public function __construct(private CartLimitService $cartLimitService)
+    {}
+
+    public function add(CartAddRequest $request): array
     {
+        $this->cartLimitService->checkQuantityPerTypeLimit($request);
         $this->user = Auth::user();
         $result = [
             'unrestrictedCreatedProducts' => true,
@@ -34,7 +40,7 @@ class CartResourceService
     {
         $cartProducts = $this->getCartProducts();
 
-        foreach (ProductTypeRestriction::getRestrictedTypeNames() as $restrictedType) {
+        foreach (ProductTypeLimit::getRestrictedTypeNames() as $restrictedType) {
             $restrictionCompliance = $this->getRestrictionCompliance($cartProducts, $restrictedType);
             $productsByType = $requestProducts->whereIn('type', [$restrictedType]);
             $productsQuantityByType = $productsByType->sum('quantity');
@@ -56,7 +62,7 @@ class CartResourceService
             ->count()
         ;
 
-        return ProductTypeRestriction::getRestrictionCompliance($restrictedType, $productsByType);
+        return ProductTypeLimit::getRestrictionCompliance($restrictedType, $productsByType);
     }
     private function getProducts(array $productIds): array
     {
@@ -103,7 +109,7 @@ class CartResourceService
     {
         $cartProducts = $this->getCartProducts();
 
-        foreach (ProductTypeRestriction::getRestrictedTypeNames() as $restrictedType) {
+        foreach (ProductTypeLimit::getRestrictedTypeNames() as $restrictedType) {
             $restrictionCompliance = $this->getRestrictionCompliance($cartProducts, $restrictedType);
             $productsByType = $requestProducts->whereIn('type', [$restrictedType]);
             $productsQuantityByType = $productsByType->sum('quantity');
@@ -133,8 +139,8 @@ class CartResourceService
                 'message' => 'Partially added',
                 'declinedTypes' => array_map(function($type) {
                     return [
-                        'type' => ProductTypeRestriction::{$type},
-                        'restriction' => ProductTypeRestriction::{$type}->value,
+                        'type' => ProductTypeLimit::{$type},
+                        'restriction' => ProductTypeLimit::{$type}->value,
                     ];
                 }, $result['violatedRestrictedTypes']),
             ]
@@ -145,8 +151,8 @@ class CartResourceService
                 'message' => 'Partially added',
                 'declinedTypes' => array_map(function($type) {
                     return [
-                        'type' => ProductTypeRestriction::{$type},
-                        'restriction' => ProductTypeRestriction::{$type}->value,
+                        'type' => ProductTypeLimit::{$type},
+                        'restriction' => ProductTypeLimit::{$type}->value,
                     ];
                 }, $result['violatedRestrictedTypes']),
             ]

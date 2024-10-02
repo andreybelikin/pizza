@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\CartController;
 use App\Http\Middleware\BeforeRequest\EnsureTokenIsValid;
 use App\Http\Middleware\BeforeRequest\EnsureTokenIsValidLogout;
 use Illuminate\Support\Facades\Route;
@@ -20,18 +21,26 @@ Route::middleware(EnsureTokenIsValid::class)->group(function () {
 
     });
 
+    Route::controller(CartController::class)->group(function () {
+        Route::get('/carts/', 'index');
+        Route::get('/carts/{userId}', 'get');
+        Route::post('/carts/products/', 'add');
+        Route::patch('/carts/{userId}/products/{productId}', 'update');
+        Route::delete('/carts/{userId}/products/{productId}', 'delete');
+    });
+
     Route::controller(UserController::class)->group(function () {
-        Route::get('/user/{id}', 'get');
-        Route::patch('/user/{id}', 'update');
-        Route::delete('/user/{id}', 'delete');
+        Route::get('/users/{id}', 'get');
+        Route::patch('/users/{id}', 'update');
+        Route::delete('/users/{id}', 'delete');
     });
 
     Route::controller(ProductController::class)->group(function () {
-        Route::get('/product/','index');
-        Route::get('/product/{id}','get');
-        Route::post('/product/',  'add');
-        Route::patch('/product/{id}', 'update');
-        Route::delete('/product/{id}','delete');
+        Route::get('/products/','index');
+        Route::get('/products/{id}','get');
+        Route::post('/products/',  'add');
+        Route::patch('/products/{id}', 'update');
+        Route::delete('/products/{id}','delete');
     });
 });
 

@@ -5,9 +5,7 @@ namespace App\Exceptions;
 use App\Dto\Response\InternalErrorResponseDto;
 use App\Dto\Response\RequestValidation\FailedValidationResponseDto;
 use App\Exceptions\Resource\ResourceException;
-use App\Exceptions\Resource\ResourceNotFoundException;
 use Exception;
-use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Validation\ValidationException;
 
