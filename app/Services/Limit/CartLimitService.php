@@ -6,13 +6,13 @@ use App\Http\Requests\Cart\CartAddRequest;
 
 class CartLimitService
 {
-    public function __construct(private QuantityPerTimeLimitCheck $quantityPerTimeLimit)
+    public function __construct(private QuantityPerTypeLimitCheck $quantityPerTimeLimit)
     {}
 
     public function checkQuantityPerTypeLimit(CartAddRequest $request): void
     {
         $this->quantityPerTimeLimit
-            ->setCartProducts($request)
+            ->setRequestProducts($request)
             ->check()
         ;
     }

@@ -50,6 +50,17 @@ class Product extends Model
         return $query;
     }
 
+    public function getProductsTypes(array $ids, array $types): array
+    {
+        return $this->query()
+            ->select(['id', 'type'])
+            ->whereIn('id', $ids)
+            ->whereIn('type', $types)
+            ->get()
+            ->toArray()
+        ;
+    }
+
     public function getProductsQuantityByType(array $ids, string $type): int
     {
         return $this->query()
@@ -59,8 +70,14 @@ class Product extends Model
         ;
     }
 
-    public function getProductsQuantity()
+    public function getCartDistinctProductsIds(): array
     {
-        
+        $distinctProducts = Product::users()
+            ->select('product_id')
+            ->groupBy(['product_id'])
+            ->get()
+        ;
+
+        return $distinctProducts->toArray();
     }
 }

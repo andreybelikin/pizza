@@ -2,12 +2,12 @@
 
 namespace App\Enums\Limit\Cart;
 
-enum ProductTypeLimit: int
+enum LimitedProductTypes: int
 {
     case Pizza = 10;
     case Drink = 20;
 
-    public function getLimitByTypeName(string $name): ?int
+    public static function getLimit(string $name): ?int
     {
         $UcName = ucfirst($name);
 
@@ -18,5 +18,10 @@ enum ProductTypeLimit: int
         }
 
         return null;
+    }
+
+    public static function getTypes(): array
+    {
+        return array_map(fn ($case) => lcfirst($case->name), self::cases());
     }
 }
