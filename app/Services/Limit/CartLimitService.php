@@ -12,7 +12,7 @@ class CartLimitService
     public function checkQuantityPerTypeLimit(CartAddRequest $request): void
     {
         $this->quantityPerTimeLimit
-            ->setRequestProducts($request)
+            ->setProducts($request)
             ->check()
         ;
     }

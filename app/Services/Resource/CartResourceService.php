@@ -2,7 +2,7 @@
 
 namespace App\Services\Resource;
 
-use App\Enums\Limit\Cart\LimitedProductTypes;
+use App\Enums\Limit\Cart\LimitedProductType;
 use App\Enums\ProductType;
 use App\Http\Requests\Cart\CartAddRequest;
 use App\Models\Product;
@@ -40,7 +40,7 @@ class CartResourceService
     {
         $cartProducts = $this->getCartProducts();
 
-        foreach (LimitedProductTypes::getRestrictedTypeNames() as $restrictedType) {
+        foreach (LimitedProductType::getRestrictedTypeNames() as $restrictedType) {
             $restrictionCompliance = $this->getRestrictionCompliance($cartProducts, $restrictedType);
             $productsByType = $requestProducts->whereIn('type', [$restrictedType]);
             $productsQuantityByType = $productsByType->sum('quantity');
@@ -62,7 +62,7 @@ class CartResourceService
             ->count()
         ;
 
-        return LimitedProductTypes::getRestrictionCompliance($restrictedType, $productsByType);
+        return LimitedProductType::getRestrictionCompliance($restrictedType, $productsByType);
     }
     private function getProducts(array $productIds): array
     {
@@ -109,7 +109,7 @@ class CartResourceService
     {
         $cartProducts = $this->getCartProducts();
 
-        foreach (LimitedProductTypes::getRestrictedTypeNames() as $restrictedType) {
+        foreach (LimitedProductType::getRestrictedTypeNames() as $restrictedType) {
             $restrictionCompliance = $this->getRestrictionCompliance($cartProducts, $restrictedType);
             $productsByType = $requestProducts->whereIn('type', [$restrictedType]);
             $productsQuantityByType = $productsByType->sum('quantity');
@@ -139,8 +139,8 @@ class CartResourceService
                 'message' => 'Partially added',
                 'declinedTypes' => array_map(function($type) {
                     return [
-                        'type' => LimitedProductTypes::{$type},
-                        'restriction' => LimitedProductTypes::{$type}->value,
+                        'type' => LimitedProductType::{$type},
+                        'restriction' => LimitedProductType::{$type}->value,
                     ];
                 }, $result['violatedRestrictedTypes']),
             ]
@@ -151,8 +151,8 @@ class CartResourceService
                 'message' => 'Partially added',
                 'declinedTypes' => array_map(function($type) {
                     return [
-                        'type' => LimitedProductTypes::{$type},
-                        'restriction' => LimitedProductTypes::{$type}->value,
+                        'type' => LimitedProductType::{$type},
+                        'restriction' => LimitedProductType::{$type}->value,
                     ];
                 }, $result['violatedRestrictedTypes']),
             ]

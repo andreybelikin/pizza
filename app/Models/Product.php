@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 class Product extends Model
 {
@@ -50,9 +51,9 @@ class Product extends Model
         return $query;
     }
 
-    public function getProductsTypes(array $ids, array $types): array
+    public static function getProductsTypes(array $ids, array $types): array
     {
-        return $this->query()
+        return self::query()
             ->select(['id', 'type'])
             ->whereIn('id', $ids)
             ->whereIn('type', $types)
@@ -61,19 +62,10 @@ class Product extends Model
         ;
     }
 
-    public function getProductsQuantityByType(array $ids, string $type): int
-    {
-        return $this->query()
-            ->whereIn('id', $ids)
-            ->where('type', $type)
-            ->count()
-        ;
-    }
-
-    public function getCartDistinctProductsIds(): array
+    public function getCartDistinctProducts(): array
     {
         $distinctProducts = Product::users()
-            ->select('product_id')
+            ->select([DB::raw('product_id as id'), DB::raw('COUNT(*) as quantity')])
             ->groupBy(['product_id'])
             ->get()
         ;

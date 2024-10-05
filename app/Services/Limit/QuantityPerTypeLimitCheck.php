@@ -2,76 +2,77 @@
 
 namespace App\Services\Limit;
 
-use App\Enums\Limit\Cart\LimitedProductTypes;
-use App\Enums\ProductType;
+use App\Enums\Limit\Cart\LimitedProductType;
 use App\Http\Requests\Cart\CartAddRequest;
 use App\Models\Product;
 
 class QuantityPerTypeLimitCheck
 {
-    private array $requestProducts;
+    public function __construct(
+        private array $requestProducts,
+        private array $cartProducts
+    ) {}
 
-    public function setRequestProducts(CartAddRequest $request): self
+    public function setProducts(CartAddRequest $request): self
     {
         $this->requestProducts = $request->input('products');
+        $this->cartProducts = $this->getCartDistinctProducts();
 
         return $this;
     }
 
-    private function check(): void
+    public function check(): void
     {
-        foreach (LimitedProductTypes::getTypes() as $type) {
-            $typeLimit = LimitedProductTypes::getLimit($type);
-            $quantity = $this->getProductsPerTypeQuantity($type);
+        $productsWithType = $this->getProductsWithTypes();
 
-            if ($quantity > $typeLimit) {
+        foreach (LimitedProductType::cases() as $limitedType) {
+            $this->checkProductsPerTypeQuantity($productsWithType, $limitedType);
+        }
+    }
 
+    private function getProductsWithTypes(): array
+    {
+        $productsIds = array_column([
+            ...$this->requestProducts,
+            ...$this->cartProducts,
+            ], 'id')
+        ;
+        $productsIds = array_unique($productsIds);
+
+        return Product::getProductsTypes($productsIds, LimitedProductType::getTypes());
+    }
+
+    private function getCartDistinctProducts(): array
+    {
+        return Product::getCartDistinctProducts();
+    }
+
+    private function checkProductsPerTypeQuantity(array $productsWithType, LimitedProductType $limitedType): void
+    {
+        $productsQuantity = 0;
+
+        foreach ($productsWithType as $productWithType) {
+            if ($productWithType['type'] === $limitedType->getName()) {
+                $productsQuantity += $this->getQuantityById($productWithType['id']);
             }
         }
-    }
 
-    private function getProductsPerTypeQuantity(string $type): int
-    {
-        $requestProductsPerType = $this->getRequestProductsPerTypes();
-
-        $cartDistinctProductsIds = $this->getCartDistinctProductsIds();
-        $productsIds = [...$this->requestProducts, ...$cartDistinctProductsIds];
-
-        return  $this->getTotalNumber($productsIds, $type);
-    }
-
-    private function getRequestProductsQuantityPerType(string $type): int
-    {
-        $quantityPerType = 0;
-
-        foreach ($requestProductsIdsPerType as $value) {
-
-            foreach ()
+        if ($productsQuantity > $limitedType->value) {
+            // исключение
         }
     }
 
-    private function getRequestProductsPerTypes(): array
+    private function getQuantityById(string $productId): int
     {
-        $ids = array_column($this->requestProducts, 'id');
-    }
+        $quantity = 0;
+        $products = [...$this->requestProducts, ...$this->cartProducts];
 
-    private function getCartProductsPerTypes(): array
-    {
+        foreach ($products as $product) {
+            if ($product['id'] === $productId) {
+                $quantity += $product['quantity'];
+            }
+        }
 
-    }
-
-    private function getProductsTypes(array $productsIds): array
-    {
-        return Product::getProductsTypes($productsIds, LimitedProductTypes::getTypes());
-    }
-
-    private function getCartDistinctProductsIds(): array
-    {
-        return Product::getCartDistinctProductsIds();
-    }
-
-    private function getTotalNumber(array $productsIds, string $type): int
-    {
-        return Product::getProductsQuantityByType($productsIds, $type);
+        return $quantity;
     }
 }
