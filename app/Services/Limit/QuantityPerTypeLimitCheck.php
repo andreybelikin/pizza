@@ -3,7 +3,7 @@
 namespace App\Services\Limit;
 
 use App\Enums\Limit\Cart\LimitedProductType;
-use App\Http\Requests\Cart\CartAddRequest;
+use App\Models\CartProduct;
 use App\Models\Product;
 
 class QuantityPerTypeLimitCheck
@@ -13,9 +13,9 @@ class QuantityPerTypeLimitCheck
         private array $cartProducts
     ) {}
 
-    public function setProducts(CartAddRequest $request): self
+    public function setProducts(array $requestProducts): self
     {
-        $this->requestProducts = $request->input('products');
+        $this->requestProducts = $requestProducts;
         $this->cartProducts = $this->getCartDistinctProducts();
 
         return $this;
@@ -44,7 +44,8 @@ class QuantityPerTypeLimitCheck
 
     private function getCartDistinctProducts(): array
     {
-        return Product::getCartDistinctProducts();
+        $cartUserId = auth()->user()->getAuthIdentifier();
+        return CartProduct::getCartDistinctProducts($cartUserId);
     }
 
     private function checkProductsPerTypeQuantity(array $productsWithType, LimitedProductType $limitedType): void

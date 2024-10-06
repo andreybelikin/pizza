@@ -9,9 +9,12 @@ use Illuminate\Database\Eloquent\Model;
 abstract class ResourceServiceAbstract
 {
     private string $modelClass;
+    private CachedResourceService $cachedResourceService;
 
-    public function __construct(private CachedResourceService $cachedResourceService)
-    {}
+    public function __construct()
+    {
+        $this->cachedResourceService = new CachedResourceService();
+    }
 
     public function setResourceModel(string $className): void
     {

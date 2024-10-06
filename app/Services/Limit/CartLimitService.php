@@ -2,17 +2,15 @@
 
 namespace App\Services\Limit;
 
-use App\Http\Requests\Cart\CartAddRequest;
-
 class CartLimitService
 {
     public function __construct(private QuantityPerTypeLimitCheck $quantityPerTimeLimit)
     {}
 
-    public function checkQuantityPerTypeLimit(CartAddRequest $request): void
+    public function checkQuantityPerTypeLimit(array $requestProducts): void
     {
         $this->quantityPerTimeLimit
-            ->setProducts($request)
+            ->setProducts($requestProducts)
             ->check()
         ;
     }

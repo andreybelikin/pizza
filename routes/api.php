@@ -22,11 +22,11 @@ Route::middleware(EnsureTokenIsValid::class)->group(function () {
     });
 
     Route::controller(CartController::class)->group(function () {
-        Route::get('/carts/', 'index');
         Route::get('/carts/{userId}', 'get');
-        Route::post('/carts/products/', 'add');
+        Route::post('/carts/{userId}/products/', 'add');
         Route::patch('/carts/{userId}/products/{productId}', 'update');
-        Route::delete('/carts/{userId}/products/{productId}', 'delete');
+        Route::delete('/carts/{userId}/products/', 'deleteCartProducts');
+        Route::delete('/carts/{userId}', 'deleteCart');
     });
 
     Route::controller(UserController::class)->group(function () {

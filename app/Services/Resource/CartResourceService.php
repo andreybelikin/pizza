@@ -2,160 +2,125 @@
 
 namespace App\Services\Resource;
 
-use App\Enums\Limit\Cart\LimitedProductType;
-use App\Enums\ProductType;
+use App\Exceptions\Resource\ResourceAccessException;
+use App\Exceptions\Resource\ResourceNotFoundException;
 use App\Http\Requests\Cart\CartAddRequest;
-use App\Models\Product;
+use App\Http\Requests\Cart\CartProductsDeleteRequest;
+use App\Http\Requests\Cart\CartUpdateRequest;
+use App\Http\Resources\CartResource;
+use App\Models\CartProduct;
+use App\Models\User;
 use App\Services\Limit\CartLimitService;
-use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Resources\Json\JsonResource;
 
 class CartResourceService
 {
-    private Authenticatable $user;
-
     public function __construct(private CartLimitService $cartLimitService)
     {}
 
-    public function add(CartAddRequest $request): array
+    public function addCart(CartAddRequest $request, string $userId): void
     {
-        $this->cartLimitService->checkQuantityPerTypeLimit($request);
-        $this->user = Auth::user();
-        $result = [
-            'unrestrictedCreatedProducts' => true,
-            'createdRestrictedProducts' => [],
-            'violatedRestrictedTypes' => [],
-        ];
-
-        $requestProducts = $this->getRequestProducts($request);
-
-        $result = $this->createUnrestrictedProducts($requestProducts, $result);
-        $result = $this->createRestrictedProducts($requestProducts, $result);
-
-        return $this->getCreateResult($result);
+        $this->checkActionPermission('update', $userId);
+        $products = $request->input('products');
+        $this->cartLimitService->checkQuantityPerTypeLimit($products);
+        $this->addProductsToCart($products);
     }
 
-    private function handleRestrictedProducts(array $requestProducts, array $result): array
+    public function getCart(string $userId): JsonResource
     {
-        $cartProducts = $this->getCartProducts();
+        $this->checkActionPermission('get', $userId);
+        $cart = $this->getCartFromDB($userId);
 
-        foreach (LimitedProductType::getRestrictedTypeNames() as $restrictedType) {
-            $restrictionCompliance = $this->getRestrictionCompliance($cartProducts, $restrictedType);
-            $productsByType = $requestProducts->whereIn('type', [$restrictedType]);
-            $productsQuantityByType = $productsByType->sum('quantity');
+        return new CartResource($cart);
+    }
 
-            if ($restrictionCompliance > 0 && $productsQuantityByType <= $restrictionCompliance) {
-                $result['createdRestrictedProducts'][] = $productsByType->pluck('id');
-            } else {
-                $result['violatedRestrictedTypes'][] = $restrictedType;
+    public function updateCart(CartUpdateRequest $request, string $userId): JsonResource
+    {
+        $this->ensureCartFound($userId);
+        $this->checkActionPermission('update', $userId);
+
+        $products = $request->input('products');
+        $this->cartLimitService->checkQuantityPerTypeLimit($products);
+
+        $product = $request['products'][0];
+
+        if ($product['quantity'] > 0) {
+            $this->addProductsToCart($products);
+        }
+
+        if ($product['quantity'] === 0) {
+            $this->deleteProducts([$product['id']], $userId);
+        }
+
+        return $this->getCart($userId);
+    }
+
+    public function deleteCart(string $userId): void
+    {
+        $this->ensureCartFound($userId);
+        $this->checkActionPermission('delete', $userId);
+        CartProduct::emptyCart($userId);
+    }
+
+    public function deleteCartProducts(CartProductsDeleteRequest $request, string $userId): void
+    {
+        $this->checkActionPermission('delete', $userId);
+        $this->deleteProducts($request->input('products'), $userId);
+    }
+
+    private function addProductsToCart(array $products): void
+    {
+        $preparedProducts = $this->prepareProductsToAdd($products);
+        CartProduct::addProductsToCart($preparedProducts);
+    }
+
+    private function prepareProductsToAdd(array $products): array
+    {
+        $preparedProducts = [];
+
+        foreach ($products as $product) {
+            for ($i = 0; $i < $product['quantity']; $i++) {
+                $preparedProducts[] = [
+                    'product_id' => $product['id'],
+                    'user_id' => auth()->user()->getAuthIdentifier(),
+                ];
             }
         }
 
-        return $result;
+        return $preparedProducts;
     }
 
-    private function getRestrictionCompliance(array $products, string $restrictedType): int
+    private function deleteProducts(array $productsIds, string $userId): void
     {
-        $productsByType = $products
-            ->whereIn('type', [$restrictedType])
-            ->count()
-        ;
-
-        return LimitedProductType::getRestrictionCompliance($restrictedType, $productsByType);
-    }
-    private function getProducts(array $productIds): array
-    {
-        return Product::query()->find($productIds, ['id', 'type']);
+        CartProduct::deleteCartProducts($productsIds, $userId);
     }
 
-    private function getRequestProducts(Request $request): array
+    private function getCartFromDB(string $userId): array
     {
-        $requestProductIds = array_column(
-            $request->input('products'),
-            'id')
-        ;
-
-        return $this->getProducts($requestProductIds);
+        return CartProduct::getCart($userId);
     }
 
-    private function getCartProducts(): array
+    private function getCartUser(string $userId): User
     {
-        $cartProductIds = $this->user->products()->pluck(['product_id']);
-
-        return $this->getProducts($cartProductIds);
+        return User::query()->find((int) $userId);
     }
 
-    private function createUnrestrictedProducts(array $requestProducts, array $result): array
+    private function checkActionPermission(string $resourceAction, string $cartUserId): void
     {
-        $unrestrictedTypes = ProductType::getUnrestrictedTypes();
-        $unrestrictedProducts = $requestProducts->whereIn('type', $unrestrictedTypes);
+        $authorizedUser = auth()->user();
+        $cartUser = $this->getCartUser($cartUserId);
 
-        if (!empty($unrestrictedProducts)) {
-            foreach ($unrestrictedProducts as $product) {
-                for ($i = 1; $i < $product['quantity']; $i++) {
-                    $this->user->products()->attach($unrestrictedProducts);
-                }
-            }
-            $result['unrestrictedCreatedProducts'] = true;
-        } else {
-            $result['unrestrictedCreatedProducts'] = false;
+        if ($authorizedUser->cant($resourceAction, $cartUser)) {
+            throw new ResourceAccessException();
         }
-
-        return $result;
     }
 
-    private function createRestrictedProducts(array $requestProducts, array $result): array
+    private function ensureCartFound(string $userId): void
     {
-        $cartProducts = $this->getCartProducts();
+        $cart = $this->getCartFromDB($userId);
 
-        foreach (LimitedProductType::getRestrictedTypeNames() as $restrictedType) {
-            $restrictionCompliance = $this->getRestrictionCompliance($cartProducts, $restrictedType);
-            $productsByType = $requestProducts->whereIn('type', [$restrictedType]);
-            $productsQuantityByType = $productsByType->sum('quantity');
-
-            if ($restrictionCompliance > 0 && $productsQuantityByType <= $restrictionCompliance) {
-                $result['productsFitRestrictions'][] = $productsByType->pluck('id');
-            } else {
-                $result['violatedRestrictedTypes'][] = $restrictedType;
-            }
+        if (empty($cart)) {
+            throw new ResourceNotFoundException();
         }
-
-        if (!empty($result['createdRestrictedProducts'])) {
-            $this->user->products()->syncWithoutDetaching($result['createdRestrictedProducts']);
-        }
-
-        return $result;
-    }
-
-    private function getCreateResult(array $result): array
-    {
-        if ($result['unrestrictedProducts']) {
-
-        }
-        $createdResult = match ($result['unrestrictedProducts']) {
-            empty($result['violatedRestrictedTypes']) => ['message' => 'OK'],
-            !empty($result['violatedRestrictedTypes']) => [
-                'message' => 'Partially added',
-                'declinedTypes' => array_map(function($type) {
-                    return [
-                        'type' => LimitedProductType::{$type},
-                        'restriction' => LimitedProductType::{$type}->value,
-                    ];
-                }, $result['violatedRestrictedTypes']),
-            ]
-        };
-        $createdResult = match ($result['unrestrictedProducts']) {
-            empty($result['violatedRestrictedTypes']) => ['message' => 'OK'],
-            !empty($result['violatedRestrictedTypes']) => [
-                'message' => 'Partially added',
-                'declinedTypes' => array_map(function($type) {
-                    return [
-                        'type' => LimitedProductType::{$type},
-                        'restriction' => LimitedProductType::{$type}->value,
-                    ];
-                }, $result['violatedRestrictedTypes']),
-            ]
-        };
     }
 }

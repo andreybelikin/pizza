@@ -9,7 +9,6 @@ use App\Http\Requests\Product\ProductUpdateRequest;
 use App\Http\Resources\ProductResource;
 use App\Http\Resources\ProductsCollection;
 use App\Models\Product;
-use App\Models\User;
 use App\Services\Resource\Abstract\ResourceServiceAbstract;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
@@ -21,8 +20,8 @@ class ProductResourceService extends ResourceServiceAbstract
 {
     private const PRODUCTS_PER_PAGE = 15;
 
-    public function __construct(private CachedResourceService $cachedResourceService) {
-        parent::__construct($this->cachedResourceService);
+    public function __construct() {
+        parent::__construct();
         parent::setResourceModel(Product::class);
     }
 

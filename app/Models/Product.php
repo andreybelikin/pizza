@@ -61,15 +61,4 @@ class Product extends Model
             ->toArray()
         ;
     }
-
-    public function getCartDistinctProducts(): array
-    {
-        $distinctProducts = Product::users()
-            ->select([DB::raw('product_id as id'), DB::raw('COUNT(*) as quantity')])
-            ->groupBy(['product_id'])
-            ->get()
-        ;
-
-        return $distinctProducts->toArray();
-    }
 }
