@@ -15,10 +15,9 @@ use Illuminate\Http\Resources\Json\JsonResource;
 class UserResourceService extends ResourceServiceAbstract
 {
     public function __construct(
-        private AuthService $authService,
-        private CachedResourceService $cachedResourceService
+        private AuthService $authService
     ) {
-        parent::__construct($this->cachedResourceService);
+        parent::__construct();
         parent::setResourceModel(User::class);
     }
 

@@ -60,9 +60,12 @@ class CartProduct extends Model
 
         if (!empty($cart)) {
             array_walk($cart,
-                function ($cartRecord) {
+                function ($cartRecord) use ($cartUserId) {
                     /** @var Product $cartProduct */
-                    $cartProduct = self::product()->get();
+                    $cartProduct = self::find($cartRecord['id'])
+                        ->product()
+                        ->get()
+                    ;
                     $cartRecord['title'] = $cartProduct->title;
                     $cartRecord['price'] = $cartProduct->price;
                 }

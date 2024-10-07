@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Dto\Response\Resourse\CartLimitExceptionResponseDto;
 use App\Dto\Response\Resourse\CreatedResourceDto;
 use App\Dto\Response\Resourse\DeletedResourceDto;
+use App\Exceptions\Resource\Cart\QuantityPerTypeLimitException;
 use App\Http\Requests\Cart\CartAddRequest;
 use App\Http\Requests\Cart\CartProductsDeleteRequest;
 use App\Http\Requests\Cart\CartUpdateRequest;
@@ -26,20 +28,30 @@ class CartController
 
     public function add(CartAddRequest $request, string $userId): JsonResponse
     {
-        $this->cartResourceService->addCart($request, $userId);
-        $responseDto = new CreatedResourceDto();
+        try {
+            $this->cartResourceService->addCart($request, $userId);
+            $responseDto = new CreatedResourceDto();
+        } catch (QuantityPerTypeLimitException $exception) {
+            $responseDto = new CartLimitExceptionResponseDto($exception->violations);
+        }
 
         return response()->json($responseDto->toArray(), $responseDto::STATUS);
     }
 
     public function update(CartUpdateRequest $request, string $userId): JsonResponse
     {
-        $cart = $this->cartResourceService->updateCart($request, $userId);
+        try {
+            $cart = $this->cartResourceService->updateCart($request, $userId);
+            $response = response()
+                ->json($cart)
+                ->setEncodingOptions(JSON_UNESCAPED_UNICODE)
+            ;
+        } catch (QuantityPerTypeLimitException $exception) {
+            $responseDto = new CartLimitExceptionResponseDto($exception->violations);
+            $response = response()->json($responseDto->toArray(), $responseDto::STATUS);
+        }
 
-        return response()
-            ->json($cart)
-            ->setEncodingOptions(JSON_UNESCAPED_UNICODE)
-        ;
+        return $response;
     }
 
     public function deleteCart(string $userId): JsonResponse
