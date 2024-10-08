@@ -18,7 +18,10 @@ class CartController
 
     public function get(string $userId): JsonResponse
     {
-        $cart = $this->cartResourceService->getCart($userId);
+        $cart = $this->cartResourceService
+            ->setCartUser($userId)
+            ->getCart()
+        ;
 
         return response()
             ->json($cart)
@@ -29,7 +32,10 @@ class CartController
     public function add(CartAddRequest $request, string $userId): JsonResponse
     {
         try {
-            $this->cartResourceService->addCart($request, $userId);
+            $this->cartResourceService
+                ->setCartUser($userId)
+                ->addCart($request)
+            ;
             $responseDto = new CreatedResourceDto();
         } catch (QuantityPerTypeLimitException $exception) {
             $responseDto = new CartLimitExceptionResponseDto($exception->violations);
@@ -41,7 +47,10 @@ class CartController
     public function update(CartUpdateRequest $request, string $userId): JsonResponse
     {
         try {
-            $cart = $this->cartResourceService->updateCart($request, $userId);
+            $cart = $this->cartResourceService
+                ->setCartUser($userId)
+                ->updateCart($request)
+            ;
             $response = response()
                 ->json($cart)
                 ->setEncodingOptions(JSON_UNESCAPED_UNICODE)
@@ -56,7 +65,10 @@ class CartController
 
     public function deleteCart(string $userId): JsonResponse
     {
-        $this->cartResourceService->deleteCart($userId);
+        $this->cartResourceService
+            ->setCartUser($userId)
+            ->deleteCart()
+        ;
         $responseDto = new DeletedResourceDto();
 
         return response()->json($responseDto->toArray(), $responseDto::STATUS);
@@ -64,7 +76,10 @@ class CartController
 
     public function deleteCartProducts(CartProductsDeleteRequest $request, string $userId): JsonResponse
     {
-        $this->cartResourceService->deleteCartProducts($request, $userId);
+        $this->cartResourceService
+            ->setCartUser($userId)
+            ->deleteCartProducts($request)
+        ;
         $responseDto = new DeletedResourceDto();
 
         return response()->json($responseDto->toArray(), $responseDto::STATUS);

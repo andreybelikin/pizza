@@ -23,9 +23,9 @@ Route::middleware(EnsureTokenIsValid::class)->group(function () {
 
     Route::controller(CartController::class)->group(function () {
         Route::get('/carts/{userId}', 'get');
-        Route::post('/carts/{userId}/products/', 'add');
+        Route::post('/carts/{userId}/products', 'add');
         Route::patch('/carts/{userId}/products/{productId}', 'updateCart');
-        Route::delete('/carts/{userId}/products/', 'deleteCartProducts');
+        Route::delete('/carts/{userId}/products', 'deleteCartProducts');
         Route::delete('/carts/{userId}', 'deleteCart');
     });
 

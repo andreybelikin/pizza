@@ -53,25 +53,4 @@ class CartProduct extends Model
             ->delete()
         ;
     }
-
-    public static function getCart(string $cartUserId): array
-    {
-        $cart = self::getCartDistinctProducts($cartUserId);
-
-        if (!empty($cart)) {
-            array_walk($cart,
-                function ($cartRecord) use ($cartUserId) {
-                    /** @var Product $cartProduct */
-                    $cartProduct = self::find($cartRecord['id'])
-                        ->product()
-                        ->get()
-                    ;
-                    $cartRecord['title'] = $cartProduct->title;
-                    $cartRecord['price'] = $cartProduct->price;
-                }
-            );
-        }
-
-        return $cart;
-    }
 }

@@ -19,9 +19,9 @@ class CartResource extends JsonResource
         return [
             'items' => $cartProducts->map(function ($product) {
                 return [
-                    'title' => $product->title,
-                    'quantity' => $product->quantity,
-                    'price' => $product->price,
+                    'title' => $product['title'],
+                    'quantity' => $product['quantity'],
+                    'price' => $product['price'],
                 ];
             })
         ];

@@ -41,7 +41,7 @@ class QuantityPerTypeLimitCheck
         }
     }
 
-    private function getProductsWithTypes(): array
+    private function getProductsWithLimitedTypes(): array
     {
         $productsIds = array_column([
             ...$this->requestProducts,
@@ -62,18 +62,18 @@ class QuantityPerTypeLimitCheck
     private function checkProductsPerTypeQuantity(LimitedProductType $limitedType): int
     {
         $productsQuantity = 0;
-        $productsWithType = $this->getProductsWithTypes();
+        $productsWithLimitedTypes = $this->getProductsWithLimitedTypes();
 
-        foreach ($productsWithType as $productWithType) {
-            if ($productWithType['type'] === $limitedType->getName()) {
-                $productsQuantity += $this->getQuantityById($productWithType['id']);
+        foreach ($productsWithLimitedTypes as $product) {
+            if ($product['type'] === $limitedType->getName()) {
+                $productsQuantity += $this->getQuantityById($product['id']);
             }
         }
 
         return $productsQuantity;
     }
 
-    private function getQuantityById(string $productId): int
+    private function getQuantityById(int $productId): int
     {
         $quantity = 0;
         $products = [...$this->requestProducts, ...$this->cartProducts];
