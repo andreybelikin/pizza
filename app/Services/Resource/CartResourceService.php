@@ -10,7 +10,6 @@ use App\Http\Requests\Cart\CartUpdateRequest;
 use App\Http\Resources\CartResource;
 use App\Models\CartProduct;
 use App\Models\Product;
-use App\Models\User;
 use App\Services\Limit\CartLimitService;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -50,11 +49,11 @@ class CartResourceService
         $this->ensureUserIsCartOwner();
 
         $products = $request->input('products');
-        $this->cartLimitService->checkQuantityPerTypeLimit($products);
 
         $product = $request['products'][0];
 
         if ($product['quantity'] > 0) {
+            $this->cartLimitService->checkQuantityPerTypeLimit($products);
             $this->addProductsToCart($products);
         }
 
