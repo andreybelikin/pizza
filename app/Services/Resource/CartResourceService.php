@@ -4,8 +4,6 @@ namespace App\Services\Resource;
 
 use App\Exceptions\Resource\ResourceAccessException;
 use App\Exceptions\Resource\ResourceNotFoundException;
-use App\Http\Requests\Cart\CartAddRequest;
-use App\Http\Requests\Cart\CartProductsDeleteRequest;
 use App\Http\Requests\Cart\CartUpdateRequest;
 use App\Http\Resources\CartResource;
 use App\Models\CartProduct;
@@ -27,14 +25,6 @@ class CartResourceService
         return $this;
     }
 
-    public function addCart(CartAddRequest $request): void
-    {
-        $this->ensureUserIsCartOwner();
-        $products = $request->input('products');
-        $this->cartLimitService->checkQuantityPerTypeLimit($products);
-        $this->addProductsToCart($products);
-    }
-
     public function getCart(): JsonResource
     {
         $this->ensureCartExists();
@@ -45,21 +35,12 @@ class CartResourceService
 
     public function updateCart(CartUpdateRequest $request): JsonResource
     {
-        $this->ensureCartExists();
+//        $this->ensureCartExists();
         $this->ensureUserIsCartOwner();
-
-        $products = $request->input('products');
-
-        $product = $request['products'][0];
-
-        if ($product['quantity'] > 0) {
-            $this->cartLimitService->checkQuantityPerTypeLimit($products);
-            $this->addProductsToCart($products);
-        }
-
-        if ($product['quantity'] === 0) {
-            $this->deleteProducts([$product['id']]);
-        }
+        $requestProducts = $request->input('products');
+        $this->cartLimitService->checkQuantityPerTypeLimit($requestProducts);
+        $cartProducts = CartProduct::getCartDistinctProducts();
+        $this->updateCartByRequestProducts($requestProducts, $cartProducts);
 
         return $this->buildCartResource();
     }
@@ -68,46 +49,26 @@ class CartResourceService
     {
         $this->ensureCartExists();
         $this->ensureUserIsCartOwner();
-        CartProduct::emptyCart($this->cartUserId);
+        CartProduct::emptyCart();
     }
 
-    public function deleteCartProducts(CartProductsDeleteRequest $request): void
-    {
-        $this->ensureCartExists();
-        $this->ensureUserIsCartOwner();
-        $this->deleteProducts($request->input('products'));
-    }
-
-    private function addProductsToCart(array $products): void
-    {
-        $preparedProducts = $this->prepareProductsToAdd($products);
-        CartProduct::addProductsToCart($preparedProducts);
-    }
-
-    private function prepareProductsToAdd(array $products): array
+    private function addProductToCart(int $productId, int $quantity): void
     {
         $preparedProducts = [];
 
-        foreach ($products as $product) {
-            for ($i = 0; $i < $product['quantity']; $i++) {
-                $preparedProducts[] = [
-                    'product_id' => $product['id'],
-                    'user_id' => $this->cartUserId,
-                ];
-            }
+        for ($i = 0; $i < $quantity; $i++) {
+            $preparedProducts[] = [
+                'product_id' => $productId,
+                'user_id' => $this->cartUserId,
+            ];
         }
 
-        return $preparedProducts;
-    }
-
-    private function deleteProducts(array $productsIds): void
-    {
-        CartProduct::deleteCartProducts($productsIds, $this->cartUserId);
+        CartProduct::addProductsToCart($preparedProducts);
     }
 
     private function buildCartResource(): JsonResource
     {
-        $cartProducts = CartProduct::getCartDistinctProducts($this->cartUserId);
+        $cartProducts = CartProduct::getCartDistinctProducts();
         $cartProductsIds = array_column($cartProducts, 'id');
 
         $products = Product::whereIn('id', $cartProductsIds)
@@ -140,6 +101,32 @@ class CartResourceService
 
         if ($this->cartUserId !== $authorizedUserId) {
             throw new ResourceAccessException();
+        }
+    }
+
+    private function updateCartByRequestProducts(array $requestProducts, array $cartProducts): void
+    {
+        foreach ($requestProducts as $requestProduct) {
+            $requestProductId = $requestProduct['id'];
+            $requestProductQuantity = $requestProduct['quantity'];
+
+            $cartProductMatch = array_filter(
+                $cartProducts,
+                fn ($cartProduct) => $cartProduct['id'] === $requestProductId
+            );
+
+            if (empty($cartProductMatch)) {
+                $this->addProductToCart($requestProductId, $requestProductQuantity);
+                continue;
+            }
+
+            $newProductQuantity = $requestProductQuantity - $cartProductMatch['quantity'];
+
+            match ($newProductQuantity) {
+                0 => CartProduct::deleteCartProduct($requestProductId),
+                $newProductQuantity > 0 => $this->addProductToCart($requestProductId, $newProductQuantity),
+                $newProductQuantity < 0 => CartProduct::deleteCartProduct($requestProductId, abs($newProductQuantity))
+            };
         }
     }
 }

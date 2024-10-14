@@ -21,11 +21,11 @@ class CartProduct extends Model
         return $this->belongsTo(Product::class, 'product_id');
     }
 
-    public static function getCartDistinctProducts(int $cartUserId): array
+    public static function getCartDistinctProducts(): array
     {
         return self::query()
             ->select([DB::raw('product_id as id'), DB::raw('COUNT(*) as quantity')])
-            ->where('user_id', '=', $cartUserId)
+            ->where('user_id', '=', auth()->user()->getAuthIdentifier())
             ->groupBy(['product_id'])
             ->get()
             ->toArray()
@@ -37,19 +37,20 @@ class CartProduct extends Model
         self::query()->insert($products);
     }
 
-    public static function deleteCartProducts(array $productsIds, int $userId): void
+    public static function deleteCartProduct(int $productId, int $limit = 0): void
     {
         self::query()
-            ->where('user_id', '=', $userId)
-            ->whereIn('product_id', $productsIds)
+            ->where('user_id', '=', auth()->user()->getAuthIdentifier())
+            ->where('product_id', $productId)
+            ->limit($limit)
             ->delete()
         ;
     }
 
-    public static function emptyCart(int $cartUserId): void
+    public static function emptyCart(): void
     {
         self::query()
-            ->where('user_id', '=', $cartUserId)
+            ->where('user_id', '=', auth()->user()->getAuthIdentifier())
             ->delete()
         ;
     }

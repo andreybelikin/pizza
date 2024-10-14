@@ -3,10 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Dto\Response\Resourse\CartLimitExceptionResponseDto;
-use App\Dto\Response\Resourse\CreatedResourceDto;
 use App\Dto\Response\Resourse\DeletedResourceDto;
 use App\Exceptions\Resource\Cart\QuantityPerTypeLimitException;
-use App\Http\Requests\Cart\CartAddRequest;
 use App\Http\Requests\Cart\CartProductsDeleteRequest;
 use App\Http\Requests\Cart\CartUpdateRequest;
 use App\Services\Resource\CartResourceService;
@@ -29,21 +27,6 @@ class CartController
         ;
     }
 
-    public function add(CartAddRequest $request, string $userId): JsonResponse
-    {
-        try {
-            $this->cartResourceService
-                ->setCartUser($userId)
-                ->addCart($request)
-            ;
-            $responseDto = new CreatedResourceDto();
-        } catch (QuantityPerTypeLimitException $exception) {
-            $responseDto = new CartLimitExceptionResponseDto($exception->violations);
-        }
-
-        return response()->json($responseDto->toArray(), $responseDto::STATUS);
-    }
-
     public function update(CartUpdateRequest $request, string $userId): JsonResponse
     {
         try {
@@ -63,22 +46,11 @@ class CartController
         return $response;
     }
 
-    public function deleteCart(string $userId): JsonResponse
+    public function delete(string $userId): JsonResponse
     {
         $this->cartResourceService
             ->setCartUser($userId)
             ->deleteCart()
-        ;
-        $responseDto = new DeletedResourceDto();
-
-        return response()->json($responseDto->toArray(), $responseDto::STATUS);
-    }
-
-    public function deleteCartProducts(CartProductsDeleteRequest $request, string $userId): JsonResponse
-    {
-        $this->cartResourceService
-            ->setCartUser($userId)
-            ->deleteCartProducts($request)
         ;
         $responseDto = new DeletedResourceDto();
 
