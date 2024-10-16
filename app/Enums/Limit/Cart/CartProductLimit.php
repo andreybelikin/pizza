@@ -2,7 +2,7 @@
 
 namespace App\Enums\Limit\Cart;
 
-enum LimitedProductType: int
+enum CartProductLimit: int
 {
     case Pizza = 10;
     case Drink = 20;

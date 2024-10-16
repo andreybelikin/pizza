@@ -8,6 +8,7 @@ use App\Http\Requests\Cart\CartUpdateRequest;
 use App\Http\Resources\CartResource;
 use App\Models\CartProduct;
 use App\Models\Product;
+use App\Models\User;
 use App\Services\Limit\CartLimitService;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -28,18 +29,19 @@ class CartResourceService
     public function getCart(): JsonResource
     {
         $this->ensureCartExists();
-        $this->ensureUserIsCartOwner();
+        $this->checkUserPermission();
 
         return $this->buildCartResource();
     }
 
     public function updateCart(CartUpdateRequest $request): JsonResource
     {
-//        $this->ensureCartExists();
-        $this->ensureUserIsCartOwner();
+        $this->checkUserPermission();
+
         $requestProducts = $request->input('products');
         $this->cartLimitService->checkQuantityPerTypeLimit($requestProducts);
-        $cartProducts = CartProduct::getCartDistinctProducts();
+
+        $cartProducts = CartProduct::getCartDistinctProducts($this->cartUserId);
         $this->updateCartByRequestProducts($requestProducts, $cartProducts);
 
         return $this->buildCartResource();
@@ -48,8 +50,8 @@ class CartResourceService
     public function deleteCart(): void
     {
         $this->ensureCartExists();
-        $this->ensureUserIsCartOwner();
-        CartProduct::emptyCart();
+        $this->checkUserPermission();
+        CartProduct::emptyCart($this->cartUserId);
     }
 
     private function addProductToCart(int $productId, int $quantity): void
@@ -95,9 +97,13 @@ class CartResourceService
         }
     }
 
-    private function ensureUserIsCartOwner(): void
+    private function checkUserPermission(): void
     {
         $authorizedUserId = auth()->user()->getAuthIdentifier();
+
+        if (User::find($this->cartUserId)->isAdmin()) {
+            return;
+        }
 
         if ($this->cartUserId !== $authorizedUserId) {
             throw new ResourceAccessException();
@@ -123,9 +129,13 @@ class CartResourceService
             $newProductQuantity = $requestProductQuantity - $cartProductMatch['quantity'];
 
             match ($newProductQuantity) {
-                0 => CartProduct::deleteCartProduct($requestProductId),
+                0 => CartProduct::deleteCartProduct($requestProductId, $this->cartUserId),
                 $newProductQuantity > 0 => $this->addProductToCart($requestProductId, $newProductQuantity),
-                $newProductQuantity < 0 => CartProduct::deleteCartProduct($requestProductId, abs($newProductQuantity))
+                $newProductQuantity < 0 => CartProduct::deleteCartProduct(
+                    $requestProductId,
+                    $this->cartUserId,
+                    abs($newProductQuantity)
+                )
             };
         }
     }

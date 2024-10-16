@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Dto\Response\Resourse\CartLimitExceptionResponseDto;
 use App\Dto\Response\Resourse\DeletedResourceDto;
 use App\Exceptions\Resource\Cart\QuantityPerTypeLimitException;
-use App\Http\Requests\Cart\CartProductsDeleteRequest;
 use App\Http\Requests\Cart\CartUpdateRequest;
 use App\Services\Resource\CartResourceService;
 use Illuminate\Http\JsonResponse;

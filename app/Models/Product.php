@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\DB;
 
 class Product extends Model
 {
@@ -51,14 +51,12 @@ class Product extends Model
         return $query;
     }
 
-    public static function getProductsTypes(array $ids, array $types): array
+    public static function getProductsTypes(array $ids): Collection
     {
         return self::query()
             ->select(['id', 'type'])
             ->whereIn('id', $ids)
-            ->whereIn('type', $types)
             ->get()
-            ->toArray()
         ;
     }
 }

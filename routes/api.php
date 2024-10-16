@@ -22,9 +22,9 @@ Route::middleware(EnsureTokenIsValid::class)->group(function () {
     });
 
     Route::controller(CartController::class)->group(function () {
-        Route::get('/carts/{userId}', 'get');
+        Route::get('/users/{userId}/carts', 'get');
         Route::put('/users/{userId}/carts/', 'update');
-        Route::delete('/carts/{userId}', 'delete');
+        Route::delete('/users/{userId}/carts', 'delete');
     });
 
     Route::controller(UserController::class)->group(function () {
