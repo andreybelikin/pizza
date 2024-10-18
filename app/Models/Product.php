@@ -20,11 +20,13 @@ class Product extends Model
     ];
     public function users(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'cart_product');
+        return $this->belongsToMany(User::class, 'cart_product')
+                        ->withTimestamps();
     }
     public function orders(): BelongsToMany
     {
-        return $this->belongsToMany(Order::class);
+        return $this->belongsToMany(Order::class)
+                        ->withTimestamps();
     }
 
     public function scopeFilter(Builder $query, array $filters): Builder

@@ -10,14 +10,18 @@ use App\Models\CartProduct;
 use App\Models\Product;
 use App\Models\User;
 use App\Services\Limit\CartLimitService;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class CartResourceService
 {
     private int $cartUserId;
 
-    public function __construct(private CartLimitService $cartLimitService)
-    {}
+    public function __construct(
+        private CartLimitService $cartLimitService,
+        private CartDataService $cartDataService
+    ) {}
 
     public function setCartUser(string $userId): self
     {
@@ -31,7 +35,19 @@ class CartResourceService
         $this->ensureCartExists();
         $this->checkUserPermission();
 
-        return $this->buildCartResource();
+        return $this->getCartResource();
+    }
+
+    public function getCarts(array $usersIds): ResourceCollection
+    {
+        return $this->getCartsResourceCollection($usersIds);
+    }
+
+    public function getCarts(): JsonResource
+    {
+        $this->checkUserPermission();
+        $carts = $this->cartDataService->getCarts();
+
     }
 
     public function updateCart(CartUpdateRequest $request): JsonResource
@@ -40,103 +56,66 @@ class CartResourceService
 
         $requestProducts = $request->input('products');
         $this->cartLimitService->checkQuantityPerTypeLimit($requestProducts);
+        $this->cartDataService->updateCartByRequestProducts($requestProducts);
 
-        $cartProducts = CartProduct::getCartDistinctProducts($this->cartUserId);
-        $this->updateCartByRequestProducts($requestProducts, $cartProducts);
-
-        return $this->buildCartResource();
+        return $this->getCartResource();
     }
 
     public function deleteCart(): void
     {
         $this->ensureCartExists();
         $this->checkUserPermission();
-        CartProduct::emptyCart($this->cartUserId);
+        $this->cartDataService
+            ->setCartUser($this->cartUserId)
+            ->deleteCart();
     }
 
-    private function addProductToCart(int $productId, int $quantity): void
+    private function getCartResource(): JsonResource
     {
-        $preparedProducts = [];
+        $cartProducts = $this->cartDataService
+            ->setCartUser($this->cartUserId)
+            ->getCartProducts();
 
-        for ($i = 0; $i < $quantity; $i++) {
-            $preparedProducts[] = [
-                'product_id' => $productId,
-                'user_id' => $this->cartUserId,
-            ];
-        }
-
-        CartProduct::addProductsToCart($preparedProducts);
-    }
-
-    private function buildCartResource(): JsonResource
-    {
-        $cartProducts = CartProduct::getCartDistinctProducts();
-        $cartProductsIds = array_column($cartProducts, 'id');
-
-        $products = Product::whereIn('id', $cartProductsIds)
-            ->get()
-            ->toArray()
-        ;
-
-        $cart = array_map(function($cartProduct, $product) {
+        $cart['products'] = $cartProducts->map(function (CartProduct $cartProduct) {
             return [
-                'id' => $product['id'],
-                'quantity' => $cartProduct['quantity'],
-                'title' => $product['title'],
-                'price' => $product['price'],
+                'id' => $cartProduct->id,
+                'quantity' => $cartProduct->quantity,
+                'title' => $cartProduct->title,
+                'price' => $cartProduct->price,
+                'totalPrice' => $cartProduct->price * $cartProduct->quantity,
             ];
-        }, $cartProducts, $products);
+        });
+        $cart['totalSum'] = $cart['products']->sum('totalPrice');
 
         return new CartResource($cart);
     }
 
+    private function getCartsResourceCollection(array $usersIds): ResourceCollection
+    {
+        $paginatedCarts = $this->cartDataService->setCartUsers($usersIds);
+    }
+
     private function ensureCartExists(): void
     {
-        if (!CartProduct::where('user_id', '=', $this->cartUserId)->exists()) {
+        $cartExistence = $this->cartDataService
+            ->setCartUser($this->cartUserId)
+            ->cartExists();
+
+        if (!$cartExistence) {
             throw new ResourceNotFoundException();
         }
     }
 
     private function checkUserPermission(): void
     {
-        $authorizedUserId = auth()->user()->getAuthIdentifier();
+        $authorizedUser = auth()->user();
 
-        if (User::find($this->cartUserId)->isAdmin()) {
+        if ($authorizedUser->isAdmin()) {
             return;
         }
 
-        if ($this->cartUserId !== $authorizedUserId) {
+        if ($this->cartUserId !== $authorizedUser->getAuthIdentifier()) {
             throw new ResourceAccessException();
-        }
-    }
-
-    private function updateCartByRequestProducts(array $requestProducts, array $cartProducts): void
-    {
-        foreach ($requestProducts as $requestProduct) {
-            $requestProductId = $requestProduct['id'];
-            $requestProductQuantity = $requestProduct['quantity'];
-
-            $cartProductMatch = array_filter(
-                $cartProducts,
-                fn ($cartProduct) => $cartProduct['id'] === $requestProductId
-            );
-
-            if (empty($cartProductMatch)) {
-                $this->addProductToCart($requestProductId, $requestProductQuantity);
-                continue;
-            }
-
-            $newProductQuantity = $requestProductQuantity - $cartProductMatch['quantity'];
-
-            match ($newProductQuantity) {
-                0 => CartProduct::deleteCartProduct($requestProductId, $this->cartUserId),
-                $newProductQuantity > 0 => $this->addProductToCart($requestProductId, $newProductQuantity),
-                $newProductQuantity < 0 => CartProduct::deleteCartProduct(
-                    $requestProductId,
-                    $this->cartUserId,
-                    abs($newProductQuantity)
-                )
-            };
         }
     }
 }
