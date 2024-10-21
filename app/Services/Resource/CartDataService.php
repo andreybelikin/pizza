@@ -2,45 +2,32 @@
 
 namespace App\Services\Resource;
 
-use App\Models\CartProduct;
 use App\Models\Product;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Support\Collection as SupportCollection;
 
 class CartDataService
 {
-    private const CARTS_PER_PAGE = 15;
     private User $cartUser;
-    private array $cartUsers;
 
     public function setCartUser(int $userId): self
     {
-        $this->cartUser = User::query()->find($userId);
+        $this->cartUser = User::find($userId);
 
         return $this;
     }
 
-    public function setCartUsers(array $cartUsers): self
+    public function getCart(): SupportCollection
     {
-        $this->cartUsers = $cartUsers;
+        $cartProducts = $this->getCartProducts();
 
-        return $this;
-    }
-
-    public function getCartProducts(): Collection
-    {
-        $cartWithQuantity = $this->getCartWithQuantity();
-
-        return $cartWithQuantity->map(function ($cartProduct) {
-            $product = Product::query()->find($cartProduct->id);
-
+        return $cartProducts->map(function (Product $cartProduct) {
             return [
-                'id' => $product->id,
-                'title' => $product->title,
-                'quantity' => $cartProduct->quantity,
-                'price' => $product->price,
+                'id' => $cartProduct['id'],
+                'title' => $cartProduct['title'],
+                'quantity' => $this->getProductQuantity($cartProduct['id']),
+                'price' => $cartProduct['price'],
             ];
         });
     }
@@ -48,31 +35,22 @@ class CartDataService
     public function deleteCart(): void
     {
         $this->cartUser
-            ->cart
-            ->delete();
+            ->products()
+            ->detach();
     }
 
     public function cartExists(): bool
     {
         return $this->cartUser
-            ->cart
+            ->products()
             ->exists();
     }
 
-    public function getCarts(): LengthAwarePaginator
-    {
-        return User::query()
-            ->find($this->cartUsers)
-            ->cart
-            ->paginate(self::CARTS_PER_PAGE);
-    }
-
-    private function getCartWithQuantity(): Collection
+    private function getCartProducts(): EloquentCollection
     {
         return $this->cartUser
-            ->cart
-            ->select(['product_id', DB::raw('COUNT(*) as quantity')])
-            ->groupBy(['product_id'])
+            ->products()
+            ->distinct()
             ->get();
     }
 
@@ -80,28 +58,29 @@ class CartDataService
     {
         $preparedProducts = array_fill(0, $quantity, $productId);
         $this->cartUser
-            ->cart
+            ->products()
             ->attach($preparedProducts);
     }
 
     public function updateCartByRequestProducts(array $requestProducts): void
     {
-        $cartProducts = $this->getCartWithQuantity();
+        $cartProducts = $this->getCartProducts();
 
         foreach ($requestProducts as $requestProduct) {
             $requestProductId = $requestProduct['id'];
             $requestProductQuantity = $requestProduct['quantity'];
 
-            $cartProductMatch = $cartProducts->first(
-                fn (CartProduct $cartProduct) => $cartProduct->id === $requestProductId
+            $matchedCartProduct = $cartProducts->first(
+                fn (Product $cartProduct) => $cartProduct->id === $requestProductId
             );
 
-            if (is_null($cartProductMatch) && $requestProductQuantity > 0) {
+            if (is_null($matchedCartProduct) && $requestProductQuantity > 0) {
                 $this->addProductsToCart($requestProductId, $requestProductQuantity);
                 continue;
             }
 
-            $quantityDiff = $requestProductQuantity - $cartProductMatch->quantity;
+            $matchedCartProductQuantity = $this->getProductQuantity($matchedCartProduct->id);
+            $quantityDiff = $requestProductQuantity - $matchedCartProductQuantity;
 
             switch ($quantityDiff) {
                 case 0:
@@ -120,9 +99,17 @@ class CartDataService
     private function deleteProductInCart(int $productId, int $limit): void
     {
         $this->cartUser
-            ->cart
+            ->products()
             ->limit($limit)
-            ->find($productId)
-            ->delete();
+            ->where('products.id', $productId)
+            ->detach();
+    }
+
+    private function getProductQuantity(int $productId): int
+    {
+        return $this->cartUser
+            ->products()
+            ->where('products.id', $productId)
+            ->count();
     }
 }

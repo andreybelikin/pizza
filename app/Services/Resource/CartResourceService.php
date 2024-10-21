@@ -6,13 +6,9 @@ use App\Exceptions\Resource\ResourceAccessException;
 use App\Exceptions\Resource\ResourceNotFoundException;
 use App\Http\Requests\Cart\CartUpdateRequest;
 use App\Http\Resources\CartResource;
-use App\Models\CartProduct;
-use App\Models\Product;
-use App\Models\User;
 use App\Services\Limit\CartLimitService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class CartResourceService
 {
@@ -38,25 +34,15 @@ class CartResourceService
         return $this->getCartResource();
     }
 
-    public function getCarts(array $usersIds): ResourceCollection
-    {
-        return $this->getCartsResourceCollection($usersIds);
-    }
-
-    public function getCarts(): JsonResource
-    {
-        $this->checkUserPermission();
-        $carts = $this->cartDataService->getCarts();
-
-    }
-
     public function updateCart(CartUpdateRequest $request): JsonResource
     {
         $this->checkUserPermission();
 
         $requestProducts = $request->input('products');
         $this->cartLimitService->checkQuantityPerTypeLimit($requestProducts);
-        $this->cartDataService->updateCartByRequestProducts($requestProducts);
+        $this->cartDataService
+            ->setCartUser($this->cartUserId)
+            ->updateCartByRequestProducts($requestProducts);
 
         return $this->getCartResource();
     }
@@ -72,27 +58,22 @@ class CartResourceService
 
     private function getCartResource(): JsonResource
     {
-        $cartProducts = $this->cartDataService
+        $cart = $this->cartDataService
             ->setCartUser($this->cartUserId)
-            ->getCartProducts();
+            ->getCart();
 
-        $cart['products'] = $cartProducts->map(function (CartProduct $cartProduct) {
+        $cartResource['products'] = $cart->map(function (array $cartProduct) {
             return [
-                'id' => $cartProduct->id,
-                'quantity' => $cartProduct->quantity,
-                'title' => $cartProduct->title,
-                'price' => $cartProduct->price,
-                'totalPrice' => $cartProduct->price * $cartProduct->quantity,
+                'id' => $cartProduct['id'],
+                'quantity' => $cartProduct['quantity'],
+                'title' => $cartProduct['title'],
+                'price' => $cartProduct['price'],
+                'totalPrice' => $cartProduct['price'] * $cartProduct['quantity'],
             ];
         });
-        $cart['totalSum'] = $cart['products']->sum('totalPrice');
+        $cartResource['totalSum'] = $cartResource['products']->sum('totalPrice');
 
-        return new CartResource($cart);
-    }
-
-    private function getCartsResourceCollection(array $usersIds): ResourceCollection
-    {
-        $paginatedCarts = $this->cartDataService->setCartUsers($usersIds);
+        return new CartResource($cartResource);
     }
 
     private function ensureCartExists(): void
