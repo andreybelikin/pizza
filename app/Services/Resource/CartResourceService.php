@@ -6,8 +6,8 @@ use App\Exceptions\Resource\ResourceAccessException;
 use App\Exceptions\Resource\ResourceNotFoundException;
 use App\Http\Requests\Cart\CartUpdateRequest;
 use App\Http\Resources\CartResource;
+use App\Models\Product;
 use App\Services\Limit\CartLimitService;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class CartResourceService
@@ -22,6 +22,7 @@ class CartResourceService
     public function setCartUser(string $userId): self
     {
         $this->cartUserId = (int) $userId;
+        $this->cartDataService->setCartUser($this->cartUserId);
 
         return $this;
     }
@@ -40,9 +41,7 @@ class CartResourceService
 
         $requestProducts = $request->input('products');
         $this->cartLimitService->checkQuantityPerTypeLimit($requestProducts);
-        $this->cartDataService
-            ->setCartUser($this->cartUserId)
-            ->updateCartByRequestProducts($requestProducts);
+        $this->updateCartByRequestProducts($requestProducts);
 
         return $this->getCartResource();
     }
@@ -51,24 +50,22 @@ class CartResourceService
     {
         $this->ensureCartExists();
         $this->checkUserPermission();
-        $this->cartDataService
-            ->setCartUser($this->cartUserId)
-            ->deleteCart();
+        $this->cartDataService->deleteCart();
     }
 
     private function getCartResource(): JsonResource
     {
-        $cart = $this->cartDataService
-            ->setCartUser($this->cartUserId)
-            ->getCart();
+        $cart = $this->cartDataService->getCartProducts();
 
-        $cartResource['products'] = $cart->map(function (array $cartProduct) {
+        $cartResource['products'] = $cart->map(function (Product $cartProduct) {
+            $cartProductQuantity = $this->cartDataService->getProductQuantity($cartProduct['id']);
+
             return [
                 'id' => $cartProduct['id'],
-                'quantity' => $cartProduct['quantity'],
+                'quantity' => $cartProductQuantity,
                 'title' => $cartProduct['title'],
                 'price' => $cartProduct['price'],
-                'totalPrice' => $cartProduct['price'] * $cartProduct['quantity'],
+                'totalPrice' => $cartProduct['price'] * $cartProductQuantity,
             ];
         });
         $cartResource['totalSum'] = $cartResource['products']->sum('totalPrice');
@@ -78,12 +75,42 @@ class CartResourceService
 
     private function ensureCartExists(): void
     {
-        $cartExistence = $this->cartDataService
-            ->setCartUser($this->cartUserId)
-            ->cartExists();
-
-        if (!$cartExistence) {
+        if (!$this->cartDataService->isCartExists()) {
             throw new ResourceNotFoundException();
+        }
+    }
+
+    private function updateCartByRequestProducts(array $requestProducts): void
+    {
+        $cartProducts = $this->cartDataService->getCartProducts();
+
+        foreach ($requestProducts as $requestProduct) {
+            $requestProductId = $requestProduct['id'];
+            $requestProductQuantity = $requestProduct['quantity'];
+
+            if ($requestProductQuantity === 0) {
+                $this->cartDataService->deleteProductFromCart($requestProductId, 0);
+                continue;
+            }
+
+            $matchedCartProduct = $cartProducts->find($requestProductId);
+
+            if (is_null($matchedCartProduct)) {
+                $this->cartDataService->addProductsToCart($requestProductId, $requestProductQuantity);
+                continue;
+            }
+
+            $matchedCartProductQuantity = $this->cartDataService->getProductQuantity($matchedCartProduct->id);
+            $quantityDiff = $requestProductQuantity - $matchedCartProductQuantity;
+
+            switch ($quantityDiff) {
+                case $quantityDiff > 0:
+                    $this->cartDataService->addProductsToCart($requestProductId, $quantityDiff);
+                    break;
+                case $quantityDiff < 0:
+                    $this->cartDataService->deleteProductFromCart($requestProductId, abs($quantityDiff));
+                    break;
+            }
         }
     }
 

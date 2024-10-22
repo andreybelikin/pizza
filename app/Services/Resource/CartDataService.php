@@ -18,20 +18,6 @@ class CartDataService
         return $this;
     }
 
-    public function getCart(): SupportCollection
-    {
-        $cartProducts = $this->getCartProducts();
-
-        return $cartProducts->map(function (Product $cartProduct) {
-            return [
-                'id' => $cartProduct['id'],
-                'title' => $cartProduct['title'],
-                'quantity' => $this->getProductQuantity($cartProduct['id']),
-                'price' => $cartProduct['price'],
-            ];
-        });
-    }
-
     public function deleteCart(): void
     {
         $this->cartUser
@@ -39,14 +25,14 @@ class CartDataService
             ->detach();
     }
 
-    public function cartExists(): bool
+    public function isCartExists(): bool
     {
         return $this->cartUser
             ->products()
             ->exists();
     }
 
-    private function getCartProducts(): EloquentCollection
+    public function getCartProducts(): EloquentCollection
     {
         return $this->cartUser
             ->products()
@@ -54,7 +40,7 @@ class CartDataService
             ->get();
     }
 
-    private function addProductsToCart(int $productId, int $quantity): void
+    public function addProductsToCart(int $productId, int $quantity): void
     {
         $preparedProducts = array_fill(0, $quantity, $productId);
         $this->cartUser
@@ -62,41 +48,7 @@ class CartDataService
             ->attach($preparedProducts);
     }
 
-    public function updateCartByRequestProducts(array $requestProducts): void
-    {
-        $cartProducts = $this->getCartProducts();
-
-        foreach ($requestProducts as $requestProduct) {
-            $requestProductId = $requestProduct['id'];
-            $requestProductQuantity = $requestProduct['quantity'];
-
-            $matchedCartProduct = $cartProducts->first(
-                fn (Product $cartProduct) => $cartProduct->id === $requestProductId
-            );
-
-            if (is_null($matchedCartProduct) && $requestProductQuantity > 0) {
-                $this->addProductsToCart($requestProductId, $requestProductQuantity);
-                continue;
-            }
-
-            $matchedCartProductQuantity = $this->getProductQuantity($matchedCartProduct->id);
-            $quantityDiff = $requestProductQuantity - $matchedCartProductQuantity;
-
-            switch ($quantityDiff) {
-                case 0:
-                    $this->deleteProductInCart($requestProductId, 0);
-                    break;
-                case $quantityDiff > 0:
-                    $this->addProductsToCart($requestProductId, $quantityDiff);
-                    break;
-                case $quantityDiff < 0:
-                    $this->deleteProductInCart($requestProductId, abs($quantityDiff));
-                    break;
-            }
-        }
-    }
-
-    private function deleteProductInCart(int $productId, int $limit): void
+    public function deleteProductFromCart(int $productId, int $limit): void
     {
         $this->cartUser
             ->products()
@@ -105,7 +57,7 @@ class CartDataService
             ->detach();
     }
 
-    private function getProductQuantity(int $productId): int
+    public function getProductQuantity(int $productId): int
     {
         return $this->cartUser
             ->products()

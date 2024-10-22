@@ -17,13 +17,11 @@ class CartController
     {
         $cart = $this->cartResourceService
             ->setCartUser($userId)
-            ->getCart()
-        ;
+            ->getCart();
 
         return response()
             ->json($cart)
-            ->setEncodingOptions(JSON_UNESCAPED_UNICODE)
-        ;
+            ->setEncodingOptions(JSON_UNESCAPED_UNICODE);
     }
 
     public function update(CartUpdateRequest $request, string $userId): JsonResponse
@@ -31,12 +29,11 @@ class CartController
         try {
             $cart = $this->cartResourceService
                 ->setCartUser($userId)
-                ->updateCart($request)
-            ;
+                ->updateCart($request);
+
             $response = response()
                 ->json($cart)
-                ->setEncodingOptions(JSON_UNESCAPED_UNICODE)
-            ;
+                ->setEncodingOptions(JSON_UNESCAPED_UNICODE);
         } catch (QuantityPerTypeLimitException $exception) {
             $responseDto = new CartLimitExceptionResponseDto($exception->violations);
             $response = response()->json($responseDto->toArray(), $responseDto::STATUS);
@@ -49,8 +46,7 @@ class CartController
     {
         $this->cartResourceService
             ->setCartUser($userId)
-            ->deleteCart()
-        ;
+            ->deleteCart();
         $responseDto = new DeletedResourceDto();
 
         return response()->json($responseDto->toArray(), $responseDto::STATUS);
