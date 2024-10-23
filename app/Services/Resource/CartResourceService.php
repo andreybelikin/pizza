@@ -7,6 +7,7 @@ use App\Exceptions\Resource\ResourceNotFoundException;
 use App\Http\Requests\Cart\CartUpdateRequest;
 use App\Http\Resources\CartResource;
 use App\Models\Product;
+use App\Models\User;
 use App\Services\Limit\CartLimitService;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -82,33 +83,28 @@ class CartResourceService
 
     private function updateCartByRequestProducts(array $requestProducts): void
     {
-        $cartProducts = $this->cartDataService->getCartProducts();
+        $requestProductsIds = array_column($requestProducts, 'id');
+        $cartProducts = $this->cartDataService->getCartProductsById($requestProductsIds);
 
         foreach ($requestProducts as $requestProduct) {
             $requestProductId = $requestProduct['id'];
-            $requestProductQuantity = $requestProduct['quantity'];
+            $requestQuantity = $requestProduct['quantity'];
 
-            if ($requestProductQuantity === 0) {
-                $this->cartDataService->deleteProductFromCart($requestProductId, 0);
-                continue;
-            }
+            $existingCount = $cartProducts
+                ->where('id', $requestProductId)
+                ->count();
 
-            $matchedCartProduct = $cartProducts->find($requestProductId);
-
-            if (is_null($matchedCartProduct)) {
-                $this->cartDataService->addProductsToCart($requestProductId, $requestProductQuantity);
-                continue;
-            }
-
-            $matchedCartProductQuantity = $this->cartDataService->getProductQuantity($matchedCartProduct->id);
-            $quantityDiff = $requestProductQuantity - $matchedCartProductQuantity;
-
-            switch ($quantityDiff) {
-                case $quantityDiff > 0:
-                    $this->cartDataService->addProductsToCart($requestProductId, $quantityDiff);
+            switch ($requestQuantity) {
+                case $requestQuantity === 0 && $existingCount > 0:
+                    $this->cartDataService->deleteCartProduct($requestProductId, 0);
                     break;
-                case $quantityDiff < 0:
-                    $this->cartDataService->deleteProductFromCart($requestProductId, abs($quantityDiff));
+                case $requestQuantity > $existingCount:
+                    $this->cartDataService
+                        ->addCartProducts($requestProductId, $requestQuantity - $existingCount);
+                    break;
+                case $requestQuantity > 0 && $requestQuantity < $existingCount:
+                    $this->cartDataService
+                        ->deleteCartProduct($requestProductId, $existingCount - $requestQuantity);
                     break;
             }
         }

@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection as SupportCollection;
+use Illuminate\Support\Facades\DB;
 
 class CartDataService
 {
@@ -40,7 +41,15 @@ class CartDataService
             ->get();
     }
 
-    public function addProductsToCart(int $productId, int $quantity): void
+    public function getCartProductsById(array $productsIds): EloquentCollection
+    {
+        return $this->cartUser
+            ->products()
+            ->whereIn('products.id', $productsIds)
+            ->get();
+    }
+
+    public function addCartProducts(int $productId, int $quantity): void
     {
         $preparedProducts = array_fill(0, $quantity, $productId);
         $this->cartUser
@@ -48,13 +57,14 @@ class CartDataService
             ->attach($preparedProducts);
     }
 
-    public function deleteProductFromCart(int $productId, int $limit): void
+    public function deleteCartProduct(int $productId, int $limit): void
     {
-        $this->cartUser
-            ->products()
+        DB::table('cart_product')
+            ->where('product_id', $productId)
+            ->where('user_id', $this->cartUser->id)
             ->limit($limit)
-            ->where('products.id', $productId)
-            ->detach();
+            ->delete();
+//        dd($this->cartUser->products()->get());
     }
 
     public function getProductQuantity(int $productId): int
