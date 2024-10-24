@@ -20,10 +20,10 @@ class QuantityPerTypeLimitCheck
 
     public function check(): void
     {
-        $productsTypes = $this->getProductsTypes();
+        $products = $this->getProductsTypes();
 
         foreach (CartProductLimit::cases() as $limit) {
-            $productsQuantity = $this->checkProductsPerTypeQuantity($limit, $productsTypes);
+            $productsQuantity = $this->getQuantityByType($limit, $products);
 
             if ($productsQuantity > $limit->value) {
                 $violatedLimits[] = sprintf(
@@ -46,15 +46,15 @@ class QuantityPerTypeLimitCheck
         return Product::getProductsTypes($ids);
     }
 
-    private function checkProductsPerTypeQuantity(CartProductLimit $limitedType, Collection $productsTypes): int
+    private function getQuantityByType(CartProductLimit $limitedType, Collection $products): int
     {
         $productsQuantity = 0;
 
-        foreach ($this->requestProducts as $product) {
-            $productType = $productsTypes->firstWhere('id', $product['id']);
+        foreach ($this->requestProducts as $requestProduct) {
+            $product = $products->firstWhere('id', $requestProduct['id']);
 
-            if ($productType === $limitedType->getName() && $product['quantity'] > 0) {
-                $productsQuantity += $product['quantity'];
+            if ($product->type === $limitedType->getName()) {
+                $productsQuantity += $requestProduct['quantity'];
             }
         }
 

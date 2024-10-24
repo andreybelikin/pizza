@@ -25,7 +25,9 @@ class User extends Authenticatable implements JWTSubject
 
     public function products(): BelongsToMany
     {
-        return $this->belongsToMany(Product::class, 'cart_product');
+        return $this->belongsToMany(Product::class, 'cart_product')
+            ->withPivot('cart')
+            ->as('cart');
     }
 
     public function orders(): HasMany

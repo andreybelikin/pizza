@@ -57,7 +57,6 @@ class Product extends Model
         return self::query()
             ->select(['id', 'type'])
             ->whereIn('id', $ids)
-            ->get()
-        ;
+            ->get();
     }
 }

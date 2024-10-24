@@ -57,14 +57,15 @@ class CartDataService
             ->attach($preparedProducts);
     }
 
-    public function deleteCartProduct(int $productId, int $limit): void
+    public function deleteCartProduct(int $productId, int $limit = 0): void
     {
         DB::table('cart_product')
             ->where('product_id', $productId)
             ->where('user_id', $this->cartUser->id)
-            ->limit($limit)
+            ->when($limit > 0, function ($query) use ($limit) {
+                return $query->limit($limit);
+            })
             ->delete();
-//        dd($this->cartUser->products()->get());
     }
 
     public function getProductQuantity(int $productId): int
