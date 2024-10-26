@@ -44,9 +44,8 @@ class UserResourceService extends ResourceServiceAbstract
 
     public function deleteUser(UserDeleteRequest $request): void
     {
-        $userId = $request->input('id');
         /** @var User $requestedUserResource */
-        $requestedUserResource = $this->getRequestedResource($userId);
+        $requestedUserResource = $this->getRequestedResource($request->input('id'));
         $this->checkActionPermission('delete', $requestedUserResource);
         $this->deleteResource($requestedUserResource);
         $this->invalidToken($request);

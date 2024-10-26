@@ -2,6 +2,9 @@
 
 namespace Tests\TestData;
 
+use App\Models\User;
+use Tymon\JWTAuth\Facades\JWTAuth;
+
 class Tokens
 {
     public static function generateAccessToken(string $email, string $password): void
@@ -13,10 +16,22 @@ class Tokens
     }
     public static function generateRefreshToken()
     {
-        return (auth()->claims([
+        return (
+            auth()
+            ->claims(
+            [
                 'typ' => 'refresh',
                 'exp' => now()->addMinutes(config('jwt.refresh_ttl'))
             ])
-        )->tokenById(auth()->user()->getJWTIdentifier());
+        )->tokenById(
+            auth()
+            ->user()
+            ->getJWTIdentifier()
+        );
+    }
+
+    public static function getAccessTokenFromUser(User $user): string
+    {
+        return JWTAuth::fromUser($user);
     }
 }

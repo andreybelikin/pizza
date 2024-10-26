@@ -25,7 +25,7 @@ class LoginTest extends TestCase
     #[DataProvider('loginProvider')]
     public function testLogin(array $credentials, Closure $assertions): void
     {
-        TestUser::createUserWithCredentials();
+        TestUser::createUserWithCredentials($credentials);
 
         $response = $this->postJson('/api/login', $credentials);
         $decodedResponse = $response->decodeResponseJson();

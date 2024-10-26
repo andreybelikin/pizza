@@ -18,7 +18,6 @@ class ProductSeeder extends Seeder
     {
         $users = User::query()
             ->inRandomOrder()
-            ->take(5)
             ->get()
         ;
 
@@ -26,7 +25,7 @@ class ProductSeeder extends Seeder
         foreach ($products as $product) {
             $product
                 ->users()
-                ->attach($users->random(1))
+                ->attach($users->random(2))
             ;
         }
     }

@@ -64,11 +64,11 @@ class CartResourceService
             $cartProductQuantity = $this->cartDataService->getProductQuantity($cartProduct['id']);
 
             return [
-                'id' => $cartProduct['id'],
+                'id' => $cartProduct->id,
                 'quantity' => $cartProductQuantity,
-                'title' => $cartProduct['title'],
-                'price' => $cartProduct['price'],
-                'totalPrice' => $cartProduct['price'] * $cartProductQuantity,
+                'title' => $cartProduct->title,
+                'price' => $cartProduct->price,
+                'totalPrice' => $cartProduct->price * $cartProductQuantity,
             ];
         });
         $cartResource['totalSum'] = $cartResource['products']->sum('totalPrice');

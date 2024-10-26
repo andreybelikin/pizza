@@ -11,17 +11,20 @@ class TestUser
     public static function createAdminAuthorizedUser(): void
     {
         $password = fake()->password();
-        $user = User::factory()->setPassword($password)->create(['is_admin' => true]);
+        $user = User::factory()
+            ->setPassword($password)
+            ->create(['is_admin' => true]);
         Tokens::generateAccessToken($user->email, $password);
     }
 
-    public static function createUserWithCredentials(): void
+    public static function createAuthorizedUser(): void
     {
-        $credentials = [
-            'email' => 'test2233@email.com',
-            'password' => bcrypt('keK48!>O04780'),
-        ];
-
+        $user = User::first();
+        Tokens::generateAccessToken($user->email, $user->password);
+    }
+    public static function createUserWithCredentials(array $credentials): void
+    {
+        $credentials['password'] = bcrypt($credentials['password']);
         User::factory()->create($credentials);
     }
 
