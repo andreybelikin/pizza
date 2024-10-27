@@ -23,7 +23,7 @@ class UserFactory extends Factory
             'surname' => fake()->name(),
             'phone' => fake()->unique()->phoneNumber(),
             'email' => fake()->unique()->safeEmail(),
-            'is_admin' => fake()->boolean(),
+            'is_admin' => false,
             'password' => bcrypt(fake()->password()),
             'default_address' => fake()->unique()->address(),
             'address' => fake()->unique()->address(),

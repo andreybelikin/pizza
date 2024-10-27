@@ -1,11 +1,10 @@
 <?php
 
-namespace Tests\TestData;
+namespace Tests\Traits;
 
 use App\Models\User;
-use Tymon\JWTAuth\Facades\JWTAuth;
 
-class Tokens
+trait AuthTrait
 {
     public static function generateAccessToken(string $email, string $password): void
     {
@@ -14,7 +13,8 @@ class Tokens
             'password' => $password,
         ]);
     }
-    public static function generateRefreshToken()
+
+    public function generateRefreshToken()
     {
         return (
             auth()
@@ -30,8 +30,8 @@ class Tokens
         );
     }
 
-    public static function getAccessTokenFromUser(User $user): string
+    public function getAccessTokenFromUser(User $user): string
     {
-        return JWTAuth::fromUser($user);
+        return auth()->fromUser($user);
     }
 }
