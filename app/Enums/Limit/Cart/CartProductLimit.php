@@ -12,7 +12,7 @@ enum CartProductLimit: int
         return lcfirst($this->name);
     }
 
-    public static function getTypes(): array
+    public static function getLimits(): array
     {
         return array_map(fn ($case) => lcfirst($case->name), self::cases());
     }

@@ -40,7 +40,7 @@ class RefreshTest extends TestCase
         return [
             'refreshWithValidTokenShouldBlacklistRequestTokenAndReturnSuccessControllerResponse' => [
                 function () {
-                    $refreshToken = AuthTrait::generateRefreshToken();
+                    $refreshToken = AuthTrait::getRefreshToken();
 
                     return ['x-refresh-token' => $refreshToken];
                 },

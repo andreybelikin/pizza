@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
 use Tests\Traits\UserTrait;
 
-class GetTest extends TestCase
+class UserGetTest extends TestCase
 {
     use DatabaseTransactions;
 

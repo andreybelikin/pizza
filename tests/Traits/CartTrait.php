@@ -37,12 +37,15 @@ trait CartTrait
     public function createCartProducts(User $user): void
     {
         $quantityCount = 3;
-        $limitedProducts = array_map(function (string $limit) use ($quantityCount)  {
-            return Product::query()
+        $limitedProducts = [];
+
+        foreach (CartProductLimit::getLimits() as $limit) {
+            $products = Product::query()
                 ->take($quantityCount)
                 ->where('type', $limit)
                 ->get();
-        }, CartProductLimit::getTypes());
+            $limitedProducts = [...$limitedProducts, ...$products];
+        }
 
         for ($i = 0; $i < $quantityCount; $i++) {
             $user->products()->attach(array_column($limitedProducts, 'id'));

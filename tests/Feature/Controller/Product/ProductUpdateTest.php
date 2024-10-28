@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
 use Tests\Traits\UserTrait;
 
-class UpdateTest extends TestCase
+class ProductUpdateTest extends TestCase
 {
     use DatabaseTransactions;
 

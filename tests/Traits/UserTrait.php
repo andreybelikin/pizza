@@ -6,13 +6,15 @@ use App\Models\User;
 
 trait UserTrait
 {
+    use AuthTrait;
+
     public function createAdminAuthorizedUser(): void
     {
         $password = fake()->password();
         $user = User::factory()
             ->setPassword($password)
             ->create(['is_admin' => true]);
-        AuthTrait::generateAccessToken($user->email, $password);
+        $this->generateAccessToken($user->email, $password);
     }
 
     public function createUserWithCredentials(array $credentials): void

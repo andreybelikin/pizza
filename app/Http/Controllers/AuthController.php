@@ -6,7 +6,7 @@ use App\Dto\Response\Controller\Auth\InvalidCredentialsResponseDto;
 use App\Dto\Response\Controller\Auth\LogoutResponseDto;
 use App\Dto\Response\Controller\Auth\RegisterResponceDto;
 use App\Dto\Response\Controller\Auth\TokensResponseDto;
-use App\Exceptions\InvalidCredentialsException;
+use App\Exceptions\Auth\InvalidCredentialsException;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Services\Auth\AuthService;

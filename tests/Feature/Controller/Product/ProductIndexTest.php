@@ -11,7 +11,7 @@ use Tests\TestCase;
 use Tests\Traits\UserTrait;
 use Closure;
 
-class IndexTest extends TestCase
+class ProductIndexTest extends TestCase
 {
     use DatabaseTransactions;
 

@@ -4,6 +4,8 @@ namespace App\Exceptions;
 
 use App\Dto\Response\InternalErrorResponseDto;
 use App\Dto\Response\RequestValidation\FailedValidationResponseDto;
+use App\Dto\Response\Resourse\CartLimitExceptionResponseDto;
+use App\Exceptions\Limit\CartLimitException;
 use App\Exceptions\Resource\ResourceException;
 use Exception;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
@@ -21,6 +23,11 @@ class Handler extends ExceptionHandler
 
         $this->renderable(function (ResourceException $exception) {
             return $exception->getResponse();
+        });
+
+        $this->renderable(function (CartLimitException $exception) {
+            $responseDto = new CartLimitExceptionResponseDto($exception->violations);
+            return response()->json($responseDto->toArray(), $responseDto::STATUS);
         });
 
         $this->renderable(function (Exception $exception) {

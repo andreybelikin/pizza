@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
 use Tests\Traits\UserTrait;
 
-class UpdateTest extends TestCase
+class UserUpdateTest extends TestCase
 {
     use DatabaseTransactions;
 

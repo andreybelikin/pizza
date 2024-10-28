@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Exceptions\Token;
+namespace App\Exceptions\Auth;
 
 use App\Dto\Response\HttpMiddleware\TokenExceptionResponseDto;
 use Illuminate\Http\JsonResponse;

@@ -3,7 +3,7 @@
 namespace App\Http\Middleware\BeforeRequest;
 
 use App\Dto\Response\Controller\Auth\LogoutResponseDto;
-use App\Exceptions\Token\TokenAbsenceException;
+use App\Exceptions\Auth\TokenAbsenceException;
 use App\Services\Middleware\RequestTokenService;
 use Closure;
 use Illuminate\Http\Request;

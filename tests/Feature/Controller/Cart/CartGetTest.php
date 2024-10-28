@@ -9,7 +9,7 @@ use Tests\Traits\CartTrait;
 use Tests\Traits\UserTrait;
 use Tests\Traits\AuthTrait;
 
-class GetTest extends TestCase
+class CartGetTest extends TestCase
 {
     use DatabaseTransactions;
     use UserTrait;
@@ -29,7 +29,7 @@ class GetTest extends TestCase
         $expectedCart = $this->getCart($user);
         $response = $this->getJson(
             str_replace('{userId}', $user->getKey(), self::CONTROLLER_ROUTE),
-            ['authorization' => 'Bearer ' . $this->getAccessTokenFromUser($user)]
+            ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
 
         $response->assertOk();
@@ -44,7 +44,7 @@ class GetTest extends TestCase
 
         $response = $this->getJson(
             str_replace('{userId}', $anotherUser->getKey(), self::CONTROLLER_ROUTE),
-            ['authorization' => 'Bearer ' . $this->getAccessTokenFromUser($user)]
+            ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
 
         $response->assertOk();
@@ -75,7 +75,7 @@ class GetTest extends TestCase
 
         $response = $this->getJson(
             str_replace('{userId}', $anotherUser->getKey(), self::CONTROLLER_ROUTE),
-            ['authorization' => 'Bearer ' . $this->getAccessTokenFromUser($user)]
+            ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
 
         $response->assertStatus(Response::HTTP_UNAUTHORIZED);

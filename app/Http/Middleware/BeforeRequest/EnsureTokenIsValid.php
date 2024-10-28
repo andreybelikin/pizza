@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware\BeforeRequest;
 
-use App\Exceptions\Token\TokenException;
+use App\Exceptions\Auth\TokenException;
 use App\Services\Middleware\RequestTokenService;
 use Closure;
 use Illuminate\Http\Request;

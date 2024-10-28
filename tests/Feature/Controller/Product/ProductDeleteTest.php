@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
 use Tests\Traits\UserTrait;
 
-class DeleteTest extends TestCase
+class ProductDeleteTest extends TestCase
 {
     use DatabaseTransactions;
 

@@ -2,12 +2,12 @@
 
 namespace App\Services\Middleware;
 
-use App\Exceptions\Token\TokenAbsenceException;
-use App\Exceptions\Token\TokenBlacklistedException;
-use App\Exceptions\Token\TokenException;
-use App\Exceptions\Token\TokenHasExpiredException;
-use App\Exceptions\Token\TokenIsInvalidException;
-use App\Exceptions\Token\TokenUserNotDefinedException;
+use App\Exceptions\Auth\TokenAbsenceException;
+use App\Exceptions\Auth\TokenBlacklistedException;
+use App\Exceptions\Auth\TokenException;
+use App\Exceptions\Auth\TokenHasExpiredException;
+use App\Exceptions\Auth\TokenIsInvalidException;
+use App\Exceptions\Auth\TokenUserNotDefinedException;
 use App\Services\Auth\TokenBlacklistService;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;

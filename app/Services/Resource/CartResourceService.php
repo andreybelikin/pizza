@@ -9,7 +9,6 @@ use App\Http\Resources\CartResource;
 use App\Models\Product;
 use App\Models\User;
 use App\Services\Limit\CartLimitService;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class CartResourceService
@@ -41,8 +40,8 @@ class CartResourceService
     public function updateCart(CartUpdateRequest $request): JsonResource
     {
         $this->checkActionPermission('update');
-
         $requestProducts = $request->input('products');
+
         $this->cartLimitService->checkQuantityPerTypeLimit($requestProducts);
         $this->updateCartByRequestProducts($requestProducts);
 

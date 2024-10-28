@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Exceptions;
+namespace App\Exceptions\Auth;
 
 class InvalidCredentialsException extends \Exception
 {}

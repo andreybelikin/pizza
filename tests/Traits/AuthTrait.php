@@ -14,7 +14,7 @@ trait AuthTrait
         ]);
     }
 
-    public function generateRefreshToken()
+    public function getRefreshToken()
     {
         return (
             auth()
@@ -30,8 +30,13 @@ trait AuthTrait
         );
     }
 
-    public function getAccessTokenFromUser(User $user): string
+    public function getUserAccessToken(User $user): string
     {
         return auth()->fromUser($user);
+    }
+
+    public function getInvalidToken(): string
+    {
+        return 'eyJhbGciOiJIUzI1NiJ9.eyJpZCI6IjEifQ.ZAU547bnCcGrvSZiaDeYpbQg6rUopOe3HMJ01l2a2NQ';
     }
 }
