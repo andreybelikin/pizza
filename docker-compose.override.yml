@@ -1,0 +1,74 @@
+services:
+    web:
+      image: nginx:stable-alpine
+      container_name: web
+      restart: unless-stopped
+      tty: true
+      ports:
+          - "80:80"
+          - "443:443"
+      networks:
+        - app-network
+      depends_on:
+        - app
+    app:
+        build:
+            context: .:/docker/app
+            dockerfile: Dockerfile
+            args:
+                WWWGROUP: '${WWWGROUP}'
+                WWWUSER: '${WWWUSER}'
+        container_name: app
+        extra_hosts:
+            - 'host.docker.internal:host-gateway'
+        volumes:
+            - '.:/var/www/html'
+            - '.:/docker/app/xdebug.ini:/etc/php/8.3/cli/conf.d/20-xdebug.ini'
+        working_dir:
+          - '/var/www/html'
+        depends_on:
+            - db
+            - redis
+    db:
+        image: 'mysql/mysql-server:8.0'
+        ports:
+            - '3306:3306'
+        environment:
+            MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
+            MYSQL_DATABASE: '${DB_DATABASE}'
+            MYSQL_USER: '${DB_USERNAME}'
+            MYSQL_PASSWORD: '${DB_PASSWORD}'
+            MYSQL_ALLOW_EMPTY_PASSWORD: 1
+        volumes:
+            - 'db:/var/lib/mysql'
+    db_test:
+        image: 'mysql/mysql-server:8.0'
+        ports:
+          - '3307:3306'
+        environment:
+          MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
+          MYSQL_ROOT_HOST: '%'
+          MYSQL_DATABASE: '${DB_DATABASE}'
+          MYSQL_USER: '${DB_USERNAME}'
+          MYSQL_PASSWORD: '${DB_PASSWORD}'
+          MYSQL_ALLOW_EMPTY_PASSWORD: 1
+        volumes:
+          - 'db_test:/var/lib/mysql'
+    redis:
+        image: 'redis:alpine'
+        ports:
+            - '6379:6379'
+        volumes:
+            - 'redis:/data'
+        networks:
+            - app-network
+networks:
+  app-network:
+    driver: bridge
+volumes:
+    db:
+        driver: local
+    db_test:
+        driver: local
+    redis:
+        driver: tmpfs

@@ -18,7 +18,10 @@ Route::controller(AuthController::class)->group(function () {
 
 Route::middleware(EnsureTokenIsValid::class)->group(function () {
     Route::controller(OrderController::class)->group(function () {
-
+        Route::get('/orders/', 'index');
+        Route::get('/orders/{orderId}', 'get');
+        Route::put('/orders/{orderId}', 'update');
+        Route::delete('/orders/{orderId}', 'delete');
     });
 
     Route::controller(CartController::class)->group(function () {
