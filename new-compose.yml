@@ -24,34 +24,32 @@ services:
         volumes:
             - '.:/var/www/html'
             - '.:/docker/app/xdebug.ini:/etc/php/8.3/cli/conf.d/20-xdebug.ini'
-        working_dir:
-          - '/var/www/html'
+        working_dir: '/var/www/html'
         depends_on:
             - db
             - redis
     db:
         image: 'mysql/mysql-server:8.0'
-        ports:
-            - '3306:3306'
         environment:
             MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
             MYSQL_DATABASE: '${DB_DATABASE}'
             MYSQL_USER: '${DB_USERNAME}'
             MYSQL_PASSWORD: '${DB_PASSWORD}'
             MYSQL_ALLOW_EMPTY_PASSWORD: 1
+        ports:
+          - '${DB_PORT}:${DB_PORT}'
         volumes:
             - 'db:/var/lib/mysql'
     db_test:
         image: 'mysql/mysql-server:8.0'
-        ports:
-          - '3307:3306'
         environment:
           MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
-          MYSQL_ROOT_HOST: '%'
-          MYSQL_DATABASE: '${DB_DATABASE}'
-          MYSQL_USER: '${DB_USERNAME}'
-          MYSQL_PASSWORD: '${DB_PASSWORD}'
+          MYSQL_DATABASE: '${TEST_DB_DATABASE}'
+          MYSQL_USER: '${TEST_DB_USERNAME}'
+          MYSQL_PASSWORD: '${TEST_DB_PASSWORD}'
           MYSQL_ALLOW_EMPTY_PASSWORD: 1
+        ports:
+          - '${DB_PORT}:${DB_PORT}'
         volumes:
           - 'db_test:/var/lib/mysql'
     redis:
