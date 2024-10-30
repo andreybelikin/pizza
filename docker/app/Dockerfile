@@ -19,5 +19,5 @@ RUN apt-get update && apt-get install -y \
     docker-php-ext-install pdo_mysql mbstring zip exif pcntl gd && \
     apt-get clean && rm -rf /var/lib/apt/lists/* &&  \
     pecl install redis xdebug-3.3.1 \
-    && docker-php-ext-enable redis xdebug \
+    && docker-php-ext-enable redis xdebug
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer

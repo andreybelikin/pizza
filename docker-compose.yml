@@ -1,78 +1,69 @@
 services:
-    app:
-        build:
-            context: ./vendor/laravel/sail/runtimes/8.3
-            dockerfile: Dockerfile
-            args:
-                WWWGROUP: '${WWWGROUP}'
-        image: sail-8.3/app
-        extra_hosts:
-            - 'host.docker.internal:host-gateway'
-        ports:
-            - '${APP_PORT:-80}:80'
-            - '${VITE_PORT:-5173}:${VITE_PORT:-5173}'
-        environment:
-            WWWUSER: '${WWWUSER}'
-            LARAVEL_SAIL: 1
-            XDEBUG_MODE: '${SAIL_XDEBUG_MODE:-develop,debug}'
-            XDEBUG_CONFIG: '${SAIL_XDEBUG_CONFIG:-client_host=host.docker.internal, start_with_request=yes}'
-            IGNITION_LOCAL_SITES_PATH: '${PWD}'
-        user:
-            '${WWWUSER}:${WWWGROUP}'
-        volumes:
-            - '.:/var/www/html'
-            - '.:/docker/app/xdebug.ini:/etc/php/8.3/cli/conf.d/20-xdebug.ini'
-        networks:
-            - sail
-        depends_on:
-            - mysql
-            - redis
-    mysql:
-        image: 'mysql/mysql-server:8.0'
-        ports:
-            - '${FORWARD_DB_PORT:-3306}:3306'
-        environment:
-            MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
-            MYSQL_ROOT_HOST: '%'
-            MYSQL_DATABASE: '${DB_DATABASE}'
-            MYSQL_USER: '${DB_USERNAME}'
-            MYSQL_PASSWORD: '${DB_PASSWORD}'
-            MYSQL_ALLOW_EMPTY_PASSWORD: 1
-        volumes:
-            - 'sail-mysql:/var/lib/mysql'
-            - './vendor/laravel/sail/database/mysql/create-testing-database.sh:/docker-entrypoint-initdb.d/10-create-testing-database.sh'
-        networks:
-            - sail
-        healthcheck:
-            test:
-                - CMD
-                - mysqladmin
-                - ping
-                - '-p${DB_PASSWORD}'
-            retries: 3
-            timeout: 5s
-    redis:
-        image: 'redis:alpine'
-        ports:
-            - '${FORWARD_REDIS_PORT:-6379}:6379'
-        volumes:
-            - 'sail-redis:/data'
-        networks:
-            - sail
-        healthcheck:
-            test:
-                - CMD
-                - redis-cli
-                - ping
-            retries: 3
-            timeout: 5s
+  web:
+    image: nginx:stable-alpine
+    container_name: web
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - app-network
+    depends_on:
+      - app
+  app:
+    build:
+      context: ./docker/app
+      dockerfile: Dockerfile
+    container_name: app
+    user: '${UID:-1000}:${GID:-1000}'
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    volumes:
+      - '.:/var/www/html'
+      - '.:/docker/app/xdebug.ini:/etc/php/8.3/cli/conf.d/20-xdebug.ini'
+    working_dir: '/var/www/html'
+    depends_on:
+      - db
+      - redis
+    environment:
+      PHP_IDE_CONFIG: "serverName=DevServer"
+  db:
+    image: 'mysql/mysql-server:8.0'
+    environment:
+      MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
+      MYSQL_DATABASE: '${DB_DATABASE}'
+      MYSQL_USER: '${DB_USERNAME}'
+      MYSQL_PASSWORD: '${DB_PASSWORD}'
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+    ports:
+      - '${DB_PORT}:${DB_PORT}'
+    volumes:
+      - 'db:/var/lib/mysql'
+  db_test:
+    image: 'mysql/mysql-server:8.0'
+    environment:
+      MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
+      MYSQL_DATABASE: '${TEST_DB_DATABASE}'
+      MYSQL_USER: '${TEST_DB_USERNAME}'
+      MYSQL_PASSWORD: '${TEST_DB_PASSWORD}'
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+    ports:
+      - '${TEST_DB_PORT}:${TEST_DB_PORT}'
+    volumes:
+      - 'db_test:/var/lib/mysql'
+  redis:
+    image: 'redis:alpine'
+    ports:
+      - '6379:6379'
+    volumes:
+      - 'redis:/data'
+    networks:
+      - app-network
 networks:
-    sail:
-        driver: bridge
+  app-network:
+    driver: bridge
 volumes:
-    sail-mysql:
-        driver: local
-    sail-redis:
-        driver: local
-    sail-meilisearch:
-        driver: local
+  db:
+  db_test:
+  redis:
