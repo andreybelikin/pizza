@@ -14,9 +14,6 @@ use Tests\Traits\UserTrait;
 
 class LoginTest extends TestCase
 {
-    use DatabaseTransactions;
-    use UserTrait;
-
     #[DataProvider('loginProvider')]
     public function testLogin(array $requestCredentials, Closure $assertions): void
     {

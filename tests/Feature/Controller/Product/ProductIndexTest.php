@@ -13,8 +13,6 @@ use Closure;
 
 class ProductIndexTest extends TestCase
 {
-    use DatabaseTransactions;
-
     private const CONTROLLER_ROUTE = '/api/product';
     protected function setUp(): void
     {

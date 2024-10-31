@@ -10,8 +10,6 @@ use Tests\Traits\UserTrait;
 
 class ProductDeleteTest extends TestCase
 {
-    use DatabaseTransactions;
-
     private const CONTROLLER_ROUTE = '/api/product';
 
     protected function setUp(): void

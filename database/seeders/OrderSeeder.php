@@ -16,11 +16,24 @@ class OrderSeeder extends Seeder
      */
     public function run(): void
     {
-        $products = Product::all();
+        $products = Product::query()
+            ->limit(10)
+            ->get([
+                'title',
+                'description',
+                'type',
+                'price',
+            ]);
         $orders = Order::factory(10)->create();
 
-        foreach ($orders as $order) {
-            $order->products()->attach($products->random(random_int(1, 3)));
+        foreach ($orders as $key => $order) {
+            $product = $products[$key];
+            $order->orderProducts()->create([
+                'title' => $product->title,
+                'description' => $product->description,
+                'type' => $product->type,
+                'price' => $product->price,
+            ]);
         }
     }
 }

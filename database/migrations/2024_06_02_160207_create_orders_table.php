@@ -13,7 +13,7 @@ return new class extends Migration
     {
         if (!Schema::hasTable('orders')) {
             Schema::create('orders', function (Blueprint $table) {
-                $table->id();
+                $table->increments('id');
                 $table->string('status');
                 $table->string('address');
                 $table->float('total');

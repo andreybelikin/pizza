@@ -12,8 +12,6 @@ use Tests\Traits\UserTrait;
 
 class UserDeleteTest extends TestCase
 {
-    use DatabaseTransactions;
-
     private const CONTROLLER_ROUTE = '/api/user/';
 
     protected function setUp(): void

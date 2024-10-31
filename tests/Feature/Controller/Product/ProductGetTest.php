@@ -11,8 +11,6 @@ use Tests\Traits\UserTrait;
 
 class ProductGetTest extends TestCase
 {
-    use DatabaseTransactions;
-
     private const CONTROLLER_ROUTE = '/api/product';
     protected function setUp(): void
     {

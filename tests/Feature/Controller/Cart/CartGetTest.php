@@ -11,11 +11,6 @@ use Tests\Traits\AuthTrait;
 
 class CartGetTest extends TestCase
 {
-    use DatabaseTransactions;
-    use UserTrait;
-    use AuthTrait;
-    use CartTrait;
-
     private const CONTROLLER_ROUTE = '/api/users/{userId}/carts';
 
     protected function setUp(): void

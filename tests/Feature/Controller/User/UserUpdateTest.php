@@ -13,8 +13,6 @@ use Tests\Traits\UserTrait;
 
 class UserUpdateTest extends TestCase
 {
-    use DatabaseTransactions;
-
     private const CONTROLLER_ROUTE = '/api/user/';
 
     protected function setUp(): void

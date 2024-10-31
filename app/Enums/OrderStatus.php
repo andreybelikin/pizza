@@ -1,15 +1,13 @@
 <?php
 
 namespace App\Enums;
-enum OrderStatus
+enum OrderStatus: string
 {
-    case DELIVERED;
-    case CREATED;
-    public static function getOrderStatuses(): array
+    case DELIVERED = 'delivered';
+    case CREATED = 'created';
+
+    public static function getStatuses(): array
     {
-        return [
-            self::CREATED,
-            self::DELIVERED,
-        ];
+        return array_map(fn ($status) => $status->value, self::cases());
     }
 }
