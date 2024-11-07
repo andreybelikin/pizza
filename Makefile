@@ -17,6 +17,8 @@ prepare: prepare_tests
 prepare_tests:
 	$(APP_SERVICE) php artisan --env=testing key:generate
 	$(APP_SERVICE) php artisan --env=testing jwt:secret
+
+prepare_test_database:
 	$(APP_SERVICE) php artisan --env=testing migrate --seed
 
 up:

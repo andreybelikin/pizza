@@ -20,6 +20,7 @@ Route::middleware(EnsureTokenIsValid::class)->group(function () {
     Route::controller(OrderController::class)->group(function () {
         Route::get('/orders/', 'index');
         Route::get('/orders/{orderId}', 'get');
+        Route::get('/users/{userId}/orders', );
         Route::put('/orders/{orderId}', 'update');
         Route::delete('/orders/{orderId}', 'delete');
     });

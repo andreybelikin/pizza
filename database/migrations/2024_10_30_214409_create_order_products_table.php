@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('title');
             $table->text('description');
             $table->string('type');
+            $table->integer('quantity');
             $table->float('price');
             $table->foreignId('order_id');
             $table->timestamps();

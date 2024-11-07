@@ -5,8 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Order extends Model
 {
@@ -19,9 +18,9 @@ class Order extends Model
         'name',
     ];
 
-    public function orderProducts(): HasOne
+    public function orderProducts(): HasMany
     {
-        return $this->hasOne(OrderProducts::class);
+        return $this->hasMany(OrderProducts::class);
     }
 
     public function user(): BelongsTo
