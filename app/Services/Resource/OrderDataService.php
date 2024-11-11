@@ -11,9 +11,7 @@ class OrderDataService
 {
     public function getOrder(int $orderId): Order
     {
-        return Order::query()
-            ->findOrFail($orderId)
-            ->first();
+        return Order::query()->findOrFail($orderId);
     }
 
     public function getUserOrders(): Collection

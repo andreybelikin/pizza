@@ -18,7 +18,7 @@ return new class extends Migration
                 $table->string('address');
                 $table->float('total');
                 $table->string('phone');
-                $table->string('name');
+                $table->string('title');
                 $table->foreignId('user_id');
                 $table->timestamps();
             });
