@@ -6,23 +6,24 @@ use App\Exceptions\Resource\ResourceNotFoundException;
 use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class OrderDataService
 {
     public function getOrder(int $orderId): Order
     {
-        return Order::query()->findOrFail($orderId);
-    }
-
-    public function getUserOrders(): Collection
-    {
-
-    }
-
-    public function isOrderExists(int $orderId): void
-    {
-        if (!Product::query()->where('id', $orderId)->exists()) {
+        try {
+            $order = Order::query()->findOrFail($orderId);
+        } catch (ModelNotFoundException) {
             throw new ResourceNotFoundException();
         }
+
+        return $order;
+    }
+
+    public function getFilteredOrders(array $filters): Collection
+    {
+        $orders = Order::filter($filters)->get();
+
     }
 }

@@ -2,16 +2,14 @@
 
 namespace App\Dto\Response\Controller;
 
-use Illuminate\Http\Response;
-
-class OrderResponseDto
+readonly class OrderResponseDto
 {
     public function __construct(
-        readonly string $title,
-        readonly string $phone,
-        readonly string $address,
-        readonly string $status,
-        readonly array $products,
-        readonly string $total
+        string $title,
+        string $phone,
+        string $address,
+        string $status,
+        array $products,
+        string $total
     ) {}
 }

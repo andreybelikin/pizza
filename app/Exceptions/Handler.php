@@ -8,8 +8,10 @@ use App\Dto\Response\Resourse\CartLimitExceptionResponseDto;
 use App\Exceptions\Limit\CartLimitException;
 use App\Exceptions\Resource\ResourceException;
 use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpFoundation\Response;
 
 class Handler extends ExceptionHandler
 {

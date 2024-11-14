@@ -3,6 +3,7 @@
 namespace App\Services\Resource;
 
 use App\Dto\Response\Controller\OrderResponseDto;
+use App\Http\Requests\OrdersRequest;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
 use App\Models\OrderProduct;
@@ -19,9 +20,9 @@ class OrderResourceService
 
     public function getOrder(int $orderId): OrderResponseDto
     {
-        $this->orderDataService->isOrderExists($orderId);
         $order = $this->orderDataService->getOrder($orderId);
         $orderProducts = $this->prepareOrderProducts($order);
+        $totalPrice = $this->prepareTotalPrice($orderProducts);
 
         return new OrderResponseDto(
             $order->name,
@@ -29,7 +30,7 @@ class OrderResourceService
             $order->address,
             $order->status,
             $orderProducts->toArray(),
-            $order->total,
+            $totalPrice
         );
     }
 
@@ -40,18 +41,30 @@ class OrderResourceService
                 'title' => $orderProduct->title,
                 'quantity' => $orderProduct->quantity,
                 'price' => $orderProduct->price,
-                'totalPrice' => $orderProduct->quantity * $orderProduct->price,
+                'priceSum' => $orderProduct->quantity * $orderProduct->price,
             ];
         });
     }
 
-    private function getTotalPrice(Collection $orderProducts): float
+    private function prepareTotalPrice(Collection $orderProducts): float
     {
-
+        return $orderProducts->pluck('priceSum')->sum();
     }
 
-    public function getOrders()
+    public function getOrders(OrdersRequest $request): Collection
     {
+        $filters = array_filter(
+            $request->only([
+                'userId',
+                'productTitle',
+                'minSum',
+                'maxSum',
+                'status',
+                'createdAt',
+            ])
+        );
+
+        $orders = $this->orderDataService->getFilteredOrders($filters);
 
     }
 

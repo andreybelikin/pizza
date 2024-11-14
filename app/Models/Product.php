@@ -24,8 +24,7 @@ class Product extends Model
     }
     public function orders(): BelongsToMany
     {
-        return $this->belongsToMany(Order::class)
-                        ->withTimestamps();
+        return $this->belongsToMany(Order::class)->withTimestamps();
     }
 
     public function scopeFilter(Builder $query, array $filters): Builder
