@@ -2,10 +2,8 @@
 
 namespace App\Http\Resources;
 
-use App\Models\OrderProduct;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Collection;
 
 class OrderResource extends JsonResource
 {
@@ -16,24 +14,19 @@ class OrderResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $orderProductCollection = OrderProductResource::collection($this->orderProducts);
-
         return [
             'id' => $this->id,
             'name' => $this->title,
             'phone' => $this->phone,
             'address' => $this->address,
             'status' => $this->status,
-            'products' => $orderProductCollection,
-            'total' => $this->getTotal($orderProductCollection),
+            'products' => OrderProductResource::collection($this->whenLoaded('orderProducts')),
+            'total' => $this->getProductsTotalPrice(),
         ];
     }
 
-    public function getTotal(Collection $orderProducts): float
+    private function getProductsTotalPrice(): float
     {
-        $result = $orderProducts->map(fn (OrderProduct $orderProduct) => dd($orderProduct));
-        dd($result);
-
-        return $result->sum();
+        return $this->orderProducts->sum(fn ($product) => $product->price * $product->quantity);
     }
 }

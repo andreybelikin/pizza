@@ -4,26 +4,25 @@ namespace App\Services\Resource;
 
 use App\Exceptions\Resource\ResourceNotFoundException;
 use App\Models\Order;
-use App\Models\Product;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class OrderDataService
 {
     public function getOrder(int $orderId): Order
     {
-        try {
-            $order = Order::query()->findOrFail($orderId);
-        } catch (ModelNotFoundException) {
+        $order = Order::query()->find($orderId);
+
+        if (is_null($order)) {
             throw new ResourceNotFoundException();
         }
 
         return $order;
     }
 
-    public function getFilteredOrders(array $filters): Collection
+    public function getFilteredOrders(array $filters): ?LengthAwarePaginator
     {
-        $orders = Order::filter($filters)->get();
-
+        return Order::filter($filters)
+            ->with()
+            ->paginate('orderProducts');
     }
 }

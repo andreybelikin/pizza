@@ -1,15 +1,14 @@
 <?php
 
-namespace App\Http\Middleware\BeforeRequest;
+namespace App\Http\Middleware;
 
-use App\Dto\Response\Controller\Auth\LogoutResponseDto;
-use App\Exceptions\Auth\TokenAbsenceException;
+use App\Exceptions\Auth\TokenException;
 use App\Services\Middleware\RequestTokenService;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class EnsureTokenIsValidLogout
+class EnsureTokenIsValid
 {
     public function __construct(private readonly RequestTokenService $requestTokenService)
     {}
@@ -17,13 +16,14 @@ class EnsureTokenIsValidLogout
     public function handle(Request $request, Closure $next): Response
     {
         try {
-            if (!$this->requestTokenService->checkTokensPair()) {
-                $responseDto = new LogoutResponseDto();
-                return response()->json($responseDto->toArray(), $responseDto::STATUS);
+            if (str_contains($request->path(), 'api/refresh')) {
+                $this->requestTokenService->checkRefreshToken();
+            } else {
+                $this->requestTokenService->checkAuthorizationToken();
             }
 
             return $next($request);
-        } catch (TokenAbsenceException $exception) {
+        } catch (TokenException $exception) {
             return $exception->getResponse();
         }
     }

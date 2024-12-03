@@ -31,15 +31,23 @@ class Order extends Model
 
     public function scopeFilter(Builder $query, array $filters): Builder
     {
-        $query->when(($filters['userId']) ?? null, fn ($q, $userId) => $q->where('user_id', '=', $userId));
+        $query->when($filters['userId'] ?? null, fn ($q, $userId) => $q->where('user_id', '=', $userId));
+
+        $query->when(
+            $filters['createdAt'] ?? null,
+            function ($q, $createdAt) {
+                $formattedDate = \DateTime::createFromFormat('d.m.Y', $createdAt)->format('Y-m-d');
+                $q->whereDate('created_at', '=', $formattedDate);
+            }
+        );
 
         $query->when(
             !empty($filters['productTitle']),
-            function ($query) use ($filters){
+            function ($query) use ($filters) {
                 $productTitle = $filters['productTitle'];
                 $query->whereHas(
                     'orderProducts',
-                    fn (Builder $query) => $query->where('title', 'like', '%' . $productTitle .'%')
+                    fn (Builder $query) => $query->where('title', 'like', '%' . $productTitle . '%')
                 );
             }
         );
@@ -48,12 +56,12 @@ class Order extends Model
 
         $query->when(
             $filters['minSum'] ?? null,
-            fn ($q, $minSum) => $q->where('minSum', '>=', (float) $minSum)
+            fn ($q, $minSum) => $q->where('total', '>=', (float) $minSum)
         );
 
         $query->when(
             $filters['maxSum'] ?? null,
-            fn ($q, $maxSum) => $q->where('maxSum', '<=', (float) $maxSum)
+            fn ($q, $maxSum) => $q->where('total', '<=', (float) $maxSum)
         );
 
         return $query;

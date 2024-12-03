@@ -1,12 +1,12 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\CartController;
-use App\Http\Middleware\BeforeRequest\EnsureTokenIsValid;
-use App\Http\Middleware\BeforeRequest\EnsureTokenIsValidLogout;
+use App\Http\Middleware\EnsureTokenIsValid;
+use App\Http\Middleware\EnsureTokenIsValidLogout;
 use Illuminate\Support\Facades\Route;
 
 Route::controller(AuthController::class)->group(function () {
@@ -20,9 +20,8 @@ Route::middleware(EnsureTokenIsValid::class)->group(function () {
     Route::controller(OrderController::class)->group(function () {
         Route::get('/orders/', 'index');
         Route::get('/orders/{orderId}', 'get');
-        Route::get('/users/{userId}/orders', 'getUserOrders');
         Route::put('/orders/{orderId}', 'update');
-        Route::delete('/orders/{orderId}', 'delete');
+        Route::post('/users/{userId}/orders', 'add');
     });
 
     Route::controller(CartController::class)->group(function () {

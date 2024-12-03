@@ -2,56 +2,28 @@
 
 namespace App\Services\Resource;
 
-use App\Dto\Response\Controller\OrderResponseDto;
+use App\Exceptions\Resource\ResourceAccessException;
+use App\Http\Requests\OrderAddRequest;
 use App\Http\Requests\OrdersRequest;
 use App\Http\Resources\OrderResource;
+use App\Http\Resources\OrdersCollection;
 use App\Models\Order;
-use App\Models\OrderProduct;
-use App\Models\Product;
-use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Collection;
+use App\Models\User;
+use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class OrderResourceService
 {
+    public function __construct(private OrderDataService $orderDataService)
+    {}
 
-    public function __construct(
-        private OrderDataService $orderDataService
-    ) {}
-
-    public function getOrder(int $orderId): OrderResponseDto
+    public function getOrder(int $orderId): OrderResource
     {
         $order = $this->orderDataService->getOrder($orderId);
-        $orderProducts = $this->prepareOrderProducts($order);
-        $totalPrice = $this->prepareTotalPrice($orderProducts);
 
-        return new OrderResponseDto(
-            $order->name,
-            $order->phone,
-            $order->address,
-            $order->status,
-            $orderProducts->toArray(),
-            $totalPrice
-        );
+        return new OrderResource($order);
     }
 
-    private function prepareOrderProducts(Order $order): Collection
-    {
-        return $order->orderProducts->map(function (OrderProduct $orderProduct) {
-            return [
-                'title' => $orderProduct->title,
-                'quantity' => $orderProduct->quantity,
-                'price' => $orderProduct->price,
-                'priceSum' => $orderProduct->quantity * $orderProduct->price,
-            ];
-        });
-    }
-
-    private function prepareTotalPrice(Collection $orderProducts): float
-    {
-        return $orderProducts->pluck('priceSum')->sum();
-    }
-
-    public function getOrders(OrdersRequest $request): Collection
+    public function getOrders(OrdersRequest $request): ResourceCollection
     {
         $filters = array_filter(
             $request->only([
@@ -63,23 +35,31 @@ class OrderResourceService
                 'createdAt',
             ])
         );
-
         $orders = $this->orderDataService->getFilteredOrders($filters);
 
+        return new OrdersCollection($orders);
     }
 
-    public function addOrder()
+    public function addOrder(OrderAddRequest $request, string $userId): void
+    {
+        $this->checkActionPermission('add', $userId);
+        $requestOrderData = $request->input();
+
+
+    }
+
+    public function updateOrder(string $orderId, OrderUpdateRequest $request): OrderResource
     {
 
     }
 
-    public function updateOrder()
+    private function checkActionPermission(string $resourceAction, string $userId): void
     {
+        $authorizedUser = auth()->user();
+        $orderUser = User::find($userId);
 
-    }
-
-    public function deleteOrder()
-    {
-
+        if ($authorizedUser->cant($resourceAction, $orderUser)) {
+            throw new ResourceAccessException();
+        }
     }
 }

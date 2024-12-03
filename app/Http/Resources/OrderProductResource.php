@@ -17,6 +17,7 @@ class OrderProductResource extends JsonResource
         return [
             'title' => $this->title,
             'quantity' => $this->quantity,
+            'price' => $this->price,
             'totalPrice' => $this->price * $this->quantity,
         ];
     }

@@ -29,9 +29,8 @@ class ProductsCollection extends ResourceCollection
             }),
             'pagination' => [
                 'perPage' => $this->resource->perPage(),
-                'total' => $this->resource->total(),
                 'currentPage' => $this->resource->currentPage(),
-                'totalPages' => $this->resource->lastPage(),
+                'total' => $this->resource->total(),
             ],
         ];
     }
