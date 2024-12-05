@@ -13,8 +13,10 @@ use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class OrderResourceService
 {
-    public function __construct(private OrderDataService $orderDataService)
-    {}
+    public function __construct(
+        private OrderDataService $orderDataService,
+        private CartDataService $cartDataService,
+    ) {}
 
     public function getOrder(int $orderId): OrderResource
     {
@@ -43,9 +45,17 @@ class OrderResourceService
     public function addOrder(OrderAddRequest $request, string $userId): void
     {
         $this->checkActionPermission('add', $userId);
-        $requestOrderData = $request->input();
-
-
+        $requestOrderData = array_filter(
+            $request->only([
+                'name',
+                'phone',
+                'address',
+            ])
+        );
+        $userCartProducts = $this->cartDataService
+            ->setCartUser($userId)
+            ->getCartProducts();
+        $this->orderDataService->addNewOrder($requestOrderData, $userCartProducts);
     }
 
     public function updateOrder(string $orderId, OrderUpdateRequest $request): OrderResource

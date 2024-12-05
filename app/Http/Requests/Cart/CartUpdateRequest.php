@@ -2,11 +2,9 @@
 
 namespace App\Http\Requests\Cart;
 
-use App\Enums\ProductType;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Validation\Rules\Enum;
 use Illuminate\Validation\ValidationException;
 
 class CartUpdateRequest extends FormRequest

@@ -6,6 +6,7 @@ use App\Http\Requests\OrderAddRequest;
 use App\Http\Requests\OrdersRequest;
 use App\Services\Resource\OrderResourceService;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 class OrderController
 {
@@ -19,7 +20,7 @@ class OrderController
 
         return response()
             ->json($orders)
-            ->setStatusCode(JsonResponse::HTTP_OK);
+            ->setStatusCode(Response::HTTP_OK);
     }
 
     public function get(string $orderId): JsonResponse
@@ -28,13 +29,16 @@ class OrderController
 
         return response()
             ->json($order)
+            ->setStatusCode(Response::HTTP_OK)
             ->setEncodingOptions(JSON_UNESCAPED_UNICODE);
     }
 
-    public function add(OrderAddRequest $request, string $userId): JsonResponse
+    public function add(OrderAddRequest $request, string $userId): Response
     {
         $this->orderResourceService->addOrder($request, $userId);
 
+        return response()
+            ->setStatusCode(Response::HTTP_OK);
     }
 
     public function update(): JsonResponse

@@ -43,7 +43,7 @@ class ProductUpdateRequest extends FormRequest
         ]);
     }
 
-    protected function withValidator($validator)
+    protected function withValidator($validator): void
     {
         $fields = ['title', 'description', 'type', 'price'];
 

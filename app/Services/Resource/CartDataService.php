@@ -35,10 +35,14 @@ class CartDataService
 
     public function getCartProducts(): EloquentCollection
     {
-        return $this->cartUser
+        $cartProducts = $this->cartUser
             ->products()
             ->distinct()
             ->get();
+
+        return $cartProducts->map(function (Product $cartProduct) {
+            return $cartProduct->quantity = $this->getCartProductQuantity($cartProduct->id);
+        });
     }
 
     public function getCartProductsById(array $productsIds): EloquentCollection
@@ -68,7 +72,7 @@ class CartDataService
             ->delete();
     }
 
-    public function getProductQuantity(int $productId): int
+    public function getCartProductQuantity(int $productId): int
     {
         return $this->cartUser
             ->products()

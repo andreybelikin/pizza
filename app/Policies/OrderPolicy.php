@@ -8,16 +8,21 @@ class OrderPolicy
 {
     public function update(User $authorizedUser, User $requestedUser): bool
     {
-        return $this->isOwner($authorizedUser, $requestedUser);
+        return $this->isAdmin($requestedUser) || $this->isOwner($authorizedUser, $requestedUser);
     }
 
-    public function delete(User $authorizedUser, User $requestedUser): bool
+    public function add(User $authorizedUser, User $requestedUser): bool
     {
-        return $this->isOwner($authorizedUser, $requestedUser);
+        return $this->isAdmin($requestedUser) || $this->isOwner($authorizedUser, $requestedUser);
     }
 
     private function isOwner(User $authorizedUser, User $requestedUser): bool
     {
-        return $authorizedUser->getKey() === $requestedUser->getKey();
+        return $this->isAdmin($requestedUser) || $this->isOwner($authorizedUser, $requestedUser);
+    }
+
+    private function isAdmin(User $authorizedUser): bool
+    {
+        return $authorizedUser->isAdmin();
     }
 }

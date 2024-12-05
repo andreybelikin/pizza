@@ -2,9 +2,11 @@
 
 namespace App\Services\Resource;
 
+use App\Enums\OrderStatus;
 use App\Exceptions\Resource\ResourceNotFoundException;
 use App\Models\Order;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 class OrderDataService
 {
@@ -24,5 +26,17 @@ class OrderDataService
         return Order::filter($filters)
             ->with()
             ->paginate('orderProducts');
+    }
+
+    public function addNewOrder(array $orderData, Collection $orderProducts): void
+    {
+        $newOrder = new Order($orderData);
+        $newOrder->total = $orderProducts->sum(fn ($orderProduct) => $orderProduct->price * $orderProduct->quantity);
+        $newOrder->status = OrderStatus::CREATED;
+        $newOrder->save();
+
+        $newOrder
+            ->orderProducts()
+            ->createMany($orderProducts);
     }
 }

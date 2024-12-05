@@ -22,15 +22,24 @@ class OrderAddRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'user_id' => 'required|integer',
             'phone' => 'required|string|regex:/^\d{4,15}$/|',
             'name' => 'required|string|max:20',
             'address' => 'required|string|max:100',
         ];
     }
 
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'user_id' => $this->route('userId'),
+        ]);
+    }
+
     public function messages(): array
     {
         return [
+            'user_id.required' => 'A user_id is required',
             'phone.required' => 'A phone is required',
             'phone.regex' => 'A phone should be a valid phone number',
             'name.required' => 'A name is required',

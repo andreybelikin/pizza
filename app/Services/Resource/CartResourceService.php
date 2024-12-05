@@ -59,15 +59,13 @@ class CartResourceService
     {
         $cartProducts = $this->cartDataService->getCartProducts();
 
-        $cartResource['products'] = $cartProducts->map(function (Product $cartProduct) {
-            $cartProductQuantity = $this->cartDataService->getProductQuantity($cartProduct['id']);
-
+        $cartResource['products'] = $cartProducts->map(function ($cartProduct) {
             return [
                 'id' => $cartProduct->id,
-                'quantity' => $cartProductQuantity,
+                'quantity' => $cartProduct->quantity,
                 'title' => $cartProduct->title,
                 'price' => $cartProduct->price,
-                'totalPrice' => $cartProduct->price * $cartProductQuantity,
+                'totalPrice' => $cartProduct->price * $cartProduct->quantity,
             ];
         });
         $cartResource['totalSum'] = $cartResource['products']->sum('totalPrice');
