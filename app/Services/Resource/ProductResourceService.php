@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Resource;
+namespace App\Services\Resource ;
 
 use App\Exceptions\Resource\ResourceAccessException;
 use App\Http\Requests\Product\ProductAddRequest;

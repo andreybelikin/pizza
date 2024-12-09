@@ -7,6 +7,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\EnsureTokenIsValid;
 use App\Http\Middleware\EnsureTokenIsValidLogout;
+use App\Http\Middleware\EnsureUserIsAdmin;
 use Illuminate\Support\Facades\Route;
 
 Route::controller(AuthController::class)->group(function () {
@@ -20,7 +21,7 @@ Route::middleware(EnsureTokenIsValid::class)->group(function () {
     Route::controller(OrderController::class)->group(function () {
         Route::get('/orders/', 'index');
         Route::get('/orders/{orderId}', 'get');
-        Route::put('/orders/{orderId}', 'update');
+        Route::put('/admin/orders/{orderId}', 'update')->middleware(EnsureUserIsAdmin::class);
         Route::post('/users/{userId}/orders', 'add');
     });
 

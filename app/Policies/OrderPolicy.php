@@ -6,9 +6,9 @@ use App\Models\User;
 
 class OrderPolicy
 {
-    public function update(User $authorizedUser, User $requestedUser): bool
+    public function update(User $authorizedUser): bool
     {
-        return $this->isAdmin($requestedUser) || $this->isOwner($authorizedUser, $requestedUser);
+        return $this->isAdmin($authorizedUser);
     }
 
     public function add(User $authorizedUser, User $requestedUser): bool

@@ -39,4 +39,22 @@ class OrderDataService
             ->orderProducts()
             ->createMany($orderProducts);
     }
+
+    public function updateOrder(int $orderId, array $orderData, array $requestOrderProducts): void
+    {
+        $order = $this->getOrder($orderId);
+        $order->update($orderData);
+
+        if (!empty($requestOrderProducts)) {
+            foreach ($requestOrderProducts as $requestOrderProduct) {
+                $orderProduct = $order->orderProducts()->find($requestOrderProduct['id']);
+
+                if ($requestOrderProduct['quantity'] === 0) {
+                    $orderProduct->delete();
+                } else {
+                    $orderProduct->update($requestOrderProduct);
+                }
+            }
+        }
+    }
 }

@@ -5,9 +5,9 @@ namespace App\Services\Resource;
 use App\Exceptions\Resource\ResourceAccessException;
 use App\Http\Requests\OrderAddRequest;
 use App\Http\Requests\OrdersRequest;
+use App\Http\Requests\OrderUpdateRequest;
 use App\Http\Resources\OrderResource;
 use App\Http\Resources\OrdersCollection;
-use App\Models\Order;
 use App\Models\User;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
@@ -16,6 +16,7 @@ class OrderResourceService
     public function __construct(
         private OrderDataService $orderDataService,
         private CartDataService $cartDataService,
+        private UserDataService $userDataService,
     ) {}
 
     public function getOrder(int $orderId): OrderResource
@@ -56,11 +57,21 @@ class OrderResourceService
             ->setCartUser($userId)
             ->getCartProducts();
         $this->orderDataService->addNewOrder($requestOrderData, $userCartProducts);
+        $this->cartDataService->deleteCart();
+        $this->userDataService->updateAddress($userId, $requestOrderData['address']);
     }
 
-    public function updateOrder(string $orderId, OrderUpdateRequest $request): OrderResource
+    public function updateOrder(OrderUpdateRequest $request, string $orderId): void
     {
-
+        $orderData = array_filter(
+            $request->only([
+            'name',
+            'phone',
+            'address',
+            ])
+        );
+        $orderProducts = $request->only('orderProducts');
+        $this->orderDataService->updateOrder($orderId, $orderData, $orderProducts);
     }
 
     private function checkActionPermission(string $resourceAction, string $userId): void

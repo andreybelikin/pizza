@@ -15,7 +15,6 @@ class OrderProduct extends Model
         'description',
         'type',
         'price',
-        'order_id'
     ];
 
     public function order(): BelongsTo

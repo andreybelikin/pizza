@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\OrderAddRequest;
 use App\Http\Requests\OrdersRequest;
+use App\Http\Requests\OrderUpdateRequest;
 use App\Services\Resource\OrderResourceService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -37,17 +38,13 @@ class OrderController
     {
         $this->orderResourceService->addOrder($request, $userId);
 
-        return response()
-            ->setStatusCode(Response::HTTP_OK);
+        return response()->setStatusCode(Response::HTTP_OK);
     }
 
-    public function update(): JsonResponse
+    public function update(OrderUpdateRequest $request, string $orderId): Response
     {
+        $this->orderResourceService->updateOrder($request, $orderId);
 
-    }
-
-    public function delete(): JsonResponse
-    {
-
+        return response()->setStatusCode(Response::HTTP_OK);
     }
 }
