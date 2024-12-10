@@ -6,13 +6,16 @@ use App\Enums\OrderStatus;
 use App\Exceptions\Resource\ResourceNotFoundException;
 use App\Models\Order;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Collection;
 
 class OrderDataService
 {
-    public function getOrder(int $orderId): Order
+    public function getOrder(int $orderId): Collection
     {
-        $order = Order::query()->find($orderId);
+        $order = Order::query()
+            ->find($orderId)
+            ->with('orderProducts')
+            ->get();
 
         if (is_null($order)) {
             throw new ResourceNotFoundException();

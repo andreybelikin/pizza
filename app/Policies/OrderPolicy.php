@@ -2,27 +2,31 @@
 
 namespace App\Policies;
 
+use App\Exceptions\Resource\ResourceAccessException;
+use App\Models\Order;
 use App\Models\User;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class OrderPolicy
 {
-    public function update(User $authorizedUser): bool
+    use HandlesAuthorization;
+
+    public function get(User $authorizedUser, Order $order): bool
     {
-        return $this->isAdmin($authorizedUser);
+        return $this->isOwner($authorizedUser, $order);
     }
 
-    public function add(User $authorizedUser, User $requestedUser): bool
+    public function add(User $authorizedUser, Order $order): bool
     {
-        return $this->isAdmin($requestedUser) || $this->isOwner($authorizedUser, $requestedUser);
+        return $this->isOwner($authorizedUser, $order);
     }
 
-    private function isOwner(User $authorizedUser, User $requestedUser): bool
+    private function isOwner(User $authorizedUser, Order $order): bool
     {
-        return $this->isAdmin($requestedUser) || $this->isOwner($authorizedUser, $requestedUser);
+        return $authorizedUser->id === $order->user_id;
     }
 
-    private function isAdmin(User $authorizedUser): bool
-    {
-        return $authorizedUser->isAdmin();
+    protected function deny() {
+        throw new ResourceAccessException();
     }
 }

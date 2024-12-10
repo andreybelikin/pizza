@@ -9,6 +9,7 @@ use App\Http\Middleware\EnsureTokenIsValid;
 use App\Http\Middleware\EnsureTokenIsValidLogout;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AdminOrderController;
 
 Route::controller(AuthController::class)->group(function () {
     Route::post('/login', 'login');
@@ -18,10 +19,19 @@ Route::controller(AuthController::class)->group(function () {
 });
 
 Route::middleware(EnsureTokenIsValid::class)->group(function () {
+
+    Route::middleware(EnsureUserIsAdmin::class)->group(function () {
+        Route::controller(AdminOrderController::class)->group(function () {
+            Route::get('/admin/orders', 'index');
+            Route::get('/admin/orders/{orderId}', 'get');
+            Route::post('/admin/users/{userId}/orders', 'add');
+            Route::put('/admin/orders/{orderId}', 'update');
+        });
+    });
+
     Route::controller(OrderController::class)->group(function () {
         Route::get('/orders/', 'index');
         Route::get('/orders/{orderId}', 'get');
-        Route::put('/admin/orders/{orderId}', 'update')->middleware(EnsureUserIsAdmin::class);
         Route::post('/users/{userId}/orders', 'add');
     });
 

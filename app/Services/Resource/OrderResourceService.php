@@ -2,13 +2,12 @@
 
 namespace App\Services\Resource;
 
-use App\Exceptions\Resource\ResourceAccessException;
 use App\Http\Requests\OrderAddRequest;
 use App\Http\Requests\OrdersRequest;
 use App\Http\Requests\OrderUpdateRequest;
 use App\Http\Resources\OrderResource;
 use App\Http\Resources\OrdersCollection;
-use App\Models\User;
+use App\Models\Order;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class OrderResourceService
@@ -22,12 +21,19 @@ class OrderResourceService
     public function getOrder(int $orderId): OrderResource
     {
         $order = $this->orderDataService->getOrder($orderId);
+        dd($order);
+        auth()
+            ->user()
+            ->can('get', $order);
 
         return new OrderResource($order);
     }
 
     public function getOrders(OrdersRequest $request): ResourceCollection
     {
+        auth()
+            ->user()
+            ->can('get', Order::class);
         $filters = array_filter(
             $request->only([
                 'userId',
@@ -45,7 +51,9 @@ class OrderResourceService
 
     public function addOrder(OrderAddRequest $request, string $userId): void
     {
-        $this->checkActionPermission('add', $userId);
+        auth()
+            ->user()
+            ->can('add', Order::class);
         $requestOrderData = array_filter(
             $request->only([
                 'name',
@@ -72,15 +80,5 @@ class OrderResourceService
         );
         $orderProducts = $request->only('orderProducts');
         $this->orderDataService->updateOrder($orderId, $orderData, $orderProducts);
-    }
-
-    private function checkActionPermission(string $resourceAction, string $userId): void
-    {
-        $authorizedUser = auth()->user();
-        $orderUser = User::find($userId);
-
-        if ($authorizedUser->cant($resourceAction, $orderUser)) {
-            throw new ResourceAccessException();
-        }
     }
 }
