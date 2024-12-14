@@ -30,7 +30,7 @@ Route::middleware(EnsureTokenIsValid::class)->group(function () {
     });
 
     Route::controller(OrderController::class)->group(function () {
-        Route::get('/orders/', 'index');
+        Route::get('/users/{userId}/orders', 'index');
         Route::get('/orders/{orderId}', 'get');
         Route::post('/users/{userId}/orders', 'add');
     });

@@ -10,12 +10,11 @@ use Illuminate\Database\Eloquent\Collection;
 
 class OrderDataService
 {
-    public function getOrder(int $orderId): Collection
+    public function getOrder(int $orderId): Order
     {
         $order = Order::query()
-            ->find($orderId)
             ->with('orderProducts')
-            ->get();
+            ->find($orderId);
 
         if (is_null($order)) {
             throw new ResourceNotFoundException();
@@ -27,8 +26,16 @@ class OrderDataService
     public function getFilteredOrders(array $filters): ?LengthAwarePaginator
     {
         return Order::filter($filters)
-            ->with()
-            ->paginate('orderProducts');
+            ->with('orderProducts')
+            ->paginate(15);
+    }
+
+    public function getUserOrders(string $userId): ?LengthAwarePaginator
+    {
+        return Order::query()
+            ->with('orderProducts')
+            ->where('user_id', $userId)
+            ->paginate(15);
     }
 
     public function addNewOrder(array $orderData, Collection $orderProducts): void

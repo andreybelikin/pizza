@@ -14,9 +14,9 @@ class OrderController
         private OrderResourceService  $orderResourceService
     ) {}
 
-    public function index(OrdersRequest $request): JsonResponse
+    public function index(string $userId): JsonResponse
     {
-        $orders = $this->orderResourceService->getOrders($request);
+        $orders = $this->orderResourceService->getOrders($userId);
 
         return response()
             ->json($orders)

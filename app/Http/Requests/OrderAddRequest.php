@@ -21,12 +21,23 @@ class OrderAddRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        $rules = [
             'userId' => 'required|integer',
             'phone' => 'required|string|regex:/^\d{4,15}$/|',
             'name' => 'required|string|max:20',
             'address' => 'required|string|max:100',
         ];
+
+        if (auth()->user()->isAdmin()) {
+            $adminRules = [
+                'orderProducts' => 'required|array|min:1',
+                'orderProducts.*.id' => 'required|integer|exists:products,id',
+                'orderProducts.*.quantity' => 'required_with:orderProducts|integer',
+            ];
+            $rules = [...$rules, ...$adminRules];
+        }
+
+        return $rules;
     }
 
     protected function prepareForValidation(): void
