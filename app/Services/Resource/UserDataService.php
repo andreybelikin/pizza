@@ -22,4 +22,9 @@ class UserDataService
     {
         !empty($address) ?: User::query()->find($userId)->address = $address;
     }
+
+    public function getDefaultAddress(string $userId): string
+    {
+        return User::query()->find($userId)->default_address;
+    }
 }

@@ -57,20 +57,7 @@ class CartResourceService
 
     private function getCartResource(): JsonResource
     {
-        $cartProducts = $this->cartDataService->getCartProducts();
-
-        $cartResource['products'] = $cartProducts->map(function ($cartProduct) {
-            return [
-                'id' => $cartProduct->id,
-                'quantity' => $cartProduct->quantity,
-                'title' => $cartProduct->title,
-                'price' => $cartProduct->price,
-                'totalPrice' => $cartProduct->price * $cartProduct->quantity,
-            ];
-        });
-        $cartResource['totalSum'] = $cartResource['products']->sum('totalPrice');
-
-        return new CartResource($cartResource);
+        return new CartResource($this->cartDataService->getCartProducts());
     }
 
     private function updateCartByRequestProducts(array $requestProducts): void

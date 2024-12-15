@@ -2,10 +2,8 @@
 
 namespace App\Services\Resource;
 
-use App\Models\Product;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
-use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\DB;
 
 class CartDataService
@@ -14,7 +12,7 @@ class CartDataService
 
     public function setCartUser(int $userId): self
     {
-        $this->cartUser = User::find($userId);
+        $this->cartUser = User::query()->find($userId);
 
         return $this;
     }
@@ -33,16 +31,27 @@ class CartDataService
             ->exists();
     }
 
-    public function getCartProducts(): EloquentCollection
+    public function getCartProducts(): array
     {
         $cartProducts = $this->cartUser
             ->products()
             ->distinct()
-            ->get();
+            ->get()
+            ->toArray();
 
-        return $cartProducts->map(function (Product $cartProduct) {
-            return $cartProduct->quantity = $this->getCartProductQuantity($cartProduct->id);
+        $totalSum = 0;
+        array_walk($cartProducts, function ($cartProduct) use (&$totalSum) {
+                $productQuantity = $this->getCartProductQuantity($cartProduct['id']);
+
+                $cartProduct['quantity'] = $productQuantity;
+                $cartProduct['totalPrice'] = $cartProduct['price'] * $productQuantity;
+                $totalSum += $cartProduct['totalPrice'];
         });
+
+        return [
+            'products' => $cartProducts,
+            'totalSum' => $totalSum,
+        ];
     }
 
     public function getCartProductsById(array $productsIds): EloquentCollection

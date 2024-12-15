@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\OrderStatus;
 use Illuminate\Foundation\Http\FormRequest;
 
 class OrderAddRequest extends FormRequest
@@ -11,7 +12,7 @@ class OrderAddRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,13 +24,14 @@ class OrderAddRequest extends FormRequest
     {
         $rules = [
             'userId' => 'required|integer',
-            'phone' => 'required|string|regex:/^\d{4,15}$/|',
+            'phone' => 'required|string|regex:/^\d{4,15}$/',
             'name' => 'required|string|max:20',
-            'address' => 'required|string|max:100',
+            'address' => 'string|max:100',
         ];
 
         if (auth()->user()->isAdmin()) {
             $adminRules = [
+                'status' => 'required|enum:' . OrderStatus::class,
                 'orderProducts' => 'required|array|min:1',
                 'orderProducts.*.id' => 'required|integer|exists:products,id',
                 'orderProducts.*.quantity' => 'required_with:orderProducts|integer',

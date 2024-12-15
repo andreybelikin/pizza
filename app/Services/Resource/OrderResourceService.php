@@ -3,12 +3,9 @@
 namespace App\Services\Resource;
 
 use App\Http\Requests\OrderAddRequest;
-use App\Http\Requests\OrdersRequest;
-use App\Http\Requests\OrderUpdateRequest;
 use App\Http\Resources\OrderResource;
 use App\Http\Resources\OrdersCollection;
 use App\Models\Order;
-use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
@@ -30,8 +27,7 @@ class OrderResourceService
 
     public function getOrders(string $userId): ResourceCollection
     {
-        $requestedUser = $this->userDataService->getUser($userId);
-        Gate::authorize('get', $requestedUser);
+        Gate::authorize('index', [Order::class, $userId]);
         $orders = $this->orderDataService->getUserOrders($userId);
 
         return new OrdersCollection($orders);
@@ -39,21 +35,20 @@ class OrderResourceService
 
     public function addOrder(OrderAddRequest $request, string $userId): void
     {
-        $requestedUser = $this->userDataService->getUser($userId);
-        Gate::authorize('add', $requestedUser);
+        Gate::authorize('add', [Order::class, $userId]);
+        $this->cartDataService->setCartUser($userId);
 
-        $requestOrderData = array_filter(
+        $orderData['data'] = array_filter(
             $request->only([
                 'name',
                 'phone',
                 'address',
             ])
         );
-        $userCartProducts = $this->cartDataService
-            ->setCartUser($userId)
-            ->getCartProducts();
-        $this->orderDataService->addNewOrder($requestOrderData, $userCartProducts);
+        $orderData['products'] = $this->cartDataService->getCartProducts();
+
+        $this->orderDataService->addNewOrder($orderData, $userId);
         $this->cartDataService->deleteCart();
-        $this->userDataService->updateAddress($userId, $requestOrderData['address']);
+        $this->userDataService->updateAddress($userId, $orderData['data']['address']);
     }
 }

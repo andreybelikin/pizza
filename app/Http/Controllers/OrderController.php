@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Dto\Response\Resourse\CreatedResourceDto;
 use App\Http\Requests\OrderAddRequest;
-use App\Http\Requests\OrdersRequest;
 use App\Services\Resource\OrderResourceService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,9 +18,7 @@ class OrderController
     {
         $orders = $this->orderResourceService->getOrders($userId);
 
-        return response()
-            ->json($orders)
-            ->setStatusCode(Response::HTTP_OK);
+        return response()->json($orders);
     }
 
     public function get(string $orderId): JsonResponse
@@ -29,15 +27,15 @@ class OrderController
 
         return response()
             ->json($order)
-            ->setStatusCode(Response::HTTP_OK)
             ->setEncodingOptions(JSON_UNESCAPED_UNICODE);
     }
 
     public function add(OrderAddRequest $request, string $userId): Response
     {
         $this->orderResourceService->addOrder($request, $userId);
+        $responseDto = new CreatedResourceDto();
 
-        return response()->setStatusCode(Response::HTTP_OK);
+        return response()->json($responseDto->toArray(), Response::HTTP_CREATED);
     }
 
 }

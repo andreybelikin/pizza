@@ -15,9 +15,14 @@ class OrderPolicy
         return $this->isOwner($authorizedUser, $order);
     }
 
-    public function add(User $authorizedUser, Order $order): bool
+    public function index(User $authorizedUser, string $userId): bool
     {
-        return $this->isOwner($authorizedUser, $order);
+        return $authorizedUser->id === (int)$userId;
+    }
+
+    public function add(User $authorizedUser, string $userId): bool
+    {
+        return $authorizedUser->id === (int)$userId;
     }
 
     private function isOwner(User $authorizedUser, Order $order): bool

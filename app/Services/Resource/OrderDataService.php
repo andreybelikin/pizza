@@ -6,10 +6,14 @@ use App\Enums\OrderStatus;
 use App\Exceptions\Resource\ResourceNotFoundException;
 use App\Models\Order;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Collection;
 
 class OrderDataService
 {
+    public function __construct(
+        private CartDataService $cartDataService,
+        private UserDataService $userDataService
+    ) {}
+
     public function getOrder(int $orderId): Order
     {
         $order = Order::query()
@@ -38,16 +42,24 @@ class OrderDataService
             ->paginate(15);
     }
 
-    public function addNewOrder(array $orderData, Collection $orderProducts): void
+    public function addNewOrder(array $orderData, string $userId): void
     {
-        $newOrder = new Order($orderData);
-        $newOrder->total = $orderProducts->sum(fn ($orderProduct) => $orderProduct->price * $orderProduct->quantity);
-        $newOrder->status = OrderStatus::CREATED;
-        $newOrder->save();
+        $userCartProducts = $this->cartDataService
+            ->setCartUser($userId)
+            ->getCartProducts();
 
+        $newOrder = new Order([
+            'name' => $orderData['name'],
+            'address' => $orderData['address'] ?? $this->userDataService->getDefaultAddress($userId),
+            'phone' => $orderData['phone'],
+            'total' => $userCartProducts['totalSum'],
+            'status' => $orderData['status'] ?? OrderStatus::CREATED,
+            'user_id' => $userId,
+        ]);
+        $newOrder->save();
         $newOrder
             ->orderProducts()
-            ->createMany($orderProducts);
+            ->createMany($userCartProducts['products']);
     }
 
     public function updateOrder(int $orderId, array $orderData, array $requestOrderProducts): void

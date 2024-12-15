@@ -7,7 +7,6 @@ use App\Http\Requests\OrdersRequest;
 use App\Http\Requests\OrderUpdateRequest;
 use App\Http\Resources\OrderResource;
 use App\Http\Resources\OrdersCollection;
-use App\Models\User;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class OrderResourceAdminService
@@ -44,18 +43,19 @@ class OrderResourceAdminService
 
     public function addOrder(OrderAddRequest $request, string $userId): void
     {
-        $requestOrderData = array_filter(
+        $orderData['data'] = array_filter(
             $request->only([
                 'name',
                 'phone',
                 'address',
+                'status',
             ])
         );
+        $orderData['products'] = $request->only('orderProducts');
 
-        $this->orderDataService->addNewOrder($requestOrderData, $userCartProducts);
+        $this->orderDataService->addNewOrder($orderData, $userId);
         $this->cartDataService->deleteCart();
-
-        $this->userDataService->updateAddress($userId, $requestOrderData['address']);
+        $this->userDataService->updateAddress($userId, $orderData['data']['address']);
     }
 
     public function updateOrder(OrderUpdateRequest $request, string $orderId): void

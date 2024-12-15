@@ -17,6 +17,7 @@ class Order extends Model
         'total',
         'phone',
         'name',
+        'user_id',
     ];
 
     public function orderProducts(): HasMany
