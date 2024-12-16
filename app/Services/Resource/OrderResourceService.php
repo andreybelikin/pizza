@@ -2,10 +2,12 @@
 
 namespace App\Services\Resource;
 
+use App\Dto\Request\NewOrderData;
 use App\Http\Requests\OrderAddRequest;
 use App\Http\Resources\OrderResource;
 use App\Http\Resources\OrdersCollection;
 use App\Models\Order;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
@@ -36,19 +38,26 @@ class OrderResourceService
     public function addOrder(OrderAddRequest $request, string $userId): void
     {
         Gate::authorize('add', [Order::class, $userId]);
-        $this->cartDataService->setCartUser($userId);
+        $cartProducts = $this->cartDataService->getCartProducts($userId);
 
-        $orderData['data'] = array_filter(
-            $request->only([
-                'name',
-                'phone',
-                'address',
-            ])
+        $orderData = new NewOrderData(
+            $request->get('name'),
+            $request->get('phone'),
+            $request->get('address'),
+            $request->get('status'),
+            $cartProducts['products'],
+            $cartProducts['totalSum']
         );
-        $orderData['products'] = $this->cartDataService->getCartProducts();
 
-        $this->orderDataService->addNewOrder($orderData, $userId);
-        $this->cartDataService->deleteCart();
-        $this->userDataService->updateAddress($userId, $orderData['data']['address']);
+        try {
+            DB::beginTransaction();
+            $this->orderDataService->addNewOrder($orderData, $userId);
+            $this->cartDataService->deleteCart($userId);
+            $this->userDataService->updateAddress($userId, $orderData->address);
+            DB::commit();
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            throw $exception;
+        }
     }
 }

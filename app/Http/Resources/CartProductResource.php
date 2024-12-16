@@ -18,7 +18,7 @@ class CartProductResource extends JsonResource
             'id' => $this['id'],
             'quantity' => $this['quantity'],
             'title' => $this['title'],
-            'price' => ($this['price']),
+            'price' => $this['price'],
             'totalPrice' => $this['totalPrice'],
         ];
     }

@@ -11,7 +11,6 @@ class CartLimitService
     {
         $this->quantityPerTypeLimitCheck
             ->setProducts($requestProducts)
-            ->check()
-        ;
+            ->check();
     }
 }

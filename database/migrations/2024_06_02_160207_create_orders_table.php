@@ -16,7 +16,7 @@ return new class extends Migration
                 $table->increments('id');
                 $table->string('status');
                 $table->string('address');
-                $table->float('total');
+                $table->integer('total');
                 $table->string('phone');
                 $table->string('title');
                 $table->foreignId('user_id');

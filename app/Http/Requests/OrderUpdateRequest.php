@@ -26,6 +26,7 @@ class OrderUpdateRequest extends FormRequest
             'phone' => 'string|regex:/^\d{4,15}$/|',
             'name' => 'string|max:20',
             'address' => 'string|max:255',
+            'status' => 'string|max:20',
             'orderProducts' => 'nullable|array',
             'orderProducts.*.id' => 'required_with:orderProducts|integer|exists:order_products,id|',
             'orderProducts.*' => [function ($attribute, $value, $fail) {

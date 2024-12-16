@@ -2,6 +2,8 @@
 
 namespace App\Services\Resource;
 
+use App\Dto\Request\NewOrderData;
+use App\Dto\Request\UpdateOrderData;
 use App\Enums\OrderStatus;
 use App\Exceptions\Resource\ResourceNotFoundException;
 use App\Models\Order;
@@ -10,21 +12,14 @@ use Illuminate\Pagination\LengthAwarePaginator;
 class OrderDataService
 {
     public function __construct(
-        private CartDataService $cartDataService,
         private UserDataService $userDataService
     ) {}
 
     public function getOrder(int $orderId): Order
     {
-        $order = Order::query()
+        return Order::query()
             ->with('orderProducts')
-            ->find($orderId);
-
-        if (is_null($order)) {
-            throw new ResourceNotFoundException();
-        }
-
-        return $order;
+            ->findOrFail($orderId);
     }
 
     public function getFilteredOrders(array $filters): ?LengthAwarePaginator
@@ -42,39 +37,35 @@ class OrderDataService
             ->paginate(15);
     }
 
-    public function addNewOrder(array $orderData, string $userId): void
+    public function addNewOrder(NewOrderData $orderData, string $userId): void
     {
-        $userCartProducts = $this->cartDataService
-            ->setCartUser($userId)
-            ->getCartProducts();
-
         $newOrder = new Order([
-            'name' => $orderData['name'],
-            'address' => $orderData['address'] ?? $this->userDataService->getDefaultAddress($userId),
-            'phone' => $orderData['phone'],
-            'total' => $userCartProducts['totalSum'],
-            'status' => $orderData['status'] ?? OrderStatus::CREATED,
+            'name' => $orderData->name,
+            'address' => $orderData->address ?? $this->userDataService->getDefaultAddress($userId),
+            'phone' => $orderData->phone,
+            'total' => $orderData->total,
+            'status' => $orderData->status ?? OrderStatus::CREATED,
             'user_id' => $userId,
         ]);
         $newOrder->save();
         $newOrder
             ->orderProducts()
-            ->createMany($userCartProducts['products']);
+            ->createMany($orderData->orderProducts);
     }
 
-    public function updateOrder(int $orderId, array $orderData, array $requestOrderProducts): void
+    public function updateOrder(int $orderId, UpdateOrderData $orderData): void
     {
         $order = $this->getOrder($orderId);
-        $order->update($orderData);
+        $order->update($orderData->getOderInfo());
 
-        if (!empty($requestOrderProducts)) {
-            foreach ($requestOrderProducts as $requestOrderProduct) {
-                $orderProduct = $order->orderProducts()->find($requestOrderProduct['id']);
+        if (!empty($orderData->orderProducts)) {
+            foreach ($orderData->orderProducts as $orderProduct) {
+                $orderProduct = $order->orderProducts()->find($orderProduct['id']);
 
-                if ($requestOrderProduct['quantity'] === 0) {
+                if ($orderProduct['quantity'] === 0) {
                     $orderProduct->delete();
                 } else {
-                    $orderProduct->update($requestOrderProduct);
+                    $orderProduct->update($orderProduct);
                 }
             }
         }

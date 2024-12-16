@@ -12,6 +12,7 @@ use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class Handler extends ExceptionHandler
 {
@@ -29,11 +30,15 @@ class Handler extends ExceptionHandler
 
         $this->renderable(function (CartLimitException $exception) {
             $responseDto = new CartLimitExceptionResponseDto($exception->violations);
-            return response()->json($responseDto->toArray(), $responseDto::STATUS);
+            return response()->json($responseDto->toArray(), Response::HTTP_BAD_REQUEST);
         });
 
         $this->renderable(function (AccessDeniedHttpException $exception) {
             return response()->json($exception->getMessage(), Response::HTTP_FORBIDDEN);
+        });
+
+        $this->renderable(function (NotFoundHttpException $exception) {
+            return response()->json('Resource not found', Response::HTTP_NOT_FOUND);
         });
 
         $this->renderable(function (Exception $exception) {

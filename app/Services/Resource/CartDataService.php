@@ -4,88 +4,76 @@ namespace App\Services\Resource;
 
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class CartDataService
 {
-    private User $cartUser;
+    private ?BelongsToMany $userCartProducts;
 
-    public function setCartUser(int $userId): self
+    public function deleteCart(string $userId): void
     {
-        $this->cartUser = User::query()->find($userId);
-
-        return $this;
+        $this->getUserCartProducts($userId)->detach();
     }
 
-    public function deleteCart(): void
+    public function getCartProducts(string $userId): array
     {
-        $this->cartUser
-            ->products()
-            ->detach();
-    }
-
-    public function isCartExists(): bool
-    {
-        return $this->cartUser
-            ->products()
-            ->exists();
-    }
-
-    public function getCartProducts(): array
-    {
-        $cartProducts = $this->cartUser
-            ->products()
-            ->distinct()
-            ->get()
-            ->toArray();
-
-        $totalSum = 0;
-        array_walk($cartProducts, function ($cartProduct) use (&$totalSum) {
-                $productQuantity = $this->getCartProductQuantity($cartProduct['id']);
-
-                $cartProduct['quantity'] = $productQuantity;
-                $cartProduct['totalPrice'] = $cartProduct['price'] * $productQuantity;
-                $totalSum += $cartProduct['totalPrice'];
-        });
+        $cartProducts = $this->getUserCartProducts($userId)
+            ->select(
+                'products.id',
+                'products.title',
+                'products.description',
+                'products.type',
+                'products.price',
+                'user_id',
+                \DB::raw('COUNT(products.id) as quantity'),
+                \DB::raw('(products.price * COUNT(products.id)) as totalPrice')
+            )
+            ->groupBy(
+                'products.id',
+                'products.title',
+                'products.description',
+                'products.type',
+                'products.price',
+                'user_id',
+            )
+            ->get();
 
         return [
-            'products' => $cartProducts,
-            'totalSum' => $totalSum,
+            'totalSum' => $cartProducts->sum('totalPrice'),
+            'products' => $cartProducts->toArray(),
         ];
     }
 
-    public function getCartProductsById(array $productsIds): EloquentCollection
+    public function getCartProductsById(array $productsIds, string $userId): EloquentCollection
     {
-        return $this->cartUser
-            ->products()
+        return $this->getUserCartProducts($userId)
             ->whereIn('products.id', $productsIds)
             ->get();
     }
 
-    public function addCartProducts(int $productId, int $quantity): void
+    public function addCartProducts(int $productId, string $userId, int $quantity): void
     {
         $preparedProducts = array_fill(0, $quantity, $productId);
-        $this->cartUser
-            ->products()
+        $this->getUserCartProducts($userId)
             ->attach($preparedProducts);
     }
 
-    public function deleteCartProduct(int $productId, int $limit = 0): void
+    public function deleteCartProduct(int $productId, string $userId, int $limit = 0): void
     {
-        DB::table('cart_product')
+        $this->getUserCartProducts($userId)
             ->where('product_id', $productId)
-            ->where('user_id', $this->cartUser->id)
             ->when($limit > 0, function ($query) use ($limit) {
                 return $query->limit($limit);
             })
             ->delete();
     }
 
-    public function getCartProductQuantity(int $productId): int
+    private function getUserCartProducts(string $userId): BelongsToMany
     {
-        return $this->cartUser
-            ->products()
-            ->where('products.id', $productId)
-            ->count();
+        $this->userCartProducts = $this->userCartProducts ?? User::query()
+            ->findOrFail($userId)
+            ->products();
+
+        return $this->userCartProducts;
     }
 }

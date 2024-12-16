@@ -9,13 +9,13 @@ use Illuminate\Http\JsonResponse;
 
 class CartController
 {
-    public function __construct(private CartResourceService $cartResourceService) {}
+    public function __construct(
+        private CartResourceService $cartResourceService
+    ) {}
 
     public function get(string $userId): JsonResponse
     {
-        $cart = $this->cartResourceService
-            ->setCartUser($userId)
-            ->getCart();
+        $cart = $this->cartResourceService->getCart($userId);
 
         return response()
             ->json($cart)
@@ -24,9 +24,7 @@ class CartController
 
     public function update(CartUpdateRequest $request, string $userId): JsonResponse
     {
-        $cart = $this->cartResourceService
-            ->setCartUser($userId)
-            ->updateCart($request);
+        $cart = $this->cartResourceService->updateCart($request, $userId);
 
         return response()
             ->json($cart)
@@ -35,9 +33,7 @@ class CartController
 
     public function delete(string $userId): JsonResponse
     {
-        $this->cartResourceService
-            ->setCartUser($userId)
-            ->deleteCart();
+        $this->cartResourceService->deleteCart($userId);
         $responseDto = new DeletedResourceDto();
 
         return response()->json($responseDto->toArray(), $responseDto::STATUS);

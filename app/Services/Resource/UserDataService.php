@@ -20,7 +20,7 @@ class UserDataService
 
     public function updateAddress(string $userId, string $address): void
     {
-        !empty($address) ?: User::query()->find($userId)->address = $address;
+        !empty($address) ?: User::query()->findOrFail($userId)->address = $address;
     }
 
     public function getDefaultAddress(string $userId): string

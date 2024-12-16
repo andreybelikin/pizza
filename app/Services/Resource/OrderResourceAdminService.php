@@ -2,12 +2,15 @@
 
 namespace App\Services\Resource;
 
+use App\Dto\Request\NewOrderData;
+use App\Dto\Request\UpdateOrderData;
 use App\Http\Requests\OrderAddRequest;
 use App\Http\Requests\OrdersRequest;
 use App\Http\Requests\OrderUpdateRequest;
 use App\Http\Resources\OrderResource;
 use App\Http\Resources\OrdersCollection;
 use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Support\Facades\DB;
 
 class OrderResourceAdminService
 {
@@ -43,31 +46,38 @@ class OrderResourceAdminService
 
     public function addOrder(OrderAddRequest $request, string $userId): void
     {
-        $orderData['data'] = array_filter(
-            $request->only([
-                'name',
-                'phone',
-                'address',
-                'status',
-            ])
+        $orderData = new NewOrderData(
+            $request->get('name'),
+            $request->get('phone'),
+            $request->get('address'),
+            $request->get('status'),
+            $request->get('orderProducts'),
+            array_sum(array_column($request->get('orderProducts'), 'totalPrice'))
         );
-        $orderData['products'] = $request->only('orderProducts');
 
-        $this->orderDataService->addNewOrder($orderData, $userId);
-        $this->cartDataService->deleteCart();
-        $this->userDataService->updateAddress($userId, $orderData['data']['address']);
+        try {
+            DB::beginTransaction();
+            $this->orderDataService->addNewOrder($orderData, $userId);
+            $this->cartDataService->deleteCart($userId);
+            $this->userDataService->updateAddress($userId, $orderData->address);
+            DB::commit();
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            throw $exception;
+        }
     }
 
     public function updateOrder(OrderUpdateRequest $request, string $orderId): void
     {
-        $orderData = array_filter(
-            $request->only([
-                'name',
-                'phone',
-                'address',
-            ])
-        );
-        $orderProducts = $request->only('orderProducts');
-        $this->orderDataService->updateOrder($orderId, $orderData, $orderProducts);
+        $orderData = UpdateOrderData::fromRequest($request);
+
+        try {
+            DB::beginTransaction();
+            $this->orderDataService->updateOrder($orderId, $orderData);
+            DB::commit();
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            throw $exception;
+        }
     }
 }
