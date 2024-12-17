@@ -18,12 +18,12 @@ class UserDataService
         return $user;
     }
 
-    public function updateAddress(string $userId, string $address): void
+    public function updateAddress(int $userId, string $address): void
     {
         !empty($address) ?: User::query()->findOrFail($userId)->address = $address;
     }
 
-    public function getDefaultAddress(string $userId): string
+    public function getDefaultAddress(int $userId): string
     {
         return User::query()->find($userId)->default_address;
     }

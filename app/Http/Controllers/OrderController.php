@@ -30,12 +30,12 @@ class OrderController
             ->setEncodingOptions(JSON_UNESCAPED_UNICODE);
     }
 
-    public function add(OrderAddRequest $request, string $userId): Response
+    public function add(OrderAddRequest $request, string $userId): JsonResponse
     {
-        $this->orderResourceService->addOrder($request, $userId);
-        $responseDto = new CreatedResourceDto();
+        $order = $this->orderResourceService->addOrder($request, $userId);
 
-        return response()->json($responseDto->toArray(), Response::HTTP_CREATED);
+        return response()
+            ->json($order)
+            ->setEncodingOptions(JSON_UNESCAPED_UNICODE);
     }
-
 }

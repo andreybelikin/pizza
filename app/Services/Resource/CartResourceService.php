@@ -44,7 +44,7 @@ class CartResourceService
 
     private function getCartResource(string $userId): JsonResource
     {
-        return new CartResource($this->cartDataService->getCartProducts($userId));
+        return new CartResource($this->cartDataService->getCart($userId));
     }
 
     private function updateCartByRequestProducts(array $requestProducts, string $userId): void

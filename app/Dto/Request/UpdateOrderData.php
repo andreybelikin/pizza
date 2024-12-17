@@ -2,7 +2,9 @@
 
 namespace App\Dto\Request;
 
+use App\Dto\OrderProductData;
 use App\Http\Requests\OrderUpdateRequest;
+use Illuminate\Support\Collection;
 
 readonly class UpdateOrderData
 {
@@ -11,21 +13,25 @@ readonly class UpdateOrderData
         public ?string $phone,
         public ?string $address,
         public ?string $status,
-        public ?array $orderProducts,
-        public ?int $total
+        public ?string $type,
+        public ?int $total,
+        /** @var null|Collection<OrderProductData> $orderProducts */
+        public ?Collection $orderProducts
     ) {}
 
-    public static function fromRequest(OrderUpdateRequest $request): self
-    {
+    public static function create(
+        OrderUpdateRequest $request,
+        ?Collection $orderProducts,
+        ?int $total
+    ): self {
         return new self(
-            $request->get('name'),
-            $request->get('phone'),
-            $request->get('address'),
-            $request->get('status'),
-            $request->get('orderProducts'),
-            $request->get('orderProducts')
-                ? array_sum(array_column($request->get('orderProducts'), 'totalPrice'))
-                : null
+            name: $request->get('name'),
+            phone: $request->get('phone'),
+            address: $request->get('address'),
+            status: $request->get('status'),
+            type: $request->get('orderProducts'),
+            total: $total,
+            orderProducts: $orderProducts,
         );
     }
 
@@ -36,8 +42,10 @@ readonly class UpdateOrderData
             'phone' => $this->phone,
             'address' => $this->address,
             'status' => $this->status,
+            'type' => $this->type,
             'total' => $this->total,
         ];
+
         return array_filter($orderInfo, fn($value) => !is_null($value));
     }
 }

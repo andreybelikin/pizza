@@ -30,7 +30,7 @@ class Handler extends ExceptionHandler
 
         $this->renderable(function (CartLimitException $exception) {
             $responseDto = new CartLimitExceptionResponseDto($exception->violations);
-            return response()->json($responseDto->toArray(), Response::HTTP_BAD_REQUEST);
+            return response()->json($responseDto->toArray(), Response::HTTP_UNPROCESSABLE_ENTITY);
         });
 
         $this->renderable(function (AccessDeniedHttpException $exception) {

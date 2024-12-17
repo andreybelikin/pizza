@@ -2,6 +2,10 @@
 
 namespace App\Dto\Request;
 
+use App\Dto\OrderProductData;
+use App\Http\Requests\OrderAddRequest;
+use Illuminate\Support\Collection;
+
 readonly class NewOrderData
 {
     public function __construct(
@@ -9,7 +13,25 @@ readonly class NewOrderData
         public string $phone,
         public ?string $address,
         public ?string $status,
-        public ?array $orderProducts,
-        public ?int $total
+        public int $total,
+        public int $userId,
+        /** @var Collection<OrderProductData> $orderProducts */
+        public Collection $orderProducts,
     ) {}
+
+    public static function create(
+        OrderAddRequest $request,
+        Collection $orderProducts,
+        int $total
+    ): self {
+        return new self(
+            name: $request->get('name'),
+            phone: $request->get('phone'),
+            address: $request->get('address') ?? null,
+            status: $request->get('status') ?? null,
+            total: $total,
+            userId: (int)$request->route('userId'),
+            orderProducts: $orderProducts,
+        );
+    }
 }

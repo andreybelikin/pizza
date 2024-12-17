@@ -2,9 +2,12 @@
 
 namespace App\Services\Resource;
 
+use App\Dto\CartData;
+use App\Dto\CartProductsData;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Collection;
 
 class CartDataService
 {
@@ -15,9 +18,9 @@ class CartDataService
         $this->getUserCartProducts($userId)->detach();
     }
 
-    public function getCartProducts(string $userId): array
+    public function getCart(string $userId): CartData
     {
-        $cartProducts = $this->getUserCartProducts($userId)
+        $cartProductsEntries = $this->getUserCartProducts($userId)
             ->select(
                 'products.id',
                 'products.title',
@@ -36,12 +39,14 @@ class CartDataService
                 'products.price',
                 'user_id',
             )
-            ->get();
+            ->get()
+            ->toBase();
+        $cartProductsData = CartProductsData::createFromDB($cartProductsEntries);
 
-        return [
-            'totalSum' => $cartProducts->sum('totalPrice'),
-            'products' => $cartProducts->toArray(),
-        ];
+        return new CartData(
+            $cartProductsData,
+            $cartProductsEntries->sum('totalPrice')
+        );
     }
 
     public function getCartProductsById(array $productsIds, string $userId): EloquentCollection

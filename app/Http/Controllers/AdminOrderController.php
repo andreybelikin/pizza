@@ -33,18 +33,21 @@ class AdminOrderController
             ->setEncodingOptions(JSON_UNESCAPED_UNICODE);
     }
 
-    public function add(OrderAddRequest $request, string $userId): Response
+    public function add(OrderAddRequest $request, string $userId): JsonResponse
     {
-        $this->orderResourceAdminService->addOrder($request, $userId);
-        $responseDto = new CreatedResourceDto();
+        $order = $this->orderResourceAdminService->addOrder($request, $userId);
 
-        return response()->json($responseDto->toArray(), Response::HTTP_CREATED);
+        return response()
+            ->json($order, Response::HTTP_CREATED)
+            ->setEncodingOptions(JSON_UNESCAPED_UNICODE);
     }
 
-    public function update(OrderUpdateRequest $request, string $orderId): Response
+    public function update(OrderUpdateRequest $request): JsonResponse
     {
-        $this->orderResourceAdminService->updateOrder($request, $orderId);
+        $order = $this->orderResourceAdminService->updateOrder($request);
 
-        return response();
+        return response()
+            ->json($order)
+            ->setEncodingOptions(JSON_UNESCAPED_UNICODE);
     }
 }

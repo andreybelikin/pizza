@@ -33,8 +33,8 @@ class OrderAddRequest extends FormRequest
             $adminRules = [
                 'status' => 'required|enum:' . OrderStatus::class,
                 'orderProducts' => 'required|array|min:1',
-                'orderProducts.*.id' => 'required|integer|exists:products,id',
-                'orderProducts.*.quantity' => 'required_with:orderProducts|integer',
+                'orderProducts.*.id' => 'required_with:orderProducts|integer|exists:products,id',
+                'orderProducts.*.quantity' => 'required_with:orderProducts|integer|min:1',
             ];
             $rules = [...$rules, ...$adminRules];
         }
