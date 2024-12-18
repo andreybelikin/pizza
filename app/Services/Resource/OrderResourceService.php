@@ -21,9 +21,9 @@ class OrderResourceService
         private UserDataService $userDataService,
     ) {}
 
-    public function getOrder(int $orderId): OrderResource
+    public function getOrder(string $orderId): OrderResource
     {
-        $order = $this->orderDataService->getOrder($orderId);
+        $order = $this->orderDataService->getOrder((int)$orderId);
         Gate::authorize('get', $order);
 
         return new OrderResource($order);
@@ -51,7 +51,7 @@ class OrderResourceService
         try {
             DB::beginTransaction();
             $newOrder = $this->orderDataService->addNewOrder($orderData);
-            $this->orderDataService->attachCartProductsToOrder($newOrder, $orderData->orderProducts);
+            $this->orderDataService->handleCartProducts($newOrder, $orderData->orderProducts);
             $this->cartDataService->deleteCart($orderData->userId);
             $this->userDataService->updateAddress($orderData->userId, $orderData->address);
             DB::commit();

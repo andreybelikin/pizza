@@ -19,7 +19,6 @@ Route::controller(AuthController::class)->group(function () {
 });
 
 Route::middleware(EnsureTokenIsValid::class)->group(function () {
-
     Route::middleware(EnsureUserIsAdmin::class)->group(function () {
         Route::controller(AdminOrderController::class)->group(function () {
             Route::get('/admin/orders', 'index');
@@ -48,9 +47,9 @@ Route::middleware(EnsureTokenIsValid::class)->group(function () {
     });
 
     Route::controller(ProductController::class)->group(function () {
-        Route::get('/products/','index');
-        Route::get('/products/{id}','get');
-        Route::post('/products/',  'add');
+        Route::get('/products/', 'index');
+        Route::get('/products/{id}', 'get');
+        Route::post('/products/', 'add');
         Route::patch('/products/{id}', 'update');
         Route::delete('/products/{id}','delete');
     });

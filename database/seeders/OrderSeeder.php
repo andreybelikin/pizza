@@ -30,13 +30,16 @@ class OrderSeeder extends Seeder
                 ]);
 
             foreach ($products as $product) {
+                $quantity = rand(1, 5);
                 $order->orderProducts()->create([
                     'title' => $product->title,
                     'description' => $product->description,
-                    'quantity' => rand(1, 5),
+                    'quantity' => $quantity,
                     'type' => $product->type,
                     'price' => $product->price,
                 ]);
+                $order->total += $quantity * $product->price;
+                $order->save();
             }
         }
     }

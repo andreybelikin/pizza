@@ -2,7 +2,7 @@
 
 namespace App\Services\Limit;
 
-use App\Enums\Limit\Cart\CartProductLimit;
+use App\Enums\Limit\CartProductLimit;
 use App\Exceptions\Limit\QuantityPerTypeLimitException;
 use App\Models\Product;
 use Illuminate\Database\Eloquent\Collection;

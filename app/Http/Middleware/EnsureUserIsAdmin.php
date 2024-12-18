@@ -2,10 +2,10 @@
 
 namespace App\Http\Middleware;
 
-use App\Exceptions\Resource\ResourceAccessException;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 class EnsureUserIsAdmin
 {
@@ -16,11 +16,10 @@ class EnsureUserIsAdmin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!$request->user()->isAdmin()) {
-            throw new ResourceAccessException();
+        if (!auth()->user()->isAdmin()) {
+            throw new AccessDeniedHttpException();
         }
 
-        $request->user()->isAdmin();
         return $next($request);
     }
 }

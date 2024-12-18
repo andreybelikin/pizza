@@ -18,7 +18,7 @@ return new class extends Migration
                 $table->string('address');
                 $table->integer('total');
                 $table->string('phone');
-                $table->string('title');
+                $table->string('name');
                 $table->foreignId('user_id');
                 $table->timestamps();
             });

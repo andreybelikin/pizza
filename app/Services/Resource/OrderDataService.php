@@ -7,7 +7,6 @@ use App\Dto\Request\NewOrderData;
 use App\Dto\Request\UpdateOrderData;
 use App\Enums\OrderStatus;
 use App\Models\Order;
-use App\Models\Product;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
@@ -47,7 +46,7 @@ class OrderDataService
             'address' => $orderData->address ?? $this->userDataService->getDefaultAddress($orderData->userId),
             'phone' => $orderData->phone,
             'total' => $orderData->total,
-            'status' => $orderData->status ?? OrderStatus::CREATED,
+            'status' => OrderStatus::CREATED,
             'user_id' => $orderData->userId,
         ]);
         $newOrder->save();
@@ -67,32 +66,50 @@ class OrderDataService
                 if ($orderProductModel->quantity === 0) {
                     $orderProductModel->delete();
                 } else {
-                    $orderProductModel->update($product);
+                    $orderProductModel->update($product->toArray());
                 }
             }
+            $this->updateOrderTotal($order);
         }
 
         return $order;
     }
 
-    public function attachProductsToOrder(Order $newOrder, Collection $requestOrderProductsData): void
+    public function updateOrderTotal(Order $order, ?int $totalSum = null): void
+    {
+        if (is_null($totalSum)) {
+            $totalSum = $order->orderProducts()
+                ->get()
+                ->sum(fn ($orderProduct) => $orderProduct->price * $orderProduct->quantity);
+        }
+
+        $order->total = $totalSum;
+        $order->save();
+    }
+
+    public function handleRequestProducts(Order $newOrder, Collection $requestOrderProductsData): void
     {
         $ids = $requestOrderProductsData->pluck('id')->toArray();
         $productsModels = $this->productDataService->getProductsById($ids);
-        $productsToAttach = $productsModels->map(
-            function (Product $productModel) use ($requestOrderProductsData) {
-                $quantity = $requestOrderProductsData->where('id', $productModel->id)->get('quantity');
-                $productModel->quantity = $quantity;
-            }
-        );
 
-        $newOrder->orderProducts()->createMany($productsToAttach->toArray());
+        $totalSum = 0;
+        foreach ($productsModels as $productModel) {
+            $productArray = $productModel->toArray();
+            $productArray['quantity'] = $requestOrderProductsData
+                ->where('id', $productModel->id)
+                ->first()->quantity;
+            $newOrder->orderProducts()->create($productArray);
+            $totalSum += $productArray['quantity'] * $productModel->price;
+        }
+
+        $this->updateOrderTotal($newOrder, $totalSum);
     }
 
-    public function attachCartProductsToOrder(Order $newOrder, Collection $cartProductsToAttach): void
+    public function handleCartProducts(Order $newOrder, Collection $cartProductsToAttach): void
     {
-        $cartProductsToAttach->map(fn(OrderProductData $product) => $product->getProductArray())->toArray();
-        dd($cartProductsToAttach);
-        $newOrder->orderProducts()->createMany($cartProductsToAttach);
+        $preparedProducts = $cartProductsToAttach->map(
+            fn(OrderProductData $product) => $product->getProductArray()
+        )->toArray();
+        $newOrder->orderProducts()->createMany($preparedProducts);
     }
 }

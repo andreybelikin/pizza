@@ -13,7 +13,7 @@ class OrdersRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     public function rules(): array
@@ -21,10 +21,10 @@ class OrdersRequest extends FormRequest
         return [
             'userId' => 'nullable|integer',
             'productTitle' => 'nullable|string',
-            'minSum' => 'nullable|float',
-            'maxSum' => 'nullable|float',
+            'minTotal' => 'nullable|integer',
+            'maxTotal' => 'nullable|integer',
             'status' => ['nullable', new Enum(OrderStatus::class)],
-            'createdAt' => 'nullable|date_format:Y-m-d H:i:s',
+            'createdAt' => 'nullable|date_format:d.m.Y',
         ];
     }
 

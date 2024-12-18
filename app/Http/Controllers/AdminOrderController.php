@@ -33,9 +33,9 @@ class AdminOrderController
             ->setEncodingOptions(JSON_UNESCAPED_UNICODE);
     }
 
-    public function add(OrderAddRequest $request, string $userId): JsonResponse
+    public function add(OrderAddRequest $request): JsonResponse
     {
-        $order = $this->orderResourceAdminService->addOrder($request, $userId);
+        $order = $this->orderResourceAdminService->addOrder($request);
 
         return response()
             ->json($order, Response::HTTP_CREATED)

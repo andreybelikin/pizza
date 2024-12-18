@@ -55,15 +55,9 @@ class Order extends Model
 
         $query->when($filters['status'] ?? null, fn ($q, $status) => $q->where('status', '=', $status));
 
-        $query->when(
-            $filters['minSum'] ?? null,
-            fn ($q, $minSum) => $q->where('total', '>=', (float) $minSum)
-        );
+        $query->when($filters['minTotal'] ?? null, fn ($q, $minSum) => $q->where('total', '>=', $minSum));
 
-        $query->when(
-            $filters['maxSum'] ?? null,
-            fn ($q, $maxSum) => $q->where('total', '<=', (float) $maxSum)
-        );
+        $query->when($filters['maxTotal'] ?? null, fn ($q, $maxSum) => $q->where('total', '<=', $maxSum));
 
         return $query;
     }

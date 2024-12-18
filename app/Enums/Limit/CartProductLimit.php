@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Enums\Limit\Cart;
+namespace App\Enums\Limit;
 
 enum CartProductLimit: int
 {

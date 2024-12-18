@@ -36,8 +36,8 @@ class OrderResourceAdminService
             $request->only([
                 'userId',
                 'productTitle',
-                'minSum',
-                'maxSum',
+                'minTotal',
+                'maxTotal',
                 'status',
                 'createdAt',
             ])
@@ -59,7 +59,7 @@ class OrderResourceAdminService
         try {
             DB::beginTransaction();
             $newOrder = $this->orderDataService->addNewOrder($orderData);
-            $this->orderDataService->attachProductsToOrder($newOrder, $orderData->orderProducts);
+            $this->orderDataService->handleRequestProducts($newOrder, $orderData->orderProducts);
             $this->cartDataService->deleteCart($orderData->userId);
             $this->userDataService->updateAddress($orderData->userId, $orderData->address);
             DB::commit();
@@ -77,7 +77,6 @@ class OrderResourceAdminService
         $orderData = UpdateOrderData::create(
             request: $request,
             orderProducts: $requestProducts,
-            total: $this->getOrderTotal($requestProducts)
         );
 
         try {

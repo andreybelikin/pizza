@@ -2,18 +2,10 @@
 
 namespace Tests\Feature\Controller\Cart;
 
-use App\Enums\Limit\Cart\CartProductLimit;
-use App\Exceptions\Limit\QuantityPerTypeLimitException;
 use App\Exceptions\Resource\ResourceAccessException;
-use App\Models\Product;
-use App\Models\User;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Exceptions;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
-use Tests\Traits\CartTrait;
-use Tests\Traits\UserTrait;
-use Tests\Traits\AuthTrait;
 
 class CartDeleteTest extends TestCase
 {

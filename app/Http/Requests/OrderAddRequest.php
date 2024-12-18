@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\OrderStatus;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
 
 class OrderAddRequest extends FormRequest
 {
@@ -31,7 +32,7 @@ class OrderAddRequest extends FormRequest
 
         if (auth()->user()->isAdmin()) {
             $adminRules = [
-                'status' => 'required|enum:' . OrderStatus::class,
+                'status' => ['required', new Enum(OrderStatus::class)],
                 'orderProducts' => 'required|array|min:1',
                 'orderProducts.*.id' => 'required_with:orderProducts|integer|exists:products,id',
                 'orderProducts.*.quantity' => 'required_with:orderProducts|integer|min:1',

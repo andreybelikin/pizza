@@ -34,10 +34,11 @@ class Handler extends ExceptionHandler
         });
 
         $this->renderable(function (AccessDeniedHttpException $exception) {
-            return response()->json($exception->getMessage(), Response::HTTP_FORBIDDEN);
+            return response()->json($exception->getMessage() ?: 'Access denied', Response::HTTP_FORBIDDEN);
         });
 
         $this->renderable(function (NotFoundHttpException $exception) {
+            dd($exception);
             return response()->json('Resource not found', Response::HTTP_NOT_FOUND);
         });
 

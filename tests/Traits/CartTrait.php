@@ -2,7 +2,7 @@
 
 namespace Tests\Traits;
 
-use App\Enums\Limit\Cart\CartProductLimit;
+use App\Enums\Limit\CartProductLimit;
 use App\Models\Product;
 use App\Models\User;
 

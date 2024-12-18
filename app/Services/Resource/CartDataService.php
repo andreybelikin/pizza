@@ -7,7 +7,7 @@ use App\Dto\CartProductsData;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Support\Collection;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class CartDataService
 {
@@ -41,11 +41,16 @@ class CartDataService
             )
             ->get()
             ->toBase();
+
+        if ($cartProductsEntries->isEmpty()) {
+            throw new NotFoundHttpException();
+        }
+
         $cartProductsData = CartProductsData::createFromDB($cartProductsEntries);
 
         return new CartData(
-            $cartProductsData,
-            $cartProductsEntries->sum('totalPrice')
+            cartProducts: $cartProductsData,
+            totalSum: $cartProductsEntries->sum('totalPrice')
         );
     }
 

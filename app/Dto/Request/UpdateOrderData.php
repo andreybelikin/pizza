@@ -9,12 +9,12 @@ use Illuminate\Support\Collection;
 readonly class UpdateOrderData
 {
     public function __construct(
+        public int $id,
         public ?string $name,
         public ?string $phone,
         public ?string $address,
         public ?string $status,
         public ?string $type,
-        public ?int $total,
         /** @var null|Collection<OrderProductData> $orderProducts */
         public ?Collection $orderProducts
     ) {}
@@ -22,15 +22,14 @@ readonly class UpdateOrderData
     public static function create(
         OrderUpdateRequest $request,
         ?Collection $orderProducts,
-        ?int $total
     ): self {
         return new self(
-            name: $request->get('name'),
-            phone: $request->get('phone'),
-            address: $request->get('address'),
-            status: $request->get('status'),
-            type: $request->get('orderProducts'),
-            total: $total,
+            id: $request->route('orderId'),
+            name: $request->get('name') ?? null,
+            phone: $request->get('phone') ?? null,
+            address: $request->get('address') ?? null,
+            status: $request->get('status') ?? null,
+            type: $request->get('type') ?? null,
             orderProducts: $orderProducts,
         );
     }
@@ -43,7 +42,6 @@ readonly class UpdateOrderData
             'address' => $this->address,
             'status' => $this->status,
             'type' => $this->type,
-            'total' => $this->total,
         ];
 
         return array_filter($orderInfo, fn($value) => !is_null($value));

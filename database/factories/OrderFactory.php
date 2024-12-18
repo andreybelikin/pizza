@@ -24,7 +24,7 @@ class OrderFactory extends Factory
             'status' => $this->faker->randomElement(OrderStatus::getStatuses()),
             'user_id' => $users->random()->id,
             'address' => $this->faker->address(),
-            'total' => $this->faker->numberBetween(1000, 999999),
+            'total' => 0,
             'phone' => $this->faker->phoneNumber(),
             'name' => $this->faker->name(),
         ];
