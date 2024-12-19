@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\ProductType;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
 
 class OrderUpdateRequest extends FormRequest
 {
@@ -40,7 +41,7 @@ class OrderUpdateRequest extends FormRequest
             }],
             'orderProducts.*.quantity' => 'integer',
             'orderProducts.*.title' => 'string|max:50',
-            'orderProducts.*.type' => 'enum:' . ProductType::class,
+            'orderProducts.*.type' => new Enum(ProductType::class),
             'orderProducts.*.description' => 'string|max:255',
             'orderProducts.*.price' => 'integer',
         ];

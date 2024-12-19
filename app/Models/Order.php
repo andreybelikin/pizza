@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Dto\Request\ListOrderFilterData;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -30,22 +31,20 @@ class Order extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function scopeFilter(Builder $query, array $filters): Builder
+    public function scopeFilter(Builder $query, ListOrderFilterData $filters): Builder
     {
-        $query->when($filters['userId'] ?? null, fn ($q, $userId) => $q->where('user_id', '=', $userId));
+        $query->when($filters->userId, fn ($q, $userId) => $q->where('user_id', '=', $userId));
 
         $query->when(
-            $filters['createdAt'] ?? null,
+            $filters->createdAt,
             function ($q, $createdAt) {
-                $formattedDate = \DateTime::createFromFormat('d.m.Y', $createdAt)->format('Y-m-d');
-                $q->whereDate('created_at', '=', $formattedDate);
+                $q->whereDate('created_at', '=', $createdAt);
             }
         );
 
         $query->when(
-            !empty($filters['productTitle']),
-            function ($query) use ($filters) {
-                $productTitle = $filters['productTitle'];
+            $filters->productTitle,
+            function ($query, $productTitle) use ($filters) {
                 $query->whereHas(
                     'orderProducts',
                     fn (Builder $query) => $query->where('title', 'like', '%' . $productTitle . '%')
@@ -53,12 +52,20 @@ class Order extends Model
             }
         );
 
-        $query->when($filters['status'] ?? null, fn ($q, $status) => $q->where('status', '=', $status));
+        $query->when($filters->status, fn ($q, $status) => $q->where('status', '=', $status));
 
-        $query->when($filters['minTotal'] ?? null, fn ($q, $minSum) => $q->where('total', '>=', $minSum));
+        $query->when($filters->minTotal, fn ($q, $minSum) => $q->where('total', '>=', $minSum));
 
-        $query->when($filters['maxTotal'] ?? null, fn ($q, $maxSum) => $q->where('total', '<=', $maxSum));
+        $query->when($filters->maxTotal, fn ($q, $maxSum) => $q->where('total', '<=', $maxSum));
 
         return $query;
+    }
+
+    public function updateTotal(): void
+    {
+        $this->total = $this->orderProducts()
+            ->get()
+            ->sum(fn (OrderProduct $product) => $product->price * $product->quantity);
+        $this->save();
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Services\Resource;
 
 use App\Dto\OrderProductData;
+use App\Dto\Request\ListOrderFilterData;
 use App\Dto\Request\NewOrderData;
 use App\Dto\Request\UpdateOrderData;
 use App\Http\Requests\OrderAddRequest;
@@ -32,34 +33,23 @@ class OrderResourceAdminService
 
     public function getOrders(OrdersRequest $request): ResourceCollection
     {
-        $filters = array_filter(
-            $request->only([
-                'userId',
-                'productTitle',
-                'minTotal',
-                'maxTotal',
-                'status',
-                'createdAt',
-            ])
-        );
-        $orders = $this->orderDataService->getFilteredOrders($filters);
+        $listOrderFilter = ListOrderFilterData::createFromRequest($request);
+        $orders = $this->orderDataService->getFilteredOrders($listOrderFilter);
 
         return new OrdersCollection($orders);
     }
 
     public function addOrder(OrderAddRequest $request): JsonResource
     {
-        $orderProductsData = OrderProductData::fromRequest($request->get('orderProducts'));
         $orderData = NewOrderData::create(
             request: $request,
-            orderProducts: $orderProductsData,
-            total: $this->getOrderTotal($orderProductsData)
+            orderProducts: OrderProductData::fromRequest($request->get('orderProducts')),
         );
 
         try {
             DB::beginTransaction();
             $newOrder = $this->orderDataService->addNewOrder($orderData);
-            $this->orderDataService->handleRequestProducts($newOrder, $orderData->orderProducts);
+            $this->orderDataService->addRequestProducts($newOrder, $orderData->orderProducts);
             $this->cartDataService->deleteCart($orderData->userId);
             $this->userDataService->updateAddress($orderData->userId, $orderData->address);
             DB::commit();

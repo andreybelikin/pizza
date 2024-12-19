@@ -22,4 +22,17 @@ class OrderProduct extends Model
     {
         return $this->belongsTo(Order::class);
     }
+
+    protected static function booted()
+    {
+        static::updated(function (OrderProduct $orderProduct) {
+            if ($orderProduct->isDirty(['quantity', 'price'])) {
+                $orderProduct->order->updateTotal();
+            }
+        });
+
+        static::created(function (OrderProduct $orderProduct) {
+            $orderProduct->order->updateTotal();
+        });
+    }
 }

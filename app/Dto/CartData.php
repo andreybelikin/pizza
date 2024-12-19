@@ -6,8 +6,8 @@ use Illuminate\Support\Collection;
 
 class CartData {
     public function __construct(
-        /** @var Collection<CartProductsData> */
-        public Collection $cartProducts,
+        /** @var Collection<CartProductData> */
+        public Collection $products,
         public int $totalSum
     ) {}
 }

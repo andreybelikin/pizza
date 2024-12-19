@@ -44,14 +44,13 @@ class OrderResourceService
 
         $orderData = NewOrderData::create(
             request: $request,
-            orderProducts: OrderProductData::fromCartProducts($userCart->cartProducts),
-            total: $userCart->totalSum
+            orderProducts: OrderProductData::fromCartProducts($userCart->products),
         );
 
         try {
             DB::beginTransaction();
             $newOrder = $this->orderDataService->addNewOrder($orderData);
-            $this->orderDataService->handleCartProducts($newOrder, $orderData->orderProducts);
+            $this->orderDataService->addCartProducts($newOrder, $orderData->orderProducts);
             $this->cartDataService->deleteCart($orderData->userId);
             $this->userDataService->updateAddress($orderData->userId, $orderData->address);
             DB::commit();

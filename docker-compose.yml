@@ -60,6 +60,8 @@ services:
         - '3307:3306'
     volumes:
         - 'mysql_test:/var/lib/mysql'
+    networks:
+        - app-network
   redis:
     image: 'redis:alpine'
     ports:

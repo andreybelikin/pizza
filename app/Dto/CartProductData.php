@@ -4,7 +4,7 @@ namespace App\Dto;
 
 use Illuminate\Support\Collection;
 
-class CartProductsData
+class CartProductData
 {
     public function __construct(
         public int $id,

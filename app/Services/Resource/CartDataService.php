@@ -3,7 +3,7 @@
 namespace App\Services\Resource;
 
 use App\Dto\CartData;
-use App\Dto\CartProductsData;
+use App\Dto\CartProductData;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -46,10 +46,10 @@ class CartDataService
             throw new NotFoundHttpException();
         }
 
-        $cartProductsData = CartProductsData::createFromDB($cartProductsEntries);
+        $cartProductsData = CartProductData::createFromDB($cartProductsEntries);
 
         return new CartData(
-            cartProducts: $cartProductsData,
+            products: $cartProductsData,
             totalSum: $cartProductsEntries->sum('totalPrice')
         );
     }

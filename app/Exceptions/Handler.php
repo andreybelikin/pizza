@@ -38,7 +38,6 @@ class Handler extends ExceptionHandler
         });
 
         $this->renderable(function (NotFoundHttpException $exception) {
-            dd($exception);
             return response()->json('Resource not found', Response::HTTP_NOT_FOUND);
         });
 

@@ -3,6 +3,7 @@
 namespace App\Services\Resource;
 
 use App\Dto\OrderProductData;
+use App\Dto\Request\ListOrderFilterData;
 use App\Dto\Request\NewOrderData;
 use App\Dto\Request\UpdateOrderData;
 use App\Enums\OrderStatus;
@@ -24,7 +25,7 @@ class OrderDataService
             ->findOrFail($orderId);
     }
 
-    public function getFilteredOrders(array $filters): ?LengthAwarePaginator
+    public function getFilteredOrders(ListOrderFilterData $filters): ?LengthAwarePaginator
     {
         return Order::filter($filters)
             ->with('orderProducts')
@@ -58,54 +59,44 @@ class OrderDataService
     {
         $order = $this->getOrder($updateOrderData->id);
         $order->update($updateOrderData->getOderInfo());
-
-        if (!is_null($updateOrderData->orderProducts)) {
-            foreach ($updateOrderData->orderProducts as $product) {
-                $orderProductModel = $order->orderProducts()->findOrFail($product->id);
-
-                if ($orderProductModel->quantity === 0) {
-                    $orderProductModel->delete();
-                } else {
-                    $orderProductModel->update($product->toArray());
-                }
-            }
-            $this->updateOrderTotal($order);
-        }
+        $this->updateFromRequestProducts($order, $updateOrderData->orderProducts);
 
         return $order;
     }
 
-    public function updateOrderTotal(Order $order, ?int $totalSum = null): void
+    private function updateFromRequestProducts(Order $order, ?Collection $requestOrderProductsData): void
     {
-        if (is_null($totalSum)) {
-            $totalSum = $order->orderProducts()
-                ->get()
-                ->sum(fn ($orderProduct) => $orderProduct->price * $orderProduct->quantity);
+        if (is_null($requestOrderProductsData)) {
+            return;
         }
 
-        $order->total = $totalSum;
-        $order->save();
+        $currentOrderProducts = $order->orderProducts();
+        foreach ($requestOrderProductsData as $productData) {
+            $orderProductModel = $currentOrderProducts->findOrFail($productData->id);
+
+            if ($orderProductModel->quantity > 0) {
+                $orderProductModel->update($productData->getProductArray());
+            } else {
+                $orderProductModel->delete();
+            }
+        }
     }
 
-    public function handleRequestProducts(Order $newOrder, Collection $requestOrderProductsData): void
+    public function addRequestProducts(Order $newOrder, Collection $requestOrderProductsData): void
     {
         $ids = $requestOrderProductsData->pluck('id')->toArray();
         $productsModels = $this->productDataService->getProductsById($ids);
 
-        $totalSum = 0;
         foreach ($productsModels as $productModel) {
             $productArray = $productModel->toArray();
             $productArray['quantity'] = $requestOrderProductsData
                 ->where('id', $productModel->id)
                 ->first()->quantity;
             $newOrder->orderProducts()->create($productArray);
-            $totalSum += $productArray['quantity'] * $productModel->price;
         }
-
-        $this->updateOrderTotal($newOrder, $totalSum);
     }
 
-    public function handleCartProducts(Order $newOrder, Collection $cartProductsToAttach): void
+    public function addCartProducts(Order $newOrder, Collection $cartProductsToAttach): void
     {
         $preparedProducts = $cartProductsToAttach->map(
             fn(OrderProductData $product) => $product->getProductArray()

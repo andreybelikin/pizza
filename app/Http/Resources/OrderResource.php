@@ -19,7 +19,7 @@ class OrderResource extends JsonResource
             'phone' => $this->phone,
             'address' => $this->address,
             'status' => $this->status,
-            'products' => OrderProductResource::collection($this->whenLoaded('orderProducts')),
+            'orderProducts' => OrderProductResource::collection($this->whenLoaded('orderProducts')),
             'total' => $this->getProductsTotalPrice(),
         ];
     }
