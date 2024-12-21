@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\OrderStatus;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 
 class OrdersRequest extends FormRequest
@@ -19,10 +20,10 @@ class OrdersRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'userId' => 'nullable|integer',
+            'userId' => 'nullable|string|integer',
             'productTitle' => 'nullable|string',
-            'minTotal' => 'nullable|integer',
-            'maxTotal' => 'nullable|integer',
+            'minTotal' => 'nullable|string|integer',
+            'maxTotal' => 'nullable|string|integer',
             'status' => ['nullable', new Enum(OrderStatus::class)],
             'createdAt' => 'nullable|date_format:d.m.Y',
         ];

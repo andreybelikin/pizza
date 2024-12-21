@@ -18,11 +18,12 @@ readonly class ListOrderFilterData
     public static function createFromRequest(OrdersRequest $request): self
     {
         $createdAt = $request->get('createdAt');
+
         return new self(
-            userId: $request->get('userId') ?? null,
+            userId: (int)$request->get('userId') ?? null,
             productTitle: $request->get('productTitle') ?? null,
-            minTotal: $request->get('minTotal') ?? null,
-            maxTotal: $request->get('maxTotal') ?? null,
+            minTotal: (int)$request->get('minTotal') ?? null,
+            maxTotal: (int)$request->get('maxTotal') ?? null,
             status: $request->get('status') ?? null,
             createdAt: !is_null($createdAt)
                 ? \DateTime::createFromFormat('d.m.Y', $createdAt)->format('Y-m-d')

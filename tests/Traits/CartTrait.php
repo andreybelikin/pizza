@@ -5,6 +5,7 @@ namespace Tests\Traits;
 use App\Enums\Limit\CartProductLimit;
 use App\Models\Product;
 use App\Models\User;
+use Illuminate\Support\Collection;
 
 trait CartTrait
 {
@@ -32,6 +33,12 @@ trait CartTrait
         $cart['totalSum'] = array_sum(array_column($cart['products'], 'totalPrice'));
 
         return $cart;
+    }
+
+    public function createUserCartProducts(User $user, array $products): void
+    {
+        $user->products()->delete();
+        $user->products()->createMany($products);
     }
 
     public function createCartProducts(User $user): void

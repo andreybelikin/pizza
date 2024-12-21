@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Tests\Traits\AuthTrait;
 use Tests\Traits\CartTrait;
 use Tests\Traits\OrderTrait;
+use Tests\Traits\ProductTrait;
 use Tests\Traits\UserTrait;
 
 abstract class TestCase extends BaseTestCase
@@ -16,4 +17,5 @@ abstract class TestCase extends BaseTestCase
     use AuthTrait;
     use CartTrait;
     use OrderTrait;
+    use ProductTrait;
 }

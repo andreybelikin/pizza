@@ -46,7 +46,7 @@ class OrderDataService
             'name' => $orderData->name,
             'address' => $orderData->address ?? $this->userDataService->getDefaultAddress($orderData->userId),
             'phone' => $orderData->phone,
-            'total' => $orderData->total,
+            'total' => 0,
             'status' => OrderStatus::CREATED,
             'user_id' => $orderData->userId,
         ]);
