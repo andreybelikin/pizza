@@ -70,9 +70,8 @@ class OrderDataService
             return;
         }
 
-        $currentOrderProducts = $order->orderProducts();
         foreach ($requestOrderProductsData as $productData) {
-            $orderProductModel = $currentOrderProducts->findOrFail($productData->id);
+            $orderProductModel = $order->orderProducts()->findOrFail($productData->id);
 
             if ($orderProductModel->quantity > 0) {
                 $orderProductModel->update($productData->getProductArray());

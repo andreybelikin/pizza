@@ -35,7 +35,7 @@ class OrderController
         $order = $this->orderResourceService->addOrder($request, $userId);
 
         return response()
-            ->json($order)
+            ->json($order, Response::HTTP_CREATED)
             ->setEncodingOptions(JSON_UNESCAPED_UNICODE);
     }
 }

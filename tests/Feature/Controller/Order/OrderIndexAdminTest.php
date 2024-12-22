@@ -3,6 +3,7 @@
 namespace Feature\Controller\Order;
 
 use App\Dto\Request\ListOrderFilterData;
+use App\Enums\OrderStatus;
 use Tests\TestCase;
 
 class OrderIndexAdminTest extends TestCase
@@ -22,11 +23,10 @@ class OrderIndexAdminTest extends TestCase
             'testTitle',
             35000,
             250000,
-            'delivered',
-            '24.03.2024'
+            OrderStatus::DELIVERED->value,
+            (new \DateTime('today'))->format('d.m.Y')
         );
-        $this->changeOrderProducts($anotherUser, $filters);
-        $expectedOrders = $this->getFilteredOrders($filters);
+        $expectedResult = $this->createOrder($anotherUser);
 
         $filters = $this->addFilters((array)$filters);
         $response = $this->getJson(
@@ -35,7 +35,40 @@ class OrderIndexAdminTest extends TestCase
         );
 
         $response->assertOk();
-        $response->assertJson(json_decode($expectedOrders, true));
+        $response->assertJsonFragment($expectedResult['pagination']);
+        $response->assertJsonFragment($expectedResult['data']);
+    }
+
+    public function testGetFilteredOrdersByAdminWithNoResultsSuccess(): void
+    {
+        $filters = new ListOrderFilterData(
+            99,
+            'wwwwwwwwwwwwwwwwwwww',
+            50000000000,
+            50000000000,
+            'delivered',
+            '24.03.2024'
+        );
+        $expectedOrders = [
+            'data' => [],
+        ];
+        $expectedPagination = [
+            'pagination' => [
+                'currentPage' => 1,
+                'perPage' => 15,
+                'total' => 0,
+            ]
+        ];
+
+        $filters = $this->addFilters((array)$filters);
+        $response = $this->getJson(
+            self::CONTROLLER_ADMIN_ROUTE . $filters,
+            ['authorization' => 'Bearer ' . $this->getUserAccessToken($this->getAdminUser())]
+        );
+
+        $response->assertOk();
+        $response->assertJsonFragment($expectedOrders);
+        $response->assertJsonFragment($expectedPagination);
     }
 
     public function testGetOrdersWithEmptyFiltersByAdminSuccess(): void

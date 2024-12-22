@@ -11,16 +11,26 @@ class OrderGetAdmin extends TestCase
     public function testGetOrderByAdminSuccess(): void
     {
         $user = $this->getAdminUser();
-        $anotherUser = $this->getAnotherUser();
-        $expectedOrder = json_decode($this->getUserOrder($anotherUser), true);
-        $orderId = $this->getUserOrderId($anotherUser);
+        $anotherUser = $this->createUser();
+        $expectedResult = $this->createOrder($anotherUser);
         $response = $this->getJson(
-            str_replace('{orderId}', $orderId, self::CONTROLLER_ROUTE),
+            str_replace('{orderId}', $expectedResult['data']['id'], self::CONTROLLER_ROUTE),
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
 
         $response->assertOk();
-        $response->assertJson($expectedOrder);
+        $response->assertJsonFragment($expectedResult['data']);
+    }
+
+    public function testGetOrderByAdminWithNonExistentOrderShouldFail(): void
+    {
+        $user = $this->getAdminUser();
+        $response = $this->getJson(
+            str_replace('{orderId}', 99999, self::CONTROLLER_ROUTE),
+            ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
+        );
+
+        $response->assertNotFound();
     }
 
     public function testGetOrderByAdminWithInvalidCredentials(): void

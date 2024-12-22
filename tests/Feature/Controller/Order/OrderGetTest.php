@@ -16,15 +16,25 @@ class OrderGetTest extends TestCase
     public function testGetOrderByOwnerSuccess(): void
     {
         $user = $this->getUser();
-        $expectedOrder = json_decode($this->getUserOrder($user), true);
-        $orderId = $this->getUserOrderId($user);
+        $expectedResult = $this->createOrder($user);
         $response = $this->getJson(
-            str_replace('{orderId}', $orderId, self::CONTROLLER_ROUTE),
+            str_replace('{orderId}', $expectedResult['data']['id'], self::CONTROLLER_ROUTE),
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
 
         $response->assertOk();
-        $response->assertJson($expectedOrder);
+        $response->assertJsonFragment($expectedResult['data']);
+    }
+
+    public function testGetOrderWithNonExistentOrderShouldFail(): void
+    {
+        $user = $this->getUser();
+        $response = $this->getJson(
+            str_replace('{orderId}', 99999, self::CONTROLLER_ROUTE),
+            ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
+        );
+
+        $response->assertNotFound();
     }
 
     public function testGetOrderByAnotherUserShouldFail(): void
@@ -40,7 +50,7 @@ class OrderGetTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testGetOrderByOwnerWithInvalidCredentials(): void
+    public function testGetOrderByOwnerWithInvalidTokenShouldFail(): void
     {
         $user = $this->getUser();
         $orderId = $this->getUserOrderId($user);
@@ -51,5 +61,4 @@ class OrderGetTest extends TestCase
 
         $response->assertUnauthorized();
     }
-
 }

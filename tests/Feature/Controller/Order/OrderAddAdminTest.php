@@ -6,26 +6,30 @@ use App\Enums\OrderStatus;
 use App\Models\Product;
 use Tests\TestCase;
 
-class OrderAddTest extends TestCase
+class OrderAddAdminTest extends TestCase
 {
-    private const CONTROLLER_ROUTE = 'api/users/{userId}/orders';
+    private const CONTROLLER_ROUTE = 'api/admin/users/{userId}/orders';
 
-    public function testAddOrderSuccess(): void
+    public function testAddOrderByAdminSuccess(): void
     {
-        $user = $this->getUser();
+        $admin = $this->getAdminUser();
+        $anotherUser = $this->getAnotherUser();
         $products = $this->getProductsForNewOrder();
-        $this->createUserCartProducts($user, $products->toArray());
         $orderData = [
-            'userId' => $user->id,
+            'userId' => $anotherUser->id,
             'status' => OrderStatus::CREATED,
             'phone' => '89996668877',
             'address' => 'test address',
             'name' => 'test name',
+            'orderProducts' => $products->map(fn($product) => [
+                'id' => $product->id,
+                'quantity' => 1,
+            ])->toArray(),
         ];
         $response = $this->postJson(
-            str_replace('{userId}', $user->getKey(), self::CONTROLLER_ROUTE),
+            str_replace('{userId}', $anotherUser->getKey(), self::CONTROLLER_ROUTE),
             $orderData,
-            ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
+            ['authorization' => 'Bearer ' . $this->getUserAccessToken($admin)]
         );
         $expectedProducts = $products->map(
             function (Product $product) {
@@ -53,22 +57,25 @@ class OrderAddTest extends TestCase
         $response->assertJsonFragment($expectedResult['order']);
         $response->assertJsonFragment($expectedResult['orderProducts'][0]);
         $response->assertJsonFragment($expectedResult['orderProducts'][1]);
-        $this->assertEquals('test address', $this->getUserAddress($user));
+        $this->assertEquals('test address', $this->getUserAddress($anotherUser));
     }
 
-    public function testOrderAddWithInvalidTokenShouldFail(): void
+    public function testOrderAddByAdminWithInvalidTokenShouldFail(): void
     {
-        $user = $this->getUser();
+        $anotherUser = $this->getAnotherUser();
         $products = $this->getProductsForNewOrder();
-        $this->createUserCartProducts($user, $products->toArray());
         $orderData = [
             'status' => OrderStatus::CREATED,
             'phone' => '89996668877',
             'address' => 'test address',
             'name' => 'test name',
+            'orderProducts' => $products->map(fn($product) => [
+                'id' => $product->id,
+                'quantity' => 1,
+            ])->toArray(),
         ];
         $response = $this->postJson(
-            str_replace('{userId}', $user->getKey(), self::CONTROLLER_ROUTE),
+            str_replace('{userId}', $anotherUser->getKey(), self::CONTROLLER_ROUTE),
             $orderData,
             ['authorization' => 'Bearer ' . $this->getInvalidToken()]
         );
@@ -76,24 +83,23 @@ class OrderAddTest extends TestCase
         $response->assertUnauthorized();
     }
 
-    public function testOrderAddForAnotherUserShouldFail(): void
+    public function testOrderAddByAdminWithoutProductsShouldFail(): void
     {
-        $user = $this->getUser();
+        $admin = $this->getAdminUser();
         $anotherUser = $this->getAnotherUser();
-        $products = $this->getProductsForNewOrder();
-        $this->createUserCartProducts($user, $products->toArray());
         $orderData = [
             'status' => OrderStatus::CREATED,
             'phone' => '89996668877',
             'address' => 'test address',
             'name' => 'test name',
+            'orderProducts' => [],
         ];
         $response = $this->postJson(
             str_replace('{userId}', $anotherUser->getKey(), self::CONTROLLER_ROUTE),
             $orderData,
-            ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
+            ['authorization' => 'Bearer ' . $this->getUserAccessToken($admin)]
         );
 
-        $response->assertForbidden();
+        $response->assertBadRequest();
     }
 }

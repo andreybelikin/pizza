@@ -5,7 +5,6 @@ namespace Tests\Traits;
 use App\Enums\Limit\CartProductLimit;
 use App\Models\Product;
 use App\Models\User;
-use Illuminate\Support\Collection;
 
 trait CartTrait
 {

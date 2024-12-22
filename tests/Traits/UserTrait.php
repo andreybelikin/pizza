@@ -49,4 +49,11 @@ trait UserTrait
     {
         return User::factory()->create();
     }
+
+    public function getUserAddress(User $user): ?string
+    {
+        $user->refresh();
+
+        return $user->address;
+    }
 }

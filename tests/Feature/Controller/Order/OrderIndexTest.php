@@ -2,7 +2,6 @@
 
 namespace Feature\Controller\Order;
 
-use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class OrderIndexTest extends TestCase
@@ -16,15 +15,36 @@ class OrderIndexTest extends TestCase
 
     public function testGetUserOrdersByOwnerSuccess(): void
     {
-        $user = $this->getUser();
-        $expectedOrders = $this->getUserOrders($user);
+        $user = $this->createUser();
+        $expectedResult = $this->createOrder($user);
         $response = $this->getJson(
             str_replace('{userId}', $user->getKey(), self::CONTROLLER_ROUTE),
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
 
         $response->assertOk();
-        $response->assertJsonFragment(json_decode($expectedOrders, true));
+        $response->assertJsonFragment($expectedResult['data']);
+        $response->assertJsonFragment($expectedResult['pagination']);
+    }
+
+    public function testGetUserEmptyOrders(): void
+    {
+        $user = $this->createUser();
+        $response = $this->getJson(
+            str_replace('{userId}', $user->getKey(), self::CONTROLLER_ROUTE),
+            ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
+        );
+        $expectedPagination = [
+            'pagination' => [
+                'currentPage' => 1,
+                'perPage' => 15,
+                'total' => 0,
+            ]
+        ];
+
+        $response->assertOk();
+        $response->assertJsonFragment([]);
+        $response->assertJsonFragment($expectedPagination);
     }
 
     public function testGetUserOrdersWithInvalidTokenShouldFail(): void
