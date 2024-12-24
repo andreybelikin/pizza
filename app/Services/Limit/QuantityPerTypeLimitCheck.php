@@ -4,33 +4,26 @@ namespace App\Services\Limit;
 
 use App\Enums\Limit\CartProductLimit;
 use App\Exceptions\Limit\QuantityPerTypeLimitException;
-use App\Models\Product;
-use Illuminate\Database\Eloquent\Collection;
+use App\Services\Resource\ProductDataService;
+use Illuminate\Support\Collection;
 
 class QuantityPerTypeLimitCheck
 {
-    private array $requestProducts;
+    public function __construct(private ProductDataService $productDataService)
+    {}
 
-    public function setProducts(array $requestProducts): self
+    public function check(Collection $requestProducts): void
     {
-        $this->requestProducts = $requestProducts;
-
-        return $this;
-    }
-
-    public function check(): void
-    {
-        $products = $this->getProductsTypes();
+        $productsModels = $this->productDataService->getProductsTypes($requestProducts);
 
         foreach (CartProductLimit::cases() as $limit) {
-            $productsQuantity = $this->getQuantityByType($limit, $products);
+            $productsQuantity = $this->getQuantityByType($limit, $requestProducts, $productsModels);
 
             if ($productsQuantity > $limit->value) {
                 $violatedLimits[] = sprintf(
                     'Products quantity of type %s must not be more than %s',
                     $limit->getName(),
-                    $limit->value)
-                ;
+                    $limit->value);
             }
         }
 
@@ -39,22 +32,18 @@ class QuantityPerTypeLimitCheck
         }
     }
 
-    private function getProductsTypes(): Collection
-    {
-        $ids = array_column($this->requestProducts, 'id');
-
-        return Product::getProductsTypes($ids);
-    }
-
-    private function getQuantityByType(CartProductLimit $limitedType, Collection $products): int
-    {
+    private function getQuantityByType(
+        CartProductLimit $limitedType,
+        Collection $requestProducts,
+        Collection $productsModels
+    ): int {
         $productsQuantity = 0;
 
-        foreach ($this->requestProducts as $requestProduct) {
-            $product = $products->firstWhere('id', $requestProduct['id']);
+        foreach ($requestProducts as $requestProduct) {
+            $productModel = $productsModels->firstWhere('id', $requestProduct->id);
 
-            if ($product->type === $limitedType->getName()) {
-                $productsQuantity += $requestProduct['quantity'];
+            if ($productModel->type === $limitedType->getName()) {
+                $productsQuantity += $requestProduct->quantity;
             }
         }
 

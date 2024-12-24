@@ -8,6 +8,7 @@ use App\Http\Requests\OrderAddRequest;
 use App\Http\Resources\OrderResource;
 use App\Http\Resources\OrdersCollection;
 use App\Models\Order;
+use App\Services\DBTransactionService;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -19,6 +20,7 @@ class OrderResourceService
         private OrderDataService $orderDataService,
         private CartDataService $cartDataService,
         private UserDataService $userDataService,
+        private DBTransactionService $dbTransactionService,
     ) {}
 
     public function getOrder(string $orderId): OrderResource
@@ -47,17 +49,14 @@ class OrderResourceService
             orderProducts: OrderProductData::fromCartProducts($userCart->products),
         );
 
-        try {
-            DB::beginTransaction();
+        $newOrder = $this->dbTransactionService->execute(function () use ($orderData, $userCart) {
             $newOrder = $this->orderDataService->addNewOrder($orderData);
             $this->orderDataService->addCartProducts($newOrder, $orderData->orderProducts);
             $this->cartDataService->deleteCart($orderData->userId);
             $this->userDataService->updateAddress($orderData->userId, $orderData->address);
-            DB::commit();
-        } catch (\Exception $exception) {
-            DB::rollBack();
-            throw $exception;
-        }
+
+            return $newOrder;
+        });
 
         return new OrderResource($newOrder->load('orderProducts'));
     }

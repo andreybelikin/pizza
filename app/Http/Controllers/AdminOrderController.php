@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Dto\Response\Resourse\CreatedResourceDto;
 use App\Http\Requests\OrderAddRequest;
 use App\Http\Requests\OrdersRequest;
 use App\Http\Requests\OrderUpdateRequest;

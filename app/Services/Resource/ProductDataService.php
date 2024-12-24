@@ -3,7 +3,7 @@
 namespace App\Services\Resource;
 
 use App\Models\Product;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection;
 
 class ProductDataService
 {
@@ -11,6 +11,16 @@ class ProductDataService
     {
         return Product::query()
             ->whereIn('id', $productIds)
+            ->get();
+    }
+
+    public function getProductsTypes(Collection $products): Collection
+    {
+        $ids = $products->pluck('id');
+
+        return Product::query()
+            ->select(['id', 'type'])
+            ->whereIn('id', $ids)
             ->get();
     }
 }

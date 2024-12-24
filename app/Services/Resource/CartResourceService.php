@@ -2,12 +2,11 @@
 
 namespace App\Services\Resource;
 
-use App\Exceptions\Resource\ResourceAccessException;
-use App\Exceptions\Resource\ResourceNotFoundException;
+use App\Dto\Request\UpdateCartData;
 use App\Http\Requests\Cart\CartUpdateRequest;
 use App\Http\Resources\CartResource;
 use App\Models\CartProduct;
-use App\Models\User;
+use App\Services\DBTransactionService;
 use App\Services\Limit\CartLimitService;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Gate;
@@ -16,22 +15,26 @@ class CartResourceService
 {
     public function __construct(
         private CartLimitService $cartLimitService,
-        private CartDataService $cartDataService
+        private CartDataService $cartDataService,
+        private DBTransactionService $dbTransactionService
     ) {}
 
     public function getCart(string $userId): JsonResource
     {
         Gate::authorize('get', [CartProduct::class, $userId]);
+
         return $this->getCartResource($userId);
     }
 
     public function updateCart(CartUpdateRequest $request, string $userId): JsonResource
     {
         Gate::authorize('update', [CartProduct::class, $userId]);
-        $requestProducts = $request->input('products');
+        $cartUpdateData = UpdateCartData::fromRequest($request);
+        $this->cartLimitService->checkQuantityPerTypeLimit($cartUpdateData->products);
 
-        $this->cartLimitService->checkQuantityPerTypeLimit($requestProducts);
-        $this->updateCartByRequestProducts($requestProducts, $userId);
+        $this->dbTransactionService->execute(function () use ($cartUpdateData) {
+            $this->updateCartByRequestProducts($cartUpdateData);
+        });
 
         return $this->getCartResource($userId);
     }
@@ -39,7 +42,9 @@ class CartResourceService
     public function deleteCart(string $userId): void
     {
         Gate::authorize('delete', [CartProduct::class, $userId]);
-        $this->cartDataService->deleteCart($userId);
+        $this->dbTransactionService->execute(function () use ($userId) {
+            $this->cartDataService->deleteCart($userId);
+        });
     }
 
     private function getCartResource(string $userId): JsonResource
@@ -47,31 +52,35 @@ class CartResourceService
         return new CartResource($this->cartDataService->getCart($userId));
     }
 
-    private function updateCartByRequestProducts(array $requestProducts, string $userId): void
+    private function updateCartByRequestProducts(UpdateCartData $updateCartData): void
     {
-        $requestProductsIds = array_column($requestProducts, 'id');
-        $cartProducts = $this->cartDataService->getCartProductsById($requestProductsIds, $userId);
+        Gate::authorize('update', [CartProduct::class, $updateCartData->userId]);
+        $requestProductsIds = $updateCartData
+            ->products
+            ->pluck('id')
+            ->toArray();
+        $cartProducts = $this->cartDataService->getCartProductsById($requestProductsIds, $updateCartData->userId);
 
-        foreach ($requestProducts as $requestProduct) {
-            $requestProductId = $requestProduct['id'];
-            $requestQuantity = $requestProduct['quantity'];
+        foreach ($updateCartData->products as $requestProduct) {
+            $requestProductId = $requestProduct->id;
+            $requestQuantity = $requestProduct->quantity;
 
             $currentQuantity = $cartProducts
                 ->where('id', $requestProductId)
                 ->count();
 
             if ($requestQuantity === 0 && $currentQuantity > 0) {
-                $this->cartDataService->deleteCartProduct($requestProductId, $userId);
+                $this->cartDataService->deleteCartProduct($requestProduct->id, $updateCartData->userId);
             } elseif ($requestQuantity > $currentQuantity) {
                 $this->cartDataService->addCartProducts(
-                    $requestProductId,
-                    $userId,
+                    $requestProduct->id,
+                    $updateCartData->userId,
                     $requestQuantity - $currentQuantity
                 );
             } elseif ($requestQuantity > 0 && $requestQuantity < $currentQuantity) {
                 $this->cartDataService->deleteCartProduct(
-                    $requestProductId,
-                    $userId,
+                    $requestProduct->id,
+                    $updateCartData->userId,
                     $currentQuantity - $requestQuantity
                 );
             }

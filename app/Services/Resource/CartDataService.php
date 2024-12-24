@@ -75,13 +75,15 @@ class CartDataService
             ->when($limit > 0, function ($query) use ($limit) {
                 return $query->limit($limit);
             })
-            ->delete();
+            ->detach();
     }
 
     private function getUserCartProducts(string $userId): BelongsToMany
     {
-        $this->userCartProducts = $this->userCartProducts ?? User::query()
+        $this->userCartProducts = $this->userCartProducts ??
+            User::query()
             ->findOrFail($userId)
+            ->refresh()
             ->products();
 
         return $this->userCartProducts;

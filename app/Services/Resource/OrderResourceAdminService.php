@@ -11,10 +11,9 @@ use App\Http\Requests\OrdersRequest;
 use App\Http\Requests\OrderUpdateRequest;
 use App\Http\Resources\OrderResource;
 use App\Http\Resources\OrdersCollection;
+use App\Services\DBTransactionService;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Resources\Json\ResourceCollection;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 
 class OrderResourceAdminService
 {
@@ -22,6 +21,7 @@ class OrderResourceAdminService
         private OrderDataService $orderDataService,
         private CartDataService $cartDataService,
         private UserDataService $userDataService,
+        private DBTransactionService $dbTransactionService,
     ) {}
 
     public function getOrder(int $orderId): OrderResource
@@ -46,17 +46,14 @@ class OrderResourceAdminService
             orderProducts: OrderProductData::fromRequest($request->get('orderProducts')),
         );
 
-        try {
-            DB::beginTransaction();
+        $newOrder = $this->dbTransactionService->execute(function () use ($orderData) {
             $newOrder = $this->orderDataService->addNewOrder($orderData);
             $this->orderDataService->addRequestProducts($newOrder, $orderData->orderProducts);
             $this->cartDataService->deleteCart($orderData->userId);
             $this->userDataService->updateAddress($orderData->userId, $orderData->address);
-            DB::commit();
-        } catch (\Exception $exception) {
-            DB::rollBack();
-            throw $exception;
-        }
+
+            return $newOrder;
+        });
 
         return new OrderResource($newOrder->load('orderProducts'));
     }
@@ -69,20 +66,10 @@ class OrderResourceAdminService
             orderProducts: $requestProducts,
         );
 
-        try {
-            DB::beginTransaction();
-            $order = $this->orderDataService->updateOrder($orderData);
-            DB::commit();
-        } catch (\Exception $exception) {
-            DB::rollBack();
-            throw $exception;
-        }
+        $order = $this->dbTransactionService->execute(function () use ($orderData, $request) {
+            return $this->orderDataService->updateOrder($orderData);
+        });
 
         return new OrderResource($order->load('orderProducts'));
-    }
-
-    private function getOrderTotal(Collection $products): int
-    {
-        return $products->sum(fn ($product) => $product->price * $product->quantity);
     }
 }
