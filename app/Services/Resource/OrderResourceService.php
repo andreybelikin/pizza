@@ -10,7 +10,6 @@ use App\Http\Resources\OrdersCollection;
 use App\Models\Order;
 use App\Services\DBTransactionService;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
@@ -42,7 +41,7 @@ class OrderResourceService
     public function addOrder(OrderAddRequest $request, string $userId): JsonResource
     {
         Gate::authorize('add', [Order::class, $userId]);
-        $userCart = $this->cartDataService->getCart($userId);
+        $userCart = $this->cartDataService->getCart((int)$userId);
 
         $orderData = NewOrderData::create(
             request: $request,

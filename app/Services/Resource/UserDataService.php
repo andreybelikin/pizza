@@ -4,6 +4,7 @@ namespace App\Services\Resource;
 
 use App\Exceptions\Resource\ResourceAccessException;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class UserDataService
 {

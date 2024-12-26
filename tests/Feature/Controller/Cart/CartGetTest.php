@@ -2,16 +2,12 @@
 
 namespace Tests\Feature\Controller\Cart;
 
-use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
-use Tests\Traits\CartTrait;
-use Tests\Traits\UserTrait;
-use Tests\Traits\AuthTrait;
 
 class CartGetTest extends TestCase
 {
     private const CONTROLLER_ROUTE = '/api/users/{userId}/carts';
+    private const ADMIN_CONTROLLER_ROUTE = '/api/admin/users/{userId}/carts';
 
     protected function setUp(): void
     {
@@ -33,13 +29,13 @@ class CartGetTest extends TestCase
 
     public function testGetCartByAdminSuccess(): void
     {
-        $user = $this->getAdminUser();
+        $adminUser = $this->getAdminUser();
         $anotherUser = $this->getAnotherUser();
         $expectedCart = $this->getCart($anotherUser);
 
         $response = $this->getJson(
-            str_replace('{userId}', $anotherUser->getKey(), self::CONTROLLER_ROUTE),
-            ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
+            str_replace('{userId}', $anotherUser->getKey(), self::ADMIN_CONTROLLER_ROUTE),
+            ['authorization' => 'Bearer ' . $this->getUserAccessToken($adminUser)]
         );
 
         $response->assertOk();
@@ -49,18 +45,25 @@ class CartGetTest extends TestCase
     public function testGetProductWithInvalidTokenShouldFail(): void
     {
         $user = $this->getUser();
-        $invalidToken = 'eyJhbGciOiJIUzI1NiJ9.eyJpZCI6IjEifQ.ZAU547bnCcGrvSZiaDeYpbQg6rUopOe3HMJ01l2a2NQ';
 
         $response = $this->getJson(
             str_replace('{userId}', $user->getKey(), self::CONTROLLER_ROUTE),
-            ['authorization' => 'Bearer ' . $invalidToken]
+            ['authorization' => 'Bearer ' . $this->getInvalidToken()]
         );
 
-        $response->assertStatus(Response::HTTP_UNAUTHORIZED);
-        $decodedResponse = $response->decodeResponseJson();
+        $response->assertUnauthorized();
+    }
 
-        static::assertArrayHasKey('message', $decodedResponse);
-        static::assertSame('Token Signature could not be verified.', $decodedResponse['message']);
+    public function testGetProductByAdminWithInvalidTokenShouldFail(): void
+    {
+        $user = $this->getAdminUser();
+
+        $response = $this->getJson(
+            str_replace('{userId}', $user->getKey(), self::ADMIN_CONTROLLER_ROUTE),
+            ['authorization' => 'Bearer ' . $this->getInvalidToken()]
+        );
+
+        $response->assertUnauthorized();
     }
 
     public function testGetAnotherUserCartShouldFail(): void
@@ -73,10 +76,6 @@ class CartGetTest extends TestCase
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
 
-        $response->assertStatus(Response::HTTP_UNAUTHORIZED);
-        $decodedResponse = $response->decodeResponseJson();
-
-        static::assertArrayHasKey('message', $decodedResponse);
-        static::assertSame('Don\'t have permission to this resource', $decodedResponse['message']);
+        $response->assertForbidden();
     }
 }

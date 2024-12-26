@@ -6,6 +6,11 @@ use App\Models\User;
 
 class ProductPolicy
 {
+    public function before(User $authorizedUser, string $ability): ?bool
+    {
+        return $authorizedUser->isAdmin() ?: null;
+    }
+
     public function add(User $authorizedUser): bool
     {
         return $this->isAdmin($authorizedUser);

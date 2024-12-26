@@ -2,6 +2,8 @@
 
 namespace App\Services\Resource;
 
+use App\Dto\Request\DeleteCartData;
+use App\Dto\Request\GetCartData;
 use App\Dto\Request\UpdateCartData;
 use App\Http\Requests\Cart\CartUpdateRequest;
 use App\Http\Resources\CartResource;
@@ -21,35 +23,38 @@ class CartResourceService
 
     public function getCart(string $userId): JsonResource
     {
-        Gate::authorize('get', [CartProduct::class, $userId]);
+        $getCartData = new GetCartData($userId);
+        Gate::authorize('get', [CartProduct::class, $getCartData->userId]);
 
-        return $this->getCartResource($userId);
+        return $this->getCartResource($getCartData->userId);
     }
 
-    public function updateCart(CartUpdateRequest $request, string $userId): JsonResource
+    public function updateCart(CartUpdateRequest $request): JsonResource
     {
-        Gate::authorize('update', [CartProduct::class, $userId]);
-        $cartUpdateData = UpdateCartData::fromRequest($request);
-        $this->cartLimitService->checkQuantityPerTypeLimit($cartUpdateData->products);
+        $updateCartData = UpdateCartData::fromRequest($request);
+        Gate::authorize('update', [CartProduct::class, $updateCartData->userId]);
+        $this->cartLimitService->checkQuantityPerTypeLimit($updateCartData->products);
 
-        $this->dbTransactionService->execute(function () use ($cartUpdateData) {
-            $this->updateCartByRequestProducts($cartUpdateData);
+        $this->dbTransactionService->execute(function () use ($updateCartData) {
+            $this->updateCartByRequestProducts($updateCartData);
         });
 
-        return $this->getCartResource($userId);
+        return $this->getCartResource($updateCartData->userId);
     }
 
     public function deleteCart(string $userId): void
     {
-        Gate::authorize('delete', [CartProduct::class, $userId]);
-        $this->dbTransactionService->execute(function () use ($userId) {
-            $this->cartDataService->deleteCart($userId);
+        $deleteCartData = new DeleteCartData($userId);
+        Gate::authorize('delete', [CartProduct::class, $deleteCartData->userId]);
+        $this->dbTransactionService->execute(function () use ($deleteCartData) {
+            $this->cartDataService->deleteCart($deleteCartData->userId);
         });
     }
 
-    private function getCartResource(string $userId): JsonResource
+    private function getCartResource(int $userId): JsonResource
     {
-        return new CartResource($this->cartDataService->getCart($userId));
+        $cartData = $this->cartDataService->getCart($userId);
+        return new CartResource($cartData);
     }
 
     private function updateCartByRequestProducts(UpdateCartData $updateCartData): void
@@ -66,7 +71,7 @@ class CartResourceService
             $requestQuantity = $requestProduct->quantity;
 
             $currentQuantity = $cartProducts
-                ->where('id', $requestProductId)
+                ->where('product_id', $requestProductId)
                 ->count();
 
             if ($requestQuantity === 0 && $currentQuantity > 0) {

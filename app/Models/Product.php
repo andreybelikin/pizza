@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Dto\Request\ListProductFilterData;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -21,30 +22,31 @@ class Product extends Model
     {
         return $this->belongsToMany(User::class, 'cart_product');
     }
+
     public function orders(): BelongsToMany
     {
         return $this->belongsToMany(Order::class)->withTimestamps();
     }
 
-    public function scopeFilter(Builder $query, array $filters): Builder
+    public function scopeFilter(Builder $query, ListProductFilterData $filters): Builder
     {
-        $query->when(($filters['title']) ?? null, fn ($q, $title) => $q->where('title', 'like', "%{$title}%"));
+        $query->when($filters->title, fn ($q, $title) => $q->where('title', 'like', "%{$title}%"));
 
         $query->when(
-            !empty($filters['description']),
+            $filters->description,
             fn ($q, $description) => $q->where('description', 'like', "%{$description}%")
         );
 
-        $query->when($filters['type'] ?? null, fn ($q, $type) => $q->where('type', '=', $type));
+        $query->when($filters->type, fn ($q, $type) => $q->where('type', '=', $type));
 
         $query->when(
-            $filters['minPrice'] ?? null,
-            fn ($q, $minPrice) => $q->where('price', '>=', (float) $minPrice)
+            $filters->minPrice,
+            fn ($q, $minPrice) => $q->where('price', '>=', $minPrice)
         );
 
         $query->when(
-            $filters['maxPrice'] ?? null,
-            fn ($q, $maxPrice) => $q->where('price', '<=', (float) $maxPrice)
+            $filters->maxPrice,
+            fn ($q, $maxPrice) => $q->where('price', '<=', $maxPrice)
         );
 
         return $query;

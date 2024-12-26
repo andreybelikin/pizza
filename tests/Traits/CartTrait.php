@@ -42,19 +42,23 @@ trait CartTrait
 
     public function createCartProducts(User $user): void
     {
+        if (!$user->products->isEmpty()) {
+            $user->products()->detach();
+        }
+
         $quantityCount = 3;
-        $limitedProducts = [];
+        $productsWithLimitedType = [];
 
         foreach (CartProductLimit::getLimits() as $limit) {
             $products = Product::query()
                 ->take($quantityCount)
                 ->where('type', $limit)
                 ->get();
-            $limitedProducts = [...$limitedProducts, ...$products];
+            $productsWithLimitedType = [...$productsWithLimitedType, ...$products];
         }
 
         for ($i = 0; $i < $quantityCount; $i++) {
-            $user->products()->attach(array_column($limitedProducts, 'id'));
+            $user->products()->attach(array_column($productsWithLimitedType, 'id'));
         }
     }
 }

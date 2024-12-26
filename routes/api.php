@@ -11,6 +11,7 @@ use App\Http\Middleware\EnsureUserIsAdmin;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminOrderController;
 use App\Http\Controllers\AdminCartController;
+use App\Http\Controllers\AdminProductController;
 
 Route::controller(AuthController::class)->group(function () {
     Route::post('/login', 'login');
@@ -32,6 +33,14 @@ Route::middleware(EnsureTokenIsValid::class)->group(function () {
             Route::get('/admin/users/{userId}/carts', 'get');
             Route::put('/admin/users/{userId}/carts', 'update');
             Route::delete('/admin/users/{userId}/carts', 'delete');
+        });
+
+        Route::controller(AdminProductController::class)->group(function () {
+            Route::get('/admin/products/', 'index');
+            Route::get('/admin/products/{id}', 'get');
+            Route::post('/admin/products/', 'add');
+            Route::patch('/admin/products/{id}', 'update');
+            Route::delete('/admin/products/{id}','delete');
         });
     });
 

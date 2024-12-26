@@ -3,17 +3,14 @@
 namespace Tests\Feature\Controller\Cart;
 
 use App\Enums\Limit\CartProductLimit;
-use App\Exceptions\Limit\QuantityPerTypeLimitException;
-use App\Exceptions\Resource\ResourceAccessException;
 use App\Models\Product;
 use App\Models\User;
-use Illuminate\Support\Facades\Exceptions;
-use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
 
 class CartUpdateTest extends TestCase
 {
     private const CONTROLLER_ROUTE = '/api/users/{userId}/carts';
+    private const ADMIN_CONTROLLER_ROUTE = '/api/admin/users/{userId}/carts';
 
     protected function setUp(): void
     {
@@ -46,7 +43,7 @@ class CartUpdateTest extends TestCase
         $expectedResponse = $this->getExpectedResponse($updateRequest);
 
         $response = $this->putJson(
-            str_replace('{userId}', $anotherUser->getKey(), self::CONTROLLER_ROUTE),
+            str_replace('{userId}', $anotherUser->getKey(), self::ADMIN_CONTROLLER_ROUTE),
             $updateRequest,
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
@@ -64,14 +61,26 @@ class CartUpdateTest extends TestCase
         $response = $this->putJson(
             str_replace('{userId}', $user->getKey(), self::CONTROLLER_ROUTE),
             $updateRequest,
-            ['authorization' => 'Bearer ' . self::$this->getInvalidToken()]
+            ['authorization' => 'Bearer ' . $this->getInvalidToken()]
         );
 
-        $response->assertStatus(Response::HTTP_UNAUTHORIZED);
-        $decodedResponse = $response->decodeResponseJson();
+        $response->assertUnauthorized();
+    }
 
-        static::assertArrayHasKey('message', $decodedResponse);
-        static::assertSame('Token Signature could not be verified.', $decodedResponse['message']);
+    public function testUpdateCartByAdminWithInvalidTokenShouldFail(): void
+    {
+        $user = $this->createUser();
+        $user->is_admin = true;
+        $this->createCartProducts($user);
+        $updateRequest = $this->getCartUpdateRequest($user, 3);
+
+        $response = $this->putJson(
+            str_replace('{userId}', $user->getKey(), self::ADMIN_CONTROLLER_ROUTE),
+            $updateRequest,
+            ['authorization' => 'Bearer ' . $this->getInvalidToken()]
+        );
+
+        $response->assertUnauthorized();
     }
 
     public function testUpdateAnotherUserCartShouldFail(): void
@@ -81,15 +90,13 @@ class CartUpdateTest extends TestCase
         $this->createCartProducts($anotherUser);
         $updateRequest = $this->getCartUpdateRequest($anotherUser, 3);
 
-        Exceptions::fake();
         $response = $this->putJson(
             str_replace('{userId}', $anotherUser->getKey(), self::CONTROLLER_ROUTE),
             $updateRequest,
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
 
-        $response->assertStatus(Response::HTTP_UNAUTHORIZED);
-        Exceptions::assertReported(ResourceAccessException::class);
+        $response->assertForbidden();
     }
 
     public function testUpdateCartWithViolatedLimitsShouldFail(): void
@@ -98,15 +105,28 @@ class CartUpdateTest extends TestCase
         $this->createCartProducts($user);
         $updateRequest = $this->getCartUpdateRequest($user, 25);
 
-        Exceptions::fake();
         $response = $this->putJson(
             str_replace('{userId}', $user->getKey(), self::CONTROLLER_ROUTE),
             $updateRequest,
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
 
-        $response->assertStatus(Response::HTTP_BAD_REQUEST);
-        Exceptions::assertReported(QuantityPerTypeLimitException::class);
+        $response->assertUnprocessable();
+    }
+
+    public function testUpdateCartByAdminWithViolatedLimitsShouldFail(): void
+    {
+        $user = $this->getAdminUser();
+        $this->createCartProducts($user);
+        $updateRequest = $this->getCartUpdateRequest($user, 25);
+
+        $response = $this->putJson(
+            str_replace('{userId}', $user->getKey(), self::ADMIN_CONTROLLER_ROUTE),
+            $updateRequest,
+            ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
+        );
+
+        $response->assertUnprocessable();
     }
 
     private function getCartUpdateRequest(User $user, int $newQuantity): array

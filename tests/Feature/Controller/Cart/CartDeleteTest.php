@@ -2,14 +2,12 @@
 
 namespace Tests\Feature\Controller\Cart;
 
-use App\Exceptions\Resource\ResourceAccessException;
-use Illuminate\Support\Facades\Exceptions;
-use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
 
 class CartDeleteTest extends TestCase
 {
     private const CONTROLLER_ROUTE = '/api/users/{userId}/carts';
+    private const ADMIN_CONTROLLER_ROUTE = '/api/admin/users/{userId}/carts';
 
     protected function setUp(): void
     {
@@ -38,7 +36,7 @@ class CartDeleteTest extends TestCase
         $this->createCartProducts($anotherUser);
 
         $response = $this->deleteJson(
-            str_replace('{userId}', $user->getKey(), self::CONTROLLER_ROUTE),
+            str_replace('{userId}', $user->getKey(), self::ADMIN_CONTROLLER_ROUTE),
             [],
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
@@ -55,14 +53,24 @@ class CartDeleteTest extends TestCase
         $response = $this->deleteJson(
             str_replace('{userId}', $user->getKey(), self::CONTROLLER_ROUTE),
             [],
-            ['authorization' => 'Bearer ' . self::$this->getInvalidToken()]
+            ['authorization' => 'Bearer ' . $this->getInvalidToken()]
         );
 
-        $response->assertStatus(Response::HTTP_UNAUTHORIZED);
-        $decodedResponse = $response->decodeResponseJson();
+        $response->assertUnauthorized();
+    }
 
-        static::assertArrayHasKey('message', $decodedResponse);
-        static::assertSame('Token Signature could not be verified.', $decodedResponse['message']);
+    public function testDeleteCartByAdminWithInvalidTokenShouldFail(): void
+    {
+        $user = $this->getAdminUser();
+        $this->createCartProducts($user);
+
+        $response = $this->deleteJson(
+            str_replace('{userId}', $user->getKey(), self::ADMIN_CONTROLLER_ROUTE),
+            [],
+            ['authorization' => 'Bearer ' . $this->getInvalidToken()]
+        );
+
+        $response->assertUnauthorized();
     }
 
     public function testDeleteAnotherUserCartShouldFail(): void
@@ -71,14 +79,12 @@ class CartDeleteTest extends TestCase
         $anotherUser = $this->createUser();
         $this->createCartProducts($anotherUser);
 
-        Exceptions::fake();
         $response = $this->deleteJson(
             str_replace('{userId}', $anotherUser->getKey(), self::CONTROLLER_ROUTE),
             [],
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
 
-        $response->assertStatus(Response::HTTP_UNAUTHORIZED);
-        Exceptions::assertReported(ResourceAccessException::class);
+        $response->assertForbidden();
     }
 }

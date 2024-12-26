@@ -2,7 +2,7 @@
 
 namespace App\Dto\Request;
 
-class UpdateCartProductData
+readonly class UpdateCartProductData
 {
     public function __construct(
         public int $id,

@@ -2,8 +2,6 @@
 
 namespace App\Dto;
 
-use Illuminate\Support\Collection;
-
 class CartProductData
 {
     public function __construct(
@@ -15,19 +13,4 @@ class CartProductData
         public int $quantity,
         public int $totalPrice
     ) {}
-
-    public static function createFromDB(Collection $cartProductsEntries): Collection
-    {
-        return $cartProductsEntries->map(function ($cartProductsEntry) {
-            return new self(
-                id: $cartProductsEntry->id,
-                title: $cartProductsEntry->title,
-                description: $cartProductsEntry->description,
-                type: $cartProductsEntry->type,
-                price: $cartProductsEntry->price,
-                quantity: $cartProductsEntry->quantity,
-                totalPrice: $cartProductsEntry->totalPrice
-            );
-        });
-    }
 }

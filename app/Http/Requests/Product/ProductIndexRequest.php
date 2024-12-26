@@ -27,12 +27,12 @@ class ProductIndexRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'page' => 'string|max:10',
-            'title' => 'string|max:50',
-            'description' => 'string|max:250',
-            'type' => [new Enum(ProductType::class)],
-            'minPrice' => 'string|max:7',
-            'maxPrice' => 'string|max:7',
+            'page' => 'nullable|string|max:10',
+            'title' => 'nullable|string|max:50',
+            'description' => 'nullable|string|max:250',
+            'type' => ['nullable', new Enum(ProductType::class)],
+            'minPrice' => 'nullable|integer|max:7',
+            'maxPrice' => 'nullable|integer|max:7',
         ];
     }
 
