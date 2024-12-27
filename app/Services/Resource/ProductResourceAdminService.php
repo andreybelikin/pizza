@@ -3,32 +3,28 @@
 namespace App\Services\Resource;
 
 use App\Dto\Request\AddProductData;
-use App\Dto\Request\DeleteProductData;
 use App\Dto\Request\ListProductFilterData;
+use App\Dto\Request\UpdateProductData;
 use App\Http\Requests\Product\ProductAddRequest;
-use App\Http\Requests\Product\ProductDeleteRequest;
 use App\Http\Requests\Product\ProductIndexRequest;
 use App\Http\Requests\Product\ProductUpdateRequest;
 use App\Http\Resources\ProductResource;
 use App\Http\Resources\ProductsCollection;
-use App\Models\Product;
-use App\Services\Resource\Abstract\ResourceServiceAbstract;
-use Illuminate\Auth\Access\Gate;
+use App\Services\DBTransactionService;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
-class ProductResourceAdminService extends ResourceServiceAbstract
+class ProductResourceAdminService
 {
-    public function __construct(private ProductDataService $productDataService) {
-        parent::__construct();
-        parent::setResourceModel(Product::class);
-    }
+    public function __construct(
+        private ProductDataService $productDataService,
+        private DBTransactionService $dbTransactionService,
+    )
+    {}
 
-    public function getProduct(string $requestedProductId): JsonResource
+    public function getProduct(string $productId): JsonResource
     {
-        $getProductData = ListProductFilterData::fromRequest($requestedProductId);
-        /** @var Product $requestedProductResource */
-        $requestedProductResource = $this->getRequestedResource($requestedProductId);
+        $requestedProductResource = $this->productDataService->getProduct($productId);
 
         return new ProductResource($requestedProductResource);
     }
@@ -41,32 +37,28 @@ class ProductResourceAdminService extends ResourceServiceAbstract
         return new ProductsCollection($products);
     }
 
-    public function addProduct(ProductAddRequest $request): void
+    public function addProduct(ProductAddRequest $request): JsonResource
     {
         $addProductData = AddProductData::fromRequest($request);
+        $createdProduct = $this->dbTransactionService->execute(function () use ($addProductData) {
+            return $this->productDataService->addProduct($addProductData);
+        });
 
-        Gate::authorize('add', [Product::class, $addProductData->userId]);
-
-        $newProduct = new Product($addProductData);
-        $newProduct->save();
+        return new ProductResource($createdProduct);
     }
 
     public function updateProduct(ProductUpdateRequest $request): JsonResource
     {
-        $addProductData = AddProductData::fromRequest($request);
-        Gate::authorize('update', [Product::class, ]);
+        $updateProductData = UpdateProductData::fromRequest($request);
+        $updatedProduct = $this->dbTransactionService->execute(function () use ($updateProductData) {
+            return $this->productDataService->updateProduct($updateProductData);
+        });
 
-        $newData = $this->getProductData($request);
-        $this->updateResource($requestedProductResource, $newData);
-
-        return new JsonResource($requestedProductResource);
+        return new ProductResource($updatedProduct);
     }
 
-    public function deleteProduct(ProductDeleteRequest $request): void
+    public function deleteProduct(string $productId): void
     {
-        $deleteProductData = DeleteProductData::fromRequest($request);
-        $requestedProductResource = $this->getRequestedResource($deleteProductData->id);
-        Gate::authorize('delete', [Product::class, ]);
-        $this->deleteResource($requestedProductResource);
+        $this->dbTransactionService->execute(fn () => $this->productDataService->deleteProduct($productId));
     }
 }

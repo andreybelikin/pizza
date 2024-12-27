@@ -25,14 +25,14 @@ class OrderAddRequest extends FormRequest
     {
         $rules = [
             'userId' => 'required|integer',
-            'phone' => 'required|string|regex:/^\d{4,15}$/',
-            'name' => 'required|string|max:20',
-            'address' => 'string|max:100',
+            'phone' => 'required_without_all:name,address,orderProducts|string|regex:/^\d{4,15}$/',
+            'name' => 'required_without_all:address,phone,orderProducts|string|max:20',
+            'address' => 'required_without_all:name,phone,orderProducts|string|max:100',
         ];
 
         if (auth()->user()->isAdmin()) {
             $adminRules = [
-                'status' => ['required', new Enum(OrderStatus::class)],
+                'status' => ['required_without_all:name,phone,address', new Enum(OrderStatus::class)],
                 'orderProducts' => 'required|array|min:1',
                 'orderProducts.*.id' => 'required_with:orderProducts|integer|exists:products,id',
                 'orderProducts.*.quantity' => 'required_with:orderProducts|integer|min:1',

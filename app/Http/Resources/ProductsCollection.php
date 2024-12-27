@@ -23,8 +23,6 @@ class ProductsCollection extends ResourceCollection
                     'description' => $product->description,
                     'type' => $product->type,
                     'price' => $product->price,
-                    'createdAt' => $product->created_at,
-                    'updatedAt' => $product->updated_at,
                 ];
             }),
             'pagination' => [

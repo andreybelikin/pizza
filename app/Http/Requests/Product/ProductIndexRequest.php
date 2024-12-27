@@ -31,8 +31,8 @@ class ProductIndexRequest extends FormRequest
             'title' => 'nullable|string|max:50',
             'description' => 'nullable|string|max:250',
             'type' => ['nullable', new Enum(ProductType::class)],
-            'minPrice' => 'nullable|integer|max:7',
-            'maxPrice' => 'nullable|integer|max:7',
+            'minPrice' => 'nullable|integer',
+            'maxPrice' => 'nullable|integer',
         ];
     }
 
@@ -42,8 +42,6 @@ class ProductIndexRequest extends FormRequest
             'title.string' => 'A product title must be a string',
             'title.max' => 'A product title is only 50 char long',
             'page.max' => 'A page number is only 10 char long',
-            'minPrice.max' => 'A product price is 8000 max',
-            'maxPrice.max' => 'A product price is 8000 max',
             'minPrice.integer' => 'A product price must be an integer',
             'maxPrice.integer' => 'A product price must be an integer',
             'description.string' => 'A product description must be a string',

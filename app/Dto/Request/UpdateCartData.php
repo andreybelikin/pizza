@@ -2,7 +2,7 @@
 
 namespace App\Dto\Request;
 
-use App\Http\Requests\Cart\CartUpdateRequest;
+use App\Http\Requests\Product\ProductUpdateRequest;
 use Illuminate\Support\Collection;
 
 readonly class UpdateCartData
@@ -12,7 +12,7 @@ readonly class UpdateCartData
         public Collection $products,
     ) {}
 
-    public static function fromRequest(CartUpdateRequest $request): self
+    public static function fromRequest(ProductUpdateRequest $request): self
     {
         $products = collect(
             array_map(function ($product) {

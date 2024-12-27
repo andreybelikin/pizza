@@ -2,35 +2,23 @@
 
 namespace App\Services\Resource ;
 
-use App\Dto\Request\AddProductData;
-use App\Dto\Request\DeleteProductData;
 use App\Dto\Request\ListProductFilterData;
-use App\Http\Requests\Product\ProductAddRequest;
-use App\Http\Requests\Product\ProductDeleteRequest;
 use App\Http\Requests\Product\ProductIndexRequest;
-use App\Http\Requests\Product\ProductUpdateRequest;
 use App\Http\Resources\ProductResource;
 use App\Http\Resources\ProductsCollection;
-use App\Models\Product;
-use App\Services\Resource\Abstract\ResourceServiceAbstract;
-use Illuminate\Auth\Access\Gate;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
-class ProductResourceService extends ResourceServiceAbstract
+class ProductResourceService
 {
-    public function __construct(private ProductDataService $productDataService) {
-        parent::__construct();
-        parent::setResourceModel(Product::class);
-    }
+    public function __construct(private ProductDataService $productDataService)
+    {}
 
     public function getProduct(string $requestedProductId): JsonResource
     {
-        $getProductData = ListProductFilterData::fromRequest($requestedProductId);
-        /** @var Product $requestedProductResource */
-        $requestedProductResource = $this->getRequestedResource($requestedProductId);
+        $product = $this->productDataService->getProduct($requestedProductId);
 
-        return new ProductResource($requestedProductResource);
+        return new ProductResource($product);
     }
 
     public function getProducts(ProductIndexRequest $request): ResourceCollection

@@ -25,11 +25,11 @@ class OrderUpdateRequest extends FormRequest
     {
         return [
             'orderId' => 'required|integer',
-            'phone' => 'string|regex:/^\d{4,15}$/|',
-            'name' => 'string|max:20',
-            'address' => 'string|max:255',
-            'status' => 'string|max:20',
-            'orderProducts' => 'nullable|array',
+            'phone' => 'required_without_all:name,address,status,orderProducts|string|regex:/^\d{4,15}$/|',
+            'name' => 'required_without_all:address,status,orderProducts|string|max:20',
+            'address' => 'required_without_all:name,status,orderProducts|string|max:255',
+            'status' => 'required_without_all:name,address,orderProducts|string|max:20',
+            'orderProducts' => 'nullable|array|min:1',
             'orderProducts.*.id' => 'required_with:orderProducts|integer|exists:order_products,id|',
             'orderProducts.*' => [function ($attribute, $value, $fail) {
                 $updatableFields = ['name', 'phone', 'description', 'type', 'quantity', 'price'];
@@ -44,6 +44,31 @@ class OrderUpdateRequest extends FormRequest
             'orderProducts.*.type' => new Enum(ProductType::class),
             'orderProducts.*.description' => 'string|max:255',
             'orderProducts.*.price' => 'integer',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'orderId.required' => 'An order id is required',
+            'phone.string' => 'A phone must be a string',
+            'phone.regex' => 'A phone must match format',
+            'name.string' => 'An order name must be unique',
+            'name.max' => 'An order name length must be less than 20 characters',
+            'address.string' => 'An order address must be a string',
+            'address.max' => 'An order address length must be less than 20 characters',
+            'status.string' => 'An order status must be a string',
+            'status.max' => 'An order status length must be less than 20 characters',
+            'orderProducts.array' => 'orderProducts must be an array',
+            'orderProducts.min' => 'orderProducts must be at least 1',
+            'orderProducts.*.quantity' => 'orderProducts.quantity must be an integer',
+            'orderProducts.*.title' => 'orderProducts.title must be a string',
+            'orderProducts.*.title.max' => 'orderProducts.title must be less than 50 characters long',
+            'orderProducts.*.description.string' => 'orderProducts.description must be a string',
+            'orderProducts.*.description.max' => 'orderProducts.description must be less than 50 characters long',
+            'orderProducts.*.type.in_enum' => 'orderProducts.type must be between ' . implode(', ', ProductType::getTypes()),
+            'orderProducts.*.price.integer' => 'orderProducts.price must be an integer',
+            '*.required_without_all' => 'At least one field is required',
         ];
     }
 

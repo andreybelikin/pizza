@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Product;
 
 use App\Enums\ProductType;
-use App\Rules\AtLeastOneFieldRequired;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\JsonResponse;
@@ -29,10 +28,10 @@ class ProductUpdateRequest extends FormRequest
     {
         return [
             'id' => 'required|string|max:36',
-            'title' => 'string|max:50|unique:products',
-            'description' => 'string|max:250|unique:products',
-            'type' => [new Enum(ProductType::class)],
-            'price' => 'integer|max:8000',
+            'title' => 'required_without_all:description,type,address,price|string|max:50|',
+            'description' => 'required_without_all:title,type,address,price|string|max:250|',
+            'type' => ['required_without_all:title,description,type,address,price', new Enum(ProductType::class)],
+            'price' => 'required_without_all:title,description,type,address|integer',
         ];
     }
 
@@ -41,17 +40,6 @@ class ProductUpdateRequest extends FormRequest
         $this->merge([
             'id' => $this->route('id'),
         ]);
-    }
-
-    protected function withValidator($validator): void
-    {
-        $fields = ['title', 'description', 'type', 'price'];
-
-        $validator->after(function ($validator) use ($fields) {
-            if (!$this->anyFilled($fields) || !$this->hasAny($fields)) {
-                $validator->errors()->add('fields', 'At least one field must be provided.');
-            }
-        });
     }
 
     public function messages(): array
@@ -67,6 +55,7 @@ class ProductUpdateRequest extends FormRequest
             'description.max' => 'A product description is only 250 char long',
             'description.unique' => 'A product description must be unique',
             'type.in_enum' => 'A product type is invalid',
+            '*.required_without_all' => 'At least one field is required',
         ];
     }
 
