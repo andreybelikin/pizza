@@ -2,8 +2,6 @@
 
 namespace App\Exceptions;
 
-use App\Dto\Response\InternalErrorResponseDto;
-use App\Dto\Response\Resourse\CartLimitExceptionResponseDto;
 use App\Exceptions\Limit\CartLimitException;
 use App\Exceptions\Resource\ResourceException;
 use Exception;
@@ -29,9 +27,7 @@ class Handler extends ExceptionHandler
         });
 
         $this->renderable(function (CartLimitException $exception) {
-            $responseDto = new CartLimitExceptionResponseDto($exception->violations);
-
-            return response()->json($responseDto->toArray(), Response::HTTP_UNPROCESSABLE_ENTITY);
+            return response()->json($exception->violations, Response::HTTP_UNPROCESSABLE_ENTITY);
         });
 
         $this->renderable(function (AccessDeniedHttpException $exception) {
@@ -44,9 +40,7 @@ class Handler extends ExceptionHandler
 
         $this->renderable(function (Exception $exception) {
             dd($exception);
-            $responseDto = new InternalErrorResponseDto();
-
-            return response()->json($responseDto->toArray(), $responseDto::STATUS);
+            return response()->json('Something went wrong. Try again later', Response::HTTP_INTERNAL_SERVER_ERROR);
         });
     }
 }

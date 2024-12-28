@@ -2,21 +2,30 @@
 
 namespace App\Services\Resource;
 
-use App\Exceptions\Resource\ResourceAccessException;
+use App\Dto\Request\UpdateUserData;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class UserDataService
 {
     public function getUser(string $userId): User
     {
-        $user = User::query()->find($userId);
+        return User::query()->findOrFail($userId);
+    }
 
-        if (is_null($user)) {
-            throw new ResourceAccessException();
-        }
+    public function updateUser(UpdateUserData $updateUserData): User
+    {
+        $user = User::query()->findOrFail($updateUserData->id);
+        $user->update($updateUserData->getNewValues());
+        $user->refresh();
 
         return $user;
+    }
+
+    public function deleteUser(string $userId): void
+    {
+        User::query()
+            ->findOrFail($userId)
+            ->delete();
     }
 
     public function updateAddress(int $userId, ?string $address): void

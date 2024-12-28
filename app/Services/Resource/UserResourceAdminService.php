@@ -6,17 +6,13 @@ use App\Dto\Request\UpdateUserData;
 use App\Http\Requests\User\UserUpdateRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
-use App\Services\Auth\AuthService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Gate;
 
-class UserResourceService
+class UserResourceAdminService
 {
-    public function __construct(
-        private AuthService $authService,
-        private UserDataService $userDataService,
-    ) {}
+    public function __construct(private UserDataService $userDataService) {}
 
     public function getUser(string $userId): JsonResource
     {
@@ -38,7 +34,6 @@ class UserResourceService
     public function deleteUser(Request $request, string $userId): void
     {
         Gate::authorize('delete', [User::class, $userId]);
-        $this->authService->logoutUser($request);
         $this->userDataService->deleteUser($userId);
     }
 }

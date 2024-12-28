@@ -3,14 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\User\UserUpdateRequest;
-use App\Services\Resource\UserResourceService;
+use App\Services\Resource\UserResourceAdminService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Symfony\Component\HttpFoundation\JsonResponse;
 
-class UserController
+class AdminUserController
 {
-    public function __construct(private readonly UserResourceService $userService)
+    public function __construct(private readonly UserResourceAdminService $userService)
     {}
 
     public function get(string $userId): JsonResponse
@@ -22,7 +22,7 @@ class UserController
             ->setEncodingOptions(JSON_UNESCAPED_UNICODE);
     }
 
-    public function update(UserUpdateRequest $request, $userId): JsonResponse
+    public function update(UserUpdateRequest $request, string $userId): JsonResponse
     {
         $updatedUser = $this->userService->updateUser($request, $userId);
 
@@ -31,7 +31,7 @@ class UserController
             ->setEncodingOptions(JSON_UNESCAPED_UNICODE);
     }
 
-    public function delete(Request $request, string $userId): Response
+    public function delete(Request $request, $userId): Response
     {
         $this->userService->deleteUser($request, $userId);
 

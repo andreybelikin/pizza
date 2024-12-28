@@ -60,7 +60,7 @@ class AuthService
 
         array_walk($tokens, function ($token) {
             auth()->setToken($token);
-            auth()->logout();
+            auth()->invalidate();
         });
     }
 

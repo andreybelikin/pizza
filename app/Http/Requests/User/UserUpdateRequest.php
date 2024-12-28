@@ -26,7 +26,7 @@ class UserUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'id' => 'required|string|max:36',
+            'userId' => 'required|string|max:36',
             'name' => 'string|max:50',
             'surname' => 'nullable|string|max:50',
             'phone' => 'regex:/^\d{4,15}$/|unique:users,phone',
@@ -53,7 +53,7 @@ class UserUpdateRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'id' => $this->route('id'),
+            'userId' => $this->route('userId'),
         ]);
     }
 

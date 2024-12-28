@@ -17,11 +17,11 @@ readonly class UpdateProductData
     public static function fromRequest(ProductUpdateRequest $request): self
     {
         return new self(
-            (int)$request->route('id'),
-            $request->get('title'),
-            $request->get('description'),
-            $request->get('type'),
-            $request->get('price'),
+            id: $request->route('id') ? (int)$request->route('id') : null,
+            title: $request->get('title'),
+            description: $request->get('description'),
+            type: $request->get('type'),
+            price: $request->get('price'),
         );
     }
 

@@ -3,26 +3,34 @@
 namespace App\Policies;
 
 use App\Models\User;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class UserPolicy
 {
-    public function get(User $authorizedUser, User $requestedUser): bool
+    use HandlesAuthorization;
+
+    public function before(User $authorizedUser, string $ability)
     {
-        return $this->isOwner($authorizedUser, $requestedUser);
+        return $authorizedUser->isAdmin() ? true : null;
     }
 
-    public function update(User $authorizedUser, User $requestedUser): bool
+    public function get(User $authorizedUser, string $userId): bool
     {
-        return $this->isOwner($authorizedUser, $requestedUser);
+        return $this->isOwner($authorizedUser, $userId);
     }
 
-    public function delete(User $authorizedUser, User $requestedUser): bool
+    public function update(User $authorizedUser, string $userId): bool
     {
-        return $this->isOwner($authorizedUser, $requestedUser);
+        return $this->isOwner($authorizedUser, $userId);
     }
 
-    private function isOwner(User $authorizedUser, User $requestedUser): bool
+    public function delete(User $authorizedUser, string $userId): bool
     {
-        return $authorizedUser->getKey() === $requestedUser->getKey();
+        return $this->isOwner($authorizedUser, $userId);
+    }
+
+    private function isOwner(User $authorizedUser, string $userId): bool
+    {
+        return $authorizedUser->getKey() === (int)$userId;
     }
 }

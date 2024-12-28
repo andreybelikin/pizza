@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminOrderController;
 use App\Http\Controllers\AdminCartController;
 use App\Http\Controllers\AdminProductController;
+use App\Http\Controllers\AdminUserController;
 
 Route::controller(AuthController::class)->group(function () {
     Route::post('/login', 'login');
@@ -43,6 +44,12 @@ Route::middleware(EnsureTokenIsValid::class)->group(function () {
             Route::put('/admin/products/{id}', 'update');
             Route::delete('/admin/products/{id}','delete');
         });
+
+        Route::controller(AdminUserController::class)->group(function () {
+            Route::get('/admin/users/{userId}', 'get');
+            Route::put('/admin/users/{userId}', 'update');
+            Route::delete('/admin/users/{userId}', 'delete');
+        });
     });
 
     Route::controller(OrderController::class)->group(function () {
@@ -58,9 +65,9 @@ Route::middleware(EnsureTokenIsValid::class)->group(function () {
     });
 
     Route::controller(UserController::class)->group(function () {
-        Route::get('/users/{id}', 'get');
-        Route::patch('/users/{id}', 'update');
-        Route::delete('/users/{id}', 'delete');
+        Route::get('/users/{userId}', 'get');
+        Route::put('/users/{userId}', 'update');
+        Route::delete('/users/{userId}', 'delete');
     });
 
     Route::controller(ProductController::class)->group(function () {
