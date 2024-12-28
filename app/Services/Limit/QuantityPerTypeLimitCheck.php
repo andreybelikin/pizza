@@ -14,7 +14,7 @@ class QuantityPerTypeLimitCheck
 
     public function check(Collection $requestProducts): void
     {
-        $productsModels = $this->productDataService->getProductsTypes($requestProducts);
+        $productsModels = $this->productDataService->getProductsTypes($requestProducts->pluck('id'));
 
         foreach (CartProductLimit::cases() as $limit) {
             $productsQuantity = $this->getQuantityByType($limit, $requestProducts, $productsModels);

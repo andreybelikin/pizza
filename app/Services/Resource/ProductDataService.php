@@ -47,13 +47,11 @@ class ProductDataService
             ->get();
     }
 
-    public function getProductsTypes(Collection $products): Collection
+    public function getProductsTypes(Collection $productsIds): Collection
     {
-        $ids = $products->pluck('id');
-
         return Product::query()
             ->select(['id', 'type'])
-            ->whereIn('id', $ids)
+            ->whereIn('id', $productsIds)
             ->get();
     }
 

@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Product\ProductIndexRequest;
 use App\Services\Resource\ProductResourceService;
-use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 class ProductController
@@ -11,7 +11,7 @@ class ProductController
     public function __construct(private ProductResourceService $productResourceService)
     {}
 
-    public function index(Request $request): JsonResponse
+    public function index(ProductIndexRequest $request): JsonResponse
     {
         $products = $this->productResourceService->getProducts($request);
 

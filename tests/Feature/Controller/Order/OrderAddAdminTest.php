@@ -100,6 +100,6 @@ class OrderAddAdminTest extends TestCase
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($admin)]
         );
 
-        $response->assertBadRequest();
+        $response->assertUnprocessable();
     }
 }

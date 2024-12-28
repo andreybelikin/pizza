@@ -12,7 +12,7 @@ class OrderAddTest extends TestCase
 
     public function testAddOrderSuccess(): void
     {
-        $user = $this->getUser();
+        $user = $this->createUser();
         $products = $this->getProductsForNewOrder();
         $this->createUserCartProducts($user, $products->toArray());
         $orderData = [

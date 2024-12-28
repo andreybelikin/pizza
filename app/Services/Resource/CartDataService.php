@@ -22,9 +22,8 @@ class CartDataService
 
     public function getCart(int $userId): CartData
     {
-        $cartProducts = CartProduct::query()
+        $cartProducts = CartProduct::with('product')
             ->select('product_id', DB::raw('COUNT(*) as quantity'))
-            ->with('product')
             ->where('user_id', $userId)
             ->groupBy('product_id')
             ->get()

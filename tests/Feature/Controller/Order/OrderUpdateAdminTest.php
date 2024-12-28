@@ -13,9 +13,7 @@ class OrderUpdateAdminTest extends TestCase
     public function testAddOrderUpdateByAdminSuccess(): void
     {
         $admin = $this->getAdminUser();
-        $order = $this->getUserOrder(
-            $this->getAnotherUser()
-        );
+        $order = $this->getUserOrder($this->getAnotherUser());
         $orderProductsData = $order->orderProducts->map(fn (OrderProduct $product) => [
             'id' => $product->id,
             'title' => 'test title',
@@ -39,6 +37,7 @@ class OrderUpdateAdminTest extends TestCase
         $expectedResult = $orderData;
         $expectedResult['orderProducts'] = $orderProductsData->map(function ($product) {
             return [
+                'id' => $product['id'],
                 'price' => $product['price'],
                 'quantity' => $product['quantity'],
                 'title' => $product['title'],
@@ -53,9 +52,7 @@ class OrderUpdateAdminTest extends TestCase
 
     public function testOrderUpdateByAdminWithInvalidTokenShouldFail(): void
     {
-        $order = $this->getUserOrder(
-            $this->getAnotherUser()
-        );
+        $order = $this->getUserOrder($this->getAnotherUser());
         $orderProductsData = $order->orderProducts->map(fn (OrderProduct $product) => [
             'id' => $product->id,
             'title' => 'test title',

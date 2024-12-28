@@ -3,7 +3,6 @@
 namespace App\Exceptions;
 
 use App\Dto\Response\InternalErrorResponseDto;
-use App\Dto\Response\RequestValidation\FailedValidationResponseDto;
 use App\Dto\Response\Resourse\CartLimitExceptionResponseDto;
 use App\Exceptions\Limit\CartLimitException;
 use App\Exceptions\Resource\ResourceException;
@@ -19,9 +18,10 @@ class Handler extends ExceptionHandler
     public function register(): void
     {
         $this->renderable(function (ValidationException $exception) {
-            $responseDto = new FailedValidationResponseDto($exception->validator->errors()->toArray());
-
-            return response()->json($responseDto->toArray(), $responseDto::STATUS);
+            return response()->json(
+                $exception->validator->errors()->toArray(),
+                Response::HTTP_UNPROCESSABLE_ENTITY
+            );
         });
 
         $this->renderable(function (ResourceException $exception) {
@@ -30,6 +30,7 @@ class Handler extends ExceptionHandler
 
         $this->renderable(function (CartLimitException $exception) {
             $responseDto = new CartLimitExceptionResponseDto($exception->violations);
+
             return response()->json($responseDto->toArray(), Response::HTTP_UNPROCESSABLE_ENTITY);
         });
 

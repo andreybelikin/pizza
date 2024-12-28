@@ -12,9 +12,9 @@ use App\Models\User;
 
 trait OrderTrait
 {
-    public function getUserOrderId(User $user): int
+    public function getUserOrder(User $user): Order
     {
-        return $user->orders()->first()->id;
+        return $user->orders()->first();
     }
 
     public function getFilteredOrders(ListOrderFilterData $filters): string

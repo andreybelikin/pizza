@@ -36,7 +36,6 @@ trait CartTrait
 
     public function createUserCartProducts(User $user, array $products): void
     {
-        $user->products()->delete();
         $user->products()->createMany($products);
     }
 

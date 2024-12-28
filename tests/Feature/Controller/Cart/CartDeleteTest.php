@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Controller\Cart;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class CartDeleteTest extends TestCase
@@ -45,13 +46,14 @@ class CartDeleteTest extends TestCase
         static::assertTrue($user->products()->get()->isEmpty());
     }
 
-    public function testDeleteCartWithInvalidTokenShouldFail(): void
+    #[DataProvider('contextDataProvider')]
+    public function testDeleteCartWithInvalidTokenShouldFail(\Closure $user, string $route): void
     {
-        $user = $this->createUser();
+        $user = $user($this);
         $this->createCartProducts($user);
 
         $response = $this->deleteJson(
-            str_replace('{userId}', $user->getKey(), self::CONTROLLER_ROUTE),
+            str_replace('{userId}', $user->getKey(), $route),
             [],
             ['authorization' => 'Bearer ' . $this->getInvalidToken()]
         );
@@ -59,32 +61,33 @@ class CartDeleteTest extends TestCase
         $response->assertUnauthorized();
     }
 
-    public function testDeleteCartByAdminWithInvalidTokenShouldFail(): void
+    #[DataProvider('contextDataProvider')]
+    public function testDeleteAnotherUserCartShouldFail(\Closure $user, string $route): void
     {
-        $user = $this->getAdminUser();
-        $this->createCartProducts($user);
-
-        $response = $this->deleteJson(
-            str_replace('{userId}', $user->getKey(), self::ADMIN_CONTROLLER_ROUTE),
-            [],
-            ['authorization' => 'Bearer ' . $this->getInvalidToken()]
-        );
-
-        $response->assertUnauthorized();
-    }
-
-    public function testDeleteAnotherUserCartShouldFail(): void
-    {
-        $user = $this->createUser();
+        $user = $user($this);
         $anotherUser = $this->createUser();
         $this->createCartProducts($anotherUser);
 
         $response = $this->deleteJson(
-            str_replace('{userId}', $anotherUser->getKey(), self::CONTROLLER_ROUTE),
+            str_replace('{userId}', $anotherUser->getKey(), $route),
             [],
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
 
         $response->assertForbidden();
+    }
+
+    public static function contextDataProvider(): array
+    {
+        return [
+            'user' => [
+                'user' => fn ($self) => $self->getUser(),
+                'route' => self::CONTROLLER_ROUTE,
+            ],
+            'admin' => [
+                'user' => fn ($self) => $self->getAdminUser(),
+                'route' => self::ADMIN_CONTROLLER_ROUTE,
+            ]
+        ];
     }
 }
