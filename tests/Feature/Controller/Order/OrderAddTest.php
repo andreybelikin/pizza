@@ -8,7 +8,7 @@ use Tests\TestCase;
 
 class OrderAddTest extends TestCase
 {
-    private const CONTROLLER_ROUTE = 'api/users/{userId}/orders';
+    private const USER_CONTROLLER_ROUTE = 'api/users/{userId}/orders';
 
     public function testAddOrderSuccess(): void
     {
@@ -23,7 +23,7 @@ class OrderAddTest extends TestCase
             'name' => 'test name',
         ];
         $response = $this->postJson(
-            str_replace('{userId}', $user->getKey(), self::CONTROLLER_ROUTE),
+            str_replace('{userId}', $user->getKey(), self::USER_CONTROLLER_ROUTE),
             $orderData,
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
@@ -68,7 +68,7 @@ class OrderAddTest extends TestCase
             'name' => 'test name',
         ];
         $response = $this->postJson(
-            str_replace('{userId}', $user->getKey(), self::CONTROLLER_ROUTE),
+            str_replace('{userId}', $user->getKey(), self::USER_CONTROLLER_ROUTE),
             $orderData,
             ['authorization' => 'Bearer ' . $this->getInvalidToken()]
         );
@@ -89,7 +89,7 @@ class OrderAddTest extends TestCase
             'name' => 'test name',
         ];
         $response = $this->postJson(
-            str_replace('{userId}', $anotherUser->getKey(), self::CONTROLLER_ROUTE),
+            str_replace('{userId}', $anotherUser->getKey(), self::USER_CONTROLLER_ROUTE),
             $orderData,
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );

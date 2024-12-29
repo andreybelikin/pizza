@@ -7,7 +7,7 @@ use Tests\TestCase;
 
 class ProductIndexTest extends TestCase
 {
-    private const CONTROLLER_ROUTE = '/api/products';
+    private const USER_CONTROLLER_ROUTE = '/api/products';
     private const ADMIN_CONTROLLER_ROUTE = '/api/admin/products';
 
     protected function setUp(): void
@@ -118,7 +118,7 @@ class ProductIndexTest extends TestCase
         return [
             'user' => [
                 'user' => fn ($self) => $self->getUser(),
-                'route' => self::CONTROLLER_ROUTE,
+                'route' => self::USER_CONTROLLER_ROUTE,
             ],
             'admin' => [
                 'user' => fn ($self) => $self->getAdminUser(),

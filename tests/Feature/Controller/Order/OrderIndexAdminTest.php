@@ -8,7 +8,7 @@ use Tests\TestCase;
 
 class OrderIndexAdminTest extends TestCase
 {
-    private const CONTROLLER_ADMIN_ROUTE = 'api/admin/orders';
+    private const ADMIN_CONTROLLER_ROUTE = 'api/admin/orders';
 
     protected function setUp(): void
     {
@@ -30,7 +30,7 @@ class OrderIndexAdminTest extends TestCase
 
         $filters = $this->addFilters((array)$filters);
         $response = $this->getJson(
-            self::CONTROLLER_ADMIN_ROUTE . $filters,
+            self::ADMIN_CONTROLLER_ROUTE . $filters,
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($this->getAdminUser())]
         );
 
@@ -62,7 +62,7 @@ class OrderIndexAdminTest extends TestCase
 
         $filters = $this->addFilters((array)$filters);
         $response = $this->getJson(
-            self::CONTROLLER_ADMIN_ROUTE . $filters,
+            self::ADMIN_CONTROLLER_ROUTE . $filters,
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($this->getAdminUser())]
         );
 
@@ -84,7 +84,7 @@ class OrderIndexAdminTest extends TestCase
         $expectedOrders = json_decode($this->getFilteredOrders($filters), true);
 
         $response = $this->getJson(
-            self::CONTROLLER_ADMIN_ROUTE,
+            self::ADMIN_CONTROLLER_ROUTE,
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($this->getAdminUser())]
         );
 
@@ -106,7 +106,7 @@ class OrderIndexAdminTest extends TestCase
 
         $filters = $this->addFilters((array)$filters);
         $response = $this->getJson(
-            self::CONTROLLER_ADMIN_ROUTE . $filters,
+            self::ADMIN_CONTROLLER_ROUTE . $filters,
             ['authorization' => 'Bearer ' . $this->getInvalidToken()]
         );
 

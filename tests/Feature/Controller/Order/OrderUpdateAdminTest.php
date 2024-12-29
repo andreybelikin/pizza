@@ -8,7 +8,7 @@ use Tests\TestCase;
 
 class OrderUpdateAdminTest extends TestCase
 {
-    private const CONTROLLER_ROUTE = 'api/admin/orders/{orderId}';
+    private const ADMIN_CONTROLLER_ROUTE = 'api/admin/orders/{orderId}';
 
     public function testAddOrderUpdateByAdminSuccess(): void
     {
@@ -30,7 +30,7 @@ class OrderUpdateAdminTest extends TestCase
             'orderProducts' => $orderProductsData,
         ];
         $response = $this->putJson(
-            str_replace('{orderId}', $order->id, self::CONTROLLER_ROUTE),
+            str_replace('{orderId}', $order->id, self::ADMIN_CONTROLLER_ROUTE),
             $orderData,
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($admin)]
         );
@@ -69,7 +69,7 @@ class OrderUpdateAdminTest extends TestCase
             'orderProducts' => $orderProductsData,
         ];
         $response = $this->putJson(
-            str_replace('{orderId}', $order->id, self::CONTROLLER_ROUTE),
+            str_replace('{orderId}', $order->id, self::ADMIN_CONTROLLER_ROUTE),
             $orderData,
             ['authorization' => 'Bearer ' . $this->getInvalidToken()]
         );
@@ -99,7 +99,7 @@ class OrderUpdateAdminTest extends TestCase
             'orderProducts' => $orderProductsData,
         ];
         $response = $this->putJson(
-            str_replace('{orderId}', 999999, self::CONTROLLER_ROUTE),
+            str_replace('{orderId}', 999999, self::ADMIN_CONTROLLER_ROUTE),
             $orderData,
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($admin)]
         );

@@ -6,7 +6,7 @@ use Tests\TestCase;
 
 class OrderGetTest extends TestCase
 {
-    private const CONTROLLER_ROUTE = 'api/orders/{orderId}';
+    private const USER_CONTROLLER_ROUTE = 'api/orders/{orderId}';
 
     protected function setUp(): void
     {
@@ -18,7 +18,7 @@ class OrderGetTest extends TestCase
         $user = $this->getUser();
         $expectedResult = $this->createOrder($user);
         $response = $this->getJson(
-            str_replace('{orderId}', $expectedResult['data']['id'], self::CONTROLLER_ROUTE),
+            str_replace('{orderId}', $expectedResult['data']['id'], self::USER_CONTROLLER_ROUTE),
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
 
@@ -30,7 +30,7 @@ class OrderGetTest extends TestCase
     {
         $user = $this->getUser();
         $response = $this->getJson(
-            str_replace('{orderId}', 99999, self::CONTROLLER_ROUTE),
+            str_replace('{orderId}', 99999, self::USER_CONTROLLER_ROUTE),
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
 
@@ -43,7 +43,7 @@ class OrderGetTest extends TestCase
         $anotherUser = $this->getAnotherUser();
         $orderId = $this->getUserOrderId($anotherUser);
         $response = $this->getJson(
-            str_replace('{orderId}', $orderId, self::CONTROLLER_ROUTE),
+            str_replace('{orderId}', $orderId, self::USER_CONTROLLER_ROUTE),
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
 
@@ -55,7 +55,7 @@ class OrderGetTest extends TestCase
         $user = $this->getUser();
         $orderId = $this->getUserOrderId($user);
         $response = $this->getJson(
-            str_replace('{orderId}', $orderId, self::CONTROLLER_ROUTE),
+            str_replace('{orderId}', $orderId, self::USER_CONTROLLER_ROUTE),
             ['authorization' => 'Bearer ' . $this->getInvalidToken()]
         );
 

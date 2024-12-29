@@ -7,7 +7,7 @@ use Tests\TestCase;
 
 class CartGetTest extends TestCase
 {
-    private const CONTROLLER_ROUTE = '/api/users/{userId}/carts';
+    private const USER_CONTROLLER_ROUTE = '/api/users/{userId}/carts';
     private const ADMIN_CONTROLLER_ROUTE = '/api/admin/users/{userId}/carts';
 
     protected function setUp(): void
@@ -48,7 +48,7 @@ class CartGetTest extends TestCase
         $anotherUser = $this->getAnotherUser();
 
         $response = $this->getJson(
-            str_replace('{userId}', $anotherUser->getKey(), self::CONTROLLER_ROUTE),
+            str_replace('{userId}', $anotherUser->getKey(), self::USER_CONTROLLER_ROUTE),
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
 
@@ -60,7 +60,7 @@ class CartGetTest extends TestCase
         return [
             'user' => [
                 'user' => fn ($self) => $self->getUser(),
-                'route' => self::CONTROLLER_ROUTE,
+                'route' => self::USER_CONTROLLER_ROUTE,
             ],
             'admin' => [
                 'user' => fn ($self) => $self->getAdminUser(),

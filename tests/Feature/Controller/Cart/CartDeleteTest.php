@@ -7,7 +7,7 @@ use Tests\TestCase;
 
 class CartDeleteTest extends TestCase
 {
-    private const CONTROLLER_ROUTE = '/api/users/{userId}/carts';
+    private const USER_CONTROLLER_ROUTE = '/api/users/{userId}/carts';
     private const ADMIN_CONTROLLER_ROUTE = '/api/admin/users/{userId}/carts';
 
     protected function setUp(): void
@@ -21,7 +21,7 @@ class CartDeleteTest extends TestCase
         $this->createCartProducts($user);
 
         $response = $this->deleteJson(
-            str_replace('{userId}', $user->getKey(), self::CONTROLLER_ROUTE),
+            str_replace('{userId}', $user->getKey(), self::USER_CONTROLLER_ROUTE),
             [],
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
@@ -82,7 +82,7 @@ class CartDeleteTest extends TestCase
         return [
             'user' => [
                 'user' => fn ($self) => $self->getUser(),
-                'route' => self::CONTROLLER_ROUTE,
+                'route' => self::USER_CONTROLLER_ROUTE,
             ],
             'admin' => [
                 'user' => fn ($self) => $self->getAdminUser(),
