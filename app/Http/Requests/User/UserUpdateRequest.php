@@ -31,7 +31,7 @@ class UserUpdateRequest extends FormRequest
             'surname' => 'nullable|string|max:50',
             'phone' => 'regex:/^\d{4,15}$/|unique:users,phone',
             'email' => 'email',
-            'default_address' => 'string|max:255',
+            'defaultAddress' => 'string|max:255',
         ];
     }
 

@@ -12,20 +12,17 @@ class UserDataService
         return User::query()->findOrFail($userId);
     }
 
-    public function updateUser(UpdateUserData $updateUserData): User
+    public function updateUser(User $user, UpdateUserData $updateUserData): User
     {
-        $user = User::query()->findOrFail($updateUserData->id);
         $user->update($updateUserData->getNewValues());
         $user->refresh();
 
         return $user;
     }
 
-    public function deleteUser(string $userId): void
+    public function deleteUser(User $user): void
     {
-        User::query()
-            ->findOrFail($userId)
-            ->delete();
+        $user::query()->delete();
     }
 
     public function updateAddress(int $userId, ?string $address): void

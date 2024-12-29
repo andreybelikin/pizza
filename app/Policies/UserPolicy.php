@@ -14,23 +14,23 @@ class UserPolicy
         return $authorizedUser->isAdmin() ? true : null;
     }
 
-    public function get(User $authorizedUser, string $userId): bool
+    public function get(User $authorizedUser, User $requestedUser): bool
     {
-        return $this->isOwner($authorizedUser, $userId);
+        return $this->isOwner($authorizedUser, $requestedUser);
     }
 
-    public function update(User $authorizedUser, string $userId): bool
+    public function update(User $authorizedUser, User $requestedUser): bool
     {
-        return $this->isOwner($authorizedUser, $userId);
+        return $this->isOwner($authorizedUser, $requestedUser);
     }
 
-    public function delete(User $authorizedUser, string $userId): bool
+    public function delete(User $authorizedUser, User $requestedUser): bool
     {
-        return $this->isOwner($authorizedUser, $userId);
+        return $this->isOwner($authorizedUser, $requestedUser);
     }
 
-    private function isOwner(User $authorizedUser, string $userId): bool
+    private function isOwner(User $authorizedUser, User $requestedUser): bool
     {
-        return $authorizedUser->getKey() === (int)$userId;
+        return $authorizedUser->getKey() === $requestedUser->getKey();
     }
 }

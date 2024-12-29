@@ -7,7 +7,6 @@ use App\Http\Requests\User\UserUpdateRequest;
 readonly class UpdateUserData
 {
     public function __construct(
-        public int $id,
         public ?string $name,
         public ?string $surname,
         public ?int $phone,
@@ -18,7 +17,6 @@ readonly class UpdateUserData
     public static function fromRequest(UserUpdateRequest $request): self
     {
         return new self(
-            id: $request->route('userId'),
             name: $request->get('name') ?? null,
             surname: $request->get('surname') ?? null,
             phone: (int)$request->get('phone') ? (int)$request->get('phone') : null,

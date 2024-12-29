@@ -20,25 +20,27 @@ class UserResourceService
 
     public function getUser(string $userId): JsonResource
     {
-        Gate::authorize('get', [User::class, $userId]);
         $user = $this->userDataService->getUser($userId);
+        Gate::authorize('get', [User::class, $user]);
 
         return new UserResource($user);
     }
 
     public function updateUser(UserUpdateRequest $request, string $userId): JsonResource
     {
-        Gate::authorize('update', [User::class, $userId]);
+        $user = $this->userDataService->getUser($userId);
+        Gate::authorize('update', [User::class, $user]);
         $updateUserData = UpdateUserData::fromRequest($request);
-        $updatedUser = $this->userDataService->updateUser($updateUserData);
+        $updatedUser = $this->userDataService->updateUser($user, $updateUserData);
 
         return new UserResource($updatedUser);
     }
 
     public function deleteUser(Request $request, string $userId): void
     {
-        Gate::authorize('delete', [User::class, $userId]);
+        $user = $this->userDataService->getUser($userId);
+        Gate::authorize('delete', [User::class, $user]);
         $this->authService->logoutUser($request);
-        $this->userDataService->deleteUser($userId);
+        $this->userDataService->deleteUser($user);
     }
 }
