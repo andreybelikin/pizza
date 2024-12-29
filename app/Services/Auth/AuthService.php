@@ -2,12 +2,14 @@
 
 namespace App\Services\Auth;
 
+use App\Dto\Request\LoginData;
+use App\Dto\Request\TokensData;
 use App\Exceptions\Auth\InvalidCredentialsException;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Requests\TokensRequest;
 use App\Models\User;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Http\Request;
 
 class AuthService
 {
@@ -27,8 +29,8 @@ class AuthService
 
     public function authenticateUser(LoginRequest $request): array
     {
-        $credentials = $request->only('email', 'password');
-        $accessToken = auth()->attempt($credentials);
+        $loginData = LoginData::fromRequest($request)->toArray();
+        $accessToken = auth()->attempt($loginData);
 
         if (!$accessToken) {
             throw new InvalidCredentialsException();
@@ -39,11 +41,10 @@ class AuthService
         return [$accessToken, $refreshToken];
     }
 
-    public function refreshToken(Request $request): array
+    public function refreshToken(TokensRequest $request): array
     {
-        auth()->setToken($request->header('x-refresh-token'));
+        $this->logoutUser($request);
         $authenticatedUser = auth()->user();
-        auth()->invalidate();
 
         $accessToken = $this->loginUser($authenticatedUser);
         $refreshToken = $this->generateRefreshToken();
@@ -51,12 +52,9 @@ class AuthService
         return [$accessToken, $refreshToken];
     }
 
-    public function logoutUser(Request $request): void
+    public function logoutUser(TokensRequest $request): void
     {
-        $tokens = array_filter([
-            $request->bearerToken(),
-            $request->header('x-refresh-token')
-        ]);
+        $tokens = TokensData::fromRequest($request)->toArray();
 
         array_walk($tokens, function ($token) {
             auth()->setToken($token);
