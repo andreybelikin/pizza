@@ -2,6 +2,7 @@
 
 namespace App\Services\Resource;
 
+use App\Dto\Request\RegisterUserData;
 use App\Dto\Request\UpdateUserData;
 use App\Models\User;
 
@@ -32,6 +33,11 @@ class UserDataService
             $user->address = $address;
             $user->save();
         }
+    }
+
+    public function createUser(RegisterUserData $registerUserData): User
+    {
+       return User::query()->create($registerUserData->toArray());
     }
 
     public function getDefaultAddress(int $userId): string

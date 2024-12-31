@@ -6,12 +6,11 @@ use App\Dto\Response\Controller\Auth\InvalidCredentialsResponseDto;
 use App\Dto\Response\Controller\Auth\TokensResponseDto;
 use App\Exceptions\Auth\InvalidCredentialsException;
 use App\Http\Requests\Auth\LoginRequest;
-use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\TokensRequest;
 use App\Services\Auth\AuthService;
 use Symfony\Component\HttpFoundation\Response;
 
-class AuthController
+class AdminAuthController
 {
     public function __construct(private readonly AuthService $authService)
     {}
@@ -35,15 +34,6 @@ class AuthController
         $this->authService->logoutUser($request);
 
         return response('');
-    }
-
-    public function register(RegisterRequest $request): Response
-    {
-        $user = $this->authService->registerUser($request);
-
-        return response()
-            ->json($user)
-            ->setEncodingOptions(JSON_UNESCAPED_UNICODE);
     }
 
     public function refresh(TokensRequest $request): Response

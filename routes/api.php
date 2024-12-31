@@ -5,23 +5,31 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UserController;
-use App\Http\Middleware\EnsureTokenIsValid;
-use App\Http\Middleware\EnsureTokenIsValidLogout;
+use App\Http\Middleware\EnsureAccessTokenIsValid;
+use App\Http\Middleware\EnsureRefreshTokenIsValid;
+use App\Http\Middleware\EnsureTokensAreValid;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminOrderController;
 use App\Http\Controllers\AdminCartController;
 use App\Http\Controllers\AdminProductController;
 use App\Http\Controllers\AdminUserController;
+use App\Http\Controllers\AdminAuthController;
 
 Route::controller(AuthController::class)->group(function () {
-    Route::post('/login', 'login');
-    Route::post('/logout', 'logout')->middleware(EnsureTokenIsValidLogout::class);
-    Route::post('/refresh', 'refresh')->middleware(EnsureTokenIsValid::class);
-    Route::post('/register', 'register');
+    Route::post('/auth/login', 'login');
+    Route::post('/auth/logout', 'logout')->middleware(EnsureTokensAreValid::class);
+    Route::post('/auth/refresh', 'refresh')->middleware(EnsureRefreshTokenIsValid::class);
+    Route::post('/auth/register', 'register');
 });
 
-Route::middleware(EnsureTokenIsValid::class)->group(function () {
+Route::controller(AdminAuthController::class)->group(function () {
+    Route::post('/admin/auth/login', 'login');
+    Route::post('/admin/auth/logout', 'logout')->middleware(EnsureTokensAreValid::class);
+    Route::post('/admin/auth/refresh', 'refresh')->middleware(EnsureRefreshTokenIsValid::class);
+})->middleware(EnsureUserIsAdmin::class);
+
+Route::middleware(EnsureAccessTokenIsValid::class)->group(function () {
     Route::middleware(EnsureUserIsAdmin::class)->group(function () {
         Route::controller(AdminOrderController::class)->group(function () {
             Route::get('/admin/orders', 'index');

@@ -3,28 +3,32 @@
 namespace App\Services\Auth;
 
 use App\Dto\Request\LoginData;
+use App\Dto\Request\RegisterUserData;
 use App\Dto\Request\TokensData;
 use App\Exceptions\Auth\InvalidCredentialsException;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\TokensRequest;
-use App\Models\User;
+use App\Http\Resources\UserResource;
+use App\Services\DBTransactionService;
+use App\Services\Resource\UserDataService;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 
 class AuthService
 {
-    public function registerUser(RegisterRequest $request): void
+    public function __construct(
+        private UserDataService $userDataService,
+        private DBTransactionService $dbTransactionService
+    ) {}
+
+    public function registerUser(RegisterRequest $request): JsonResource
     {
-        $user = new User([
-            'name' => $request->input('name'),
-            'surname' => $request->input('surname'),
-            'email' => $request->input('email'),
-            'phone' => $request->input('phone'),
-            'password' => bcrypt($request->input('password')),
-            'default_address' => $request->input('default_address'),
-            'is_admin' => 0,
-        ]);
-        $user->save();
+        $registerData = RegisterUserData::fromRequest($request);
+        $user = $this->dbTransactionService->execute(fn () => $this->userDataService->createUser($registerData));
+
+        return new UserResource($user);
     }
 
     public function authenticateUser(LoginRequest $request): array
@@ -52,14 +56,10 @@ class AuthService
         return [$accessToken, $refreshToken];
     }
 
-    public function logoutUser(TokensRequest $request): void
+    public function logoutUser(Request $request): void
     {
-        $tokens = TokensData::fromRequest($request)->toArray();
-
-        array_walk($tokens, function ($token) {
-            auth()->setToken($token);
-            auth()->invalidate();
-        });
+        auth()->setToken($request->bearerToken());
+        auth()->invalidate();
     }
 
     private function generateRefreshToken(): string

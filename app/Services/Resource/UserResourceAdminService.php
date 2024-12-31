@@ -5,11 +5,15 @@ namespace App\Services\Resource;
 use App\Dto\Request\UpdateUserData;
 use App\Http\Requests\User\UserUpdateRequest;
 use App\Http\Resources\UserResource;
+use App\Services\DBTransactionService;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class UserResourceAdminService
 {
-    public function __construct(private UserDataService $userDataService) {}
+    public function __construct(
+        private UserDataService $userDataService,
+        private DBTransactionService $dbTransactionService
+    ) {}
 
     public function getUser(string $userId): JsonResource
     {
@@ -22,7 +26,9 @@ class UserResourceAdminService
     {
         $user = $this->userDataService->getUser($userId);
         $updateUserData = UpdateUserData::fromRequest($request);
-        $updatedUser = $this->userDataService->updateUser($user, $updateUserData);
+        $updatedUser = $this->dbTransactionService->execute(
+            fn() => $this->userDataService->updateUser($user, $updateUserData)
+        );
 
         return new UserResource($updatedUser);
     }
@@ -30,6 +36,6 @@ class UserResourceAdminService
     public function deleteUser(string $userId): void
     {
         $user = $this->userDataService->getUser($userId);
-        $this->userDataService->deleteUser($user);
+        $this->dbTransactionService->execute(fn() => $this->userDataService->deleteUser($user));
     }
 }

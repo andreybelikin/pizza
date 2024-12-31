@@ -2,7 +2,7 @@
 
 namespace App\Dto\Request;
 
-use App\Http\Requests\TokensRequest;
+use Illuminate\Http\Request;
 
 readonly class TokensData
 {
@@ -11,11 +11,11 @@ readonly class TokensData
         public string $refreshToken,
     ) {}
 
-    public static function fromRequest(TokensRequest $request): self
+    public static function fromRequest(Request $request): self
     {
         return new self(
-            $request->get('accessToken'),
-            $request->get('refreshToken'),
+            $request->bearerToken(),
+            $request->header('x-refresh-token'),
         );
     }
 
