@@ -39,6 +39,7 @@ class Handler extends ExceptionHandler
         });
 
         $this->renderable(function (Exception $exception) {
+            dd($exception);
             return response()->json('Something went wrong. Try again later', Response::HTTP_INTERNAL_SERVER_ERROR);
         });
     }

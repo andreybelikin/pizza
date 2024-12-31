@@ -37,7 +37,11 @@ class UserDataService
 
     public function createUser(RegisterUserData $registerUserData): User
     {
-       return User::query()->create($registerUserData->toArray());
+        $newUser = new User($registerUserData->toArray());
+        $newUser->is_admin = false;
+        $newUser->save();
+
+        return $newUser;
     }
 
     public function getDefaultAddress(int $userId): string

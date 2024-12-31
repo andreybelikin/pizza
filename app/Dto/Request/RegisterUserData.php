@@ -29,6 +29,13 @@ readonly class RegisterUserData
 
     public function toArray(): array
     {
-        return (array)$this;
+        return [
+            'name' => $this->name,
+            'surname' => $this->surname,
+            'email' => $this->email,
+            'phone' => $this->phone,
+            'password' => $this->password,
+            'default_address' => $this->defaultAddress,
+        ];
     }
 }
