@@ -17,10 +17,11 @@ trait UserTrait
         $this->generateAccessToken($user->email, $password);
     }
 
-    public function createUserWithCredentials(array $credentials): void
+    public function createUserWithCredentials(array $credentials): User
     {
         $credentials['password'] = bcrypt($credentials['password']);
-        User::factory()->create($credentials);
+
+        return User::factory()->create($credentials);
     }
 
     public function getAnotherUser(): User
