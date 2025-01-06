@@ -2,15 +2,12 @@
 
 namespace App\Exceptions\Auth;
 
-use Symfony\Component\HttpFoundation\Response;
-
 class TokenUserNotDefinedException extends TokenException
 {
-    private CONST MESSAGE = 'Token user not found';
-    private CONST STATUS = Response::HTTP_INTERNAL_SERVER_ERROR;
+    private const MESSAGE = 'Token user not found';
 
     public function __construct()
     {
-        parent::__construct(self::MESSAGE, self::STATUS);
+        parent::__construct(self::MESSAGE);
     }
 }

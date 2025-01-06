@@ -4,12 +4,15 @@ namespace App\Exceptions\Auth;
 
 use App\Dto\Response\HttpMiddleware\TokenExceptionResponseDto;
 use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 class TokenException extends \Exception
 {
-    public function __construct($message, private readonly ?int $status = null)
+    const STATUS = Response::HTTP_UNAUTHORIZED;
+
+    public function __construct(string $message)
     {
-        parent::__construct($message, $status);
+        parent::__construct($message, self::STATUS);
     }
 
     public function getResponse(): JsonResponse

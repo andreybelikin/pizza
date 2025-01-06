@@ -14,7 +14,7 @@ trait AuthTrait
         ]);
     }
 
-    public function getRefreshToken()
+    public function getRefreshToken(int $userId): string
     {
         return (
             auth()
@@ -23,11 +23,7 @@ trait AuthTrait
                 'typ' => 'refresh',
                 'exp' => now()->addMinutes(config('jwt.refresh_ttl'))
             ])
-        )->tokenById(
-            auth()
-            ->user()
-            ->getJWTIdentifier()
-        );
+        )->tokenById($userId);
     }
 
     public function getUserAccessToken(User $user): string

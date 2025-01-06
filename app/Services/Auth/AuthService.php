@@ -60,6 +60,9 @@ class AuthService
     {
         auth()->setToken($request->bearerToken());
         auth()->invalidate();
+
+        auth()->setToken($request->header('x-refresh-token'));
+        auth()->invalidate();
     }
 
     private function generateRefreshToken(): string
