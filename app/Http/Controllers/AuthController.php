@@ -9,6 +9,7 @@ use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\TokensRequest;
 use App\Services\Auth\AuthService;
+use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 class AuthController
@@ -46,7 +47,7 @@ class AuthController
             ->setEncodingOptions(JSON_UNESCAPED_UNICODE);
     }
 
-    public function refresh(TokensRequest $request): Response
+    public function refresh(TokensRequest $request): JsonResponse
     {
         [$accessToken, $refreshToken] = $this->authService->refreshToken($request);
         $response = new TokensResponseDto($accessToken, $refreshToken);
