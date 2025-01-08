@@ -58,10 +58,13 @@ class AuthService
 
     public function logoutUser(Request $request): void
     {
-        auth()->setToken($request->bearerToken());
-        auth()->invalidate();
+        $this->invalidateToken($request->bearerToken());
+        $this->invalidateToken($request->header('x-refresh-token'));
+    }
 
-        auth()->setToken($request->header('x-refresh-token'));
+    public function invalidateToken(string $token): void
+    {
+        auth()->setToken($token);
         auth()->invalidate();
     }
 

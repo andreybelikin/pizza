@@ -46,6 +46,22 @@ class CartDeleteTest extends TestCase
         static::assertTrue($user->products()->get()->isEmpty());
     }
 
+    public function testDeleteAnotherUserCartByAdminShouldSuccess(): void
+    {
+        $user = $this->getAdminUser();
+        $anotherUser = $this->createUser();
+        $this->createCartProducts($anotherUser);
+
+        $response = $this->deleteJson(
+            str_replace('{userId}', $anotherUser->getKey(), self::ADMIN_CONTROLLER_ROUTE),
+            [],
+            ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
+        );
+
+        $response->assertOk();
+        static::assertTrue($anotherUser->products()->get()->isEmpty());
+    }
+
     #[DataProvider('contextDataProvider')]
     public function testDeleteCartWithInvalidTokenShouldFail(\Closure $user, string $route): void
     {
@@ -61,15 +77,14 @@ class CartDeleteTest extends TestCase
         $response->assertUnauthorized();
     }
 
-    #[DataProvider('contextDataProvider')]
-    public function testDeleteAnotherUserCartShouldFail(\Closure $user, string $route): void
+    public function testDeleteAnotherUserCartShouldFail(): void
     {
-        $user = $user($this);
+        $user = $this->getUser();
         $anotherUser = $this->createUser();
         $this->createCartProducts($anotherUser);
 
         $response = $this->deleteJson(
-            str_replace('{userId}', $anotherUser->getKey(), $route),
+            str_replace('{userId}', $anotherUser->getKey(), self::USER_CONTROLLER_ROUTE),
             [],
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );

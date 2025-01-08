@@ -30,7 +30,6 @@ class UserDeleteTest extends TestCase
             [],
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
-
         $response->assertOk();
         static::assertModelMissing($user);
     }

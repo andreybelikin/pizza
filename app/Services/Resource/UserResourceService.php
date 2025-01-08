@@ -48,6 +48,6 @@ class UserResourceService
         $this->dbTransactionService->execute(
             fn() => $this->userDataService->deleteUser($user)
         );
-        $this->authService->logoutUser($request);
+        $this->authService->invalidateToken($request->bearerToken());
     }
 }
