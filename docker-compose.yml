@@ -27,7 +27,6 @@ services:
     working_dir: '/var/www/html'
     depends_on:
       - mysql
-      - redis
     environment:
       PHP_IDE_CONFIG: "serverName=DevServer"
     networks:
