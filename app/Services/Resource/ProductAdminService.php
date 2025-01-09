@@ -14,7 +14,7 @@ use App\Services\DBTransactionService;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
-class ProductResourceAdminService
+class ProductAdminService
 {
     public function __construct(
         private ProductDataService $productDataService,

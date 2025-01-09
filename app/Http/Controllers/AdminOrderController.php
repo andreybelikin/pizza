@@ -5,13 +5,13 @@ namespace App\Http\Controllers;
 use App\Http\Requests\OrderAddRequest;
 use App\Http\Requests\OrdersRequest;
 use App\Http\Requests\OrderUpdateRequest;
-use App\Services\Resource\OrderResourceAdminService;
+use App\Services\Resource\OrderAdminService;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 class AdminOrderController
 {
-    public function __construct(private OrderResourceAdminService $orderResourceAdminService)
+    public function __construct(private OrderAdminService $orderResourceAdminService)
     {}
 
     public function index(OrdersRequest $request): JsonResponse

@@ -3,13 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\User\UserUpdateRequest;
-use App\Services\Resource\UserResourceAdminService;
+use App\Services\Resource\UserAdminService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 
 class AdminUserController
 {
-    public function __construct(private readonly UserResourceAdminService $userResourceAdminService)
+    public function __construct(private readonly UserAdminService $userResourceAdminService)
     {}
 
     public function get(string $userId): JsonResponse

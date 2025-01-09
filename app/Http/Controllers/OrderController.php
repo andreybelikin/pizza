@@ -3,14 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\OrderAddRequest;
-use App\Services\Resource\OrderResourceService;
+use App\Services\Resource\OrderService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 class OrderController
 {
     public function __construct(
-        private OrderResourceService  $orderResourceService
+        private OrderService $orderResourceService
     ) {}
 
     public function index(string $userId): JsonResponse

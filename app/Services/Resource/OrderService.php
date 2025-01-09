@@ -13,7 +13,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
-class OrderResourceService
+class OrderService
 {
     public function __construct(
         private OrderDataService $orderDataService,

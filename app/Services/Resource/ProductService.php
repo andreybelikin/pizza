@@ -9,7 +9,7 @@ use App\Http\Resources\ProductsCollection;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
-class ProductResourceService
+class ProductService
 {
     public function __construct(private ProductDataService $productDataService)
     {}

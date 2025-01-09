@@ -2,7 +2,7 @@
 
 namespace App\Exceptions\Auth;
 
-use App\Dto\Response\HttpMiddleware\TokenExceptionResponseDto;
+use App\Dto\Response\Middleware\TokenExceptionResponseDto;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 

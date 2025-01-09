@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Dto\Response\Resourse\DeletedResourceDto;
 use App\Http\Requests\Cart\CartUpdateRequest;
-use App\Services\Resource\CartResourceService;
+use App\Services\Resource\CartService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
 
 class CartController
 {
     public function __construct(
-        private CartResourceService $cartResourceService
+        private CartService $cartResourceService
     ) {}
 
     public function get(string $userId): JsonResponse
@@ -31,11 +31,10 @@ class CartController
             ->setEncodingOptions(JSON_UNESCAPED_UNICODE);
     }
 
-    public function delete(string $userId): JsonResponse
+    public function delete(string $userId): Response
     {
         $this->cartResourceService->deleteCart($userId);
-        $responseDto = new DeletedResourceDto();
 
-        return response()->json($responseDto->toArray(), $responseDto::STATUS);
+        return response('');
     }
 }

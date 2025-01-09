@@ -3,7 +3,6 @@
 namespace App\Exceptions;
 
 use App\Exceptions\Limit\CartLimitException;
-use App\Exceptions\Resource\ResourceException;
 use Exception;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Validation\ValidationException;
@@ -20,10 +19,6 @@ class Handler extends ExceptionHandler
                 $exception->validator->errors()->toArray(),
                 Response::HTTP_UNPROCESSABLE_ENTITY
             );
-        });
-
-        $this->renderable(function (ResourceException $exception) {
-            return $exception->getResponse();
         });
 
         $this->renderable(function (CartLimitException $exception) {

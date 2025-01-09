@@ -15,7 +15,7 @@ use App\Services\DBTransactionService;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
-class OrderResourceAdminService
+class OrderAdminService
 {
     public function __construct(
         private OrderDataService $orderDataService,

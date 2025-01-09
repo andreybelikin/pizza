@@ -3,14 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\User\UserUpdateRequest;
-use App\Services\Resource\UserResourceService;
+use App\Services\Resource\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 class UserController
 {
-    public function __construct(private readonly UserResourceService $userService)
+    public function __construct(private readonly UserService $userService)
     {}
 
     public function get(string $userId): JsonResponse

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Dto\Response\HttpMiddleware;
+namespace App\Dto\Response\Middleware;
 
 use Illuminate\Http\Response;
 

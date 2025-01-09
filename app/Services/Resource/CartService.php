@@ -2,7 +2,6 @@
 
 namespace App\Services\Resource;
 
-use App\Dto\Request\DeleteCartData;
 use App\Dto\Request\GetCartData;
 use App\Dto\Request\UpdateCartData;
 use App\Http\Requests\Cart\CartUpdateRequest;
@@ -13,7 +12,7 @@ use App\Services\Limit\CartLimitService;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Gate;
 
-class CartResourceService
+class CartService
 {
     public function __construct(
         private CartLimitService $cartLimitService,
@@ -44,10 +43,9 @@ class CartResourceService
 
     public function deleteCart(string $userId): void
     {
-        $deleteCartData = new DeleteCartData($userId);
-        Gate::authorize('delete', [CartProduct::class, $deleteCartData->userId]);
-        $this->dbTransactionService->execute(function () use ($deleteCartData) {
-            $this->cartDataService->deleteCart($deleteCartData->userId);
+        Gate::authorize('delete', [CartProduct::class, $userId]);
+        $this->dbTransactionService->execute(function () use ($userId) {
+            $this->cartDataService->deleteCart($userId);
         });
     }
 

@@ -5,13 +5,13 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Product\ProductAddRequest;
 use App\Http\Requests\Product\ProductIndexRequest;
 use App\Http\Requests\Product\ProductUpdateRequest;
-use App\Services\Resource\ProductResourceAdminService;
+use App\Services\Resource\ProductAdminService;
 use Illuminate\Http\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 class AdminProductController
 {
-    public function __construct(private ProductResourceAdminService $productResourceAdminService)
+    public function __construct(private ProductAdminService $productResourceAdminService)
     {}
 
     public function index(ProductIndexRequest $request): JsonResponse
