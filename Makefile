@@ -1,8 +1,8 @@
-APP_SERVICE = docker compose exec php-fpm
+APP_SERVICE = docker compose run --rm php-fpm
 
 build:
 	docker compose build
-	docker comopose run --rm php-fpm composer install
+	$(APP_SERVICE) composer install
 
 install: build prepare
 

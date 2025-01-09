@@ -64,18 +64,9 @@ services:
         - 'mysql_test:/var/lib/mysql'
     networks:
         - app-network
-  redis:
-    image: 'redis:alpine'
-    ports:
-      - '6379:6379'
-    volumes:
-      - 'redis:/data'
-    networks:
-      - app-network
 networks:
   app-network:
     driver: bridge
 volumes:
   mysql:
   mysql_test:
-  redis:
