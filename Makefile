@@ -1,16 +1,16 @@
 APP_SERVICE = docker compose run --rm php-fpm
 
 build:
+	cp -n .env.example .env
 	docker compose build
 	$(APP_SERVICE) composer install
 
 install: build prepare
 
 prepare: prepare_tests
-	cp -n .env.example .env
-	$(APP_SERVICE) php artisan jwt:secret
-	$(APP_SERVICE) php artisan key:generate
-	$(APP_SERVICE) php artisan migrate --seed
+	@$(APP_SERVICE) php artisan jwt:secret
+	@$(APP_SERVICE) php artisan key:generate
+	@$(APP_SERVICE) php artisan migrate --seed
 
 prepare_tests:
 	$(APP_SERVICE) php artisan --env=testing key:generate

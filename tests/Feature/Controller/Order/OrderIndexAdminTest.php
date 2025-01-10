@@ -1,6 +1,6 @@
 <?php
 
-namespace Feature\Controller\Order;
+namespace Tests\Feature\Controller\Order;
 
 use App\Dto\Request\ListOrderFilterData;
 use App\Enums\OrderStatus;

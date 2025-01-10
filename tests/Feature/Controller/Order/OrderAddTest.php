@@ -1,6 +1,6 @@
 <?php
 
-namespace Feature\Controller\Order;
+namespace Tests\Feature\Controller\Order;
 
 use App\Enums\OrderStatus;
 use App\Models\Product;

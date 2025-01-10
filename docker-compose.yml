@@ -1,3 +1,6 @@
+networks:
+    app-network:
+        driver: bridge
 services:
   web:
     image: nginx:stable-alpine
@@ -32,6 +35,7 @@ services:
     networks:
         - app-network
   mysql:
+    container_name: mysql
     image: 'mysql/mysql-server:8.0'
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
@@ -46,7 +50,8 @@ services:
       - 'mysql:/var/lib/mysql'
     networks:
         - app-network
-  mysql_test:
+  mysql-test:
+    container_name: mysql-test
     image: 'mysql/mysql-server:8.0'
     env_file:
         - .env.testing
@@ -63,9 +68,6 @@ services:
         - 'mysql_test:/var/lib/mysql'
     networks:
         - app-network
-networks:
-  app-network:
-    driver: bridge
 volumes:
   mysql:
   mysql_test:
