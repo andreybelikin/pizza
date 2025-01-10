@@ -1,4 +1,4 @@
-APP_SERVICE = docker compose run --rm php-fpm
+APP_SERVICE = docker compose exec php-fpm
 
 env:
 	cp -n .env.example .env
@@ -15,7 +15,7 @@ dep_install:
 	$(APP_SERVICE) composer install
 
 install: env
-	docker compose up --build
+	docker compose up --build -d
 
 setup: install dep_install keys test_keys dev_migration test_migration
 	docker compose stop
