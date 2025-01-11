@@ -56,11 +56,11 @@ class RegisterRequest extends FormRequest
             ,
             'password_confirmation.required' => 'A user confirm password is required.',
             'name.required' => 'A user name is required.',
-            'name.max' => 'A user name is only 50 char long.',
+            'name.max' => 'A user name is only :max char long.',
             'surname.required' => 'A user surname is required.',
-            'surname.max' => 'A surname is only 50 char long.',
+            'surname.max' => 'A surname is only :max char long.',
             'default_address.required' => 'A user default address is required',
-            'default_address.max' => 'A user default address is only 255 char long.',
+            'default_address.max' => 'A user default address is only :max char long.',
         ];
     }
 

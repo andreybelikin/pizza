@@ -61,13 +61,13 @@ class UserUpdateRequest extends FormRequest
     {
         return [
             'id.required' => 'A user id is required',
-            'id.max' => 'A user id is only 36 char long',
+            'id.max' => 'A user id is only :max char long',
             'email.email' => 'A user email must be a valid email address.',
             'email.unique' => 'A user with this email already exists.',
             'phone.regex' => 'A user phone must correspond to international phone number format.',
-            'name.max' => 'A user name is only 50 char long.',
-            'surname.max' => 'A surname is only 50 char long.',
-            'default_address.max' => 'A user default address is only 255 char long.',
+            'name.max' => 'A user name is only :max char long.',
+            'surname.max' => 'A surname is only :max char long.',
+            'default_address.max' => 'A user default address is only :max char long.',
         ];
     }
 

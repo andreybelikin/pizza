@@ -57,9 +57,9 @@ class OrderAddRequest extends FormRequest
             'phone.required' => 'A phone is required',
             'phone.regex' => 'A phone should be a valid phone number',
             'name.required' => 'A name is required',
-            'name.max' => 'A name length must not to be more than 20',
+            'name.max' => 'A name length must not to be more than :max',
             'address.required' => 'A address is required',
-            'address.max' => 'A address length must not to be more than 100',
+            'address.max' => 'A address length must not to be more than :max',
         ];
     }
 }

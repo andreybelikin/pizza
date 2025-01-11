@@ -40,12 +40,12 @@ class ProductIndexRequest extends FormRequest
     {
         return [
             'title.string' => 'A product title must be a string',
-            'title.max' => 'A product title is only 50 char long',
-            'page.max' => 'A page number is only 10 char long',
+            'title.max' => 'A product title is only :max char long',
+            'page.max' => 'A page number is only :max char long',
             'minPrice.integer' => 'A product price must be an integer',
             'maxPrice.integer' => 'A product price must be an integer',
             'description.string' => 'A product description must be a string',
-            'description.max' => 'A product description is only 250 char long',
+            'description.max' => 'A product description is only :max char long',
             'type.in_enum' => 'A product type is invalid',
         ];
     }

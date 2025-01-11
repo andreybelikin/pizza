@@ -36,7 +36,7 @@ class CartUpdateRequest extends FormRequest
         return [
             'products.required' => 'A products must be set',
             'products.array' => 'A products must be array',
-            'products.min' => 'A products must be at least 1',
+            'products.min' => 'A products must be at least :min',
             'products.*.id.required' => 'A product id must be set',
             'products.*.id.integer' => 'A product id must be an integer',
             'products.*.id.exists' => 'A product is not exists',

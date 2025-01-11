@@ -36,7 +36,7 @@ class LoginRequest extends FormRequest
             'email.required' => 'A user email is required.',
             'email.email' => 'A user email must be a valid email address.',
             'password.required' => 'A user password is required.',
-            'password.max' => 'A password must not be longer than 50 characters.',
+            'password.max' => 'A password must not be longer than :max characters.',
         ];
     }
 
