@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Order;
 
 use App\Enums\OrderStatus;
 use Illuminate\Foundation\Http\FormRequest;
@@ -23,6 +23,9 @@ class OrderAddRequest extends FormRequest
      */
     public function rules(): array
     {
+        $this->merge([
+            'userId' => $this->route('userId'),
+        ]);
         $rules = [
             'userId' => 'required|integer',
             'phone' => 'required_without_all:name,address,orderProducts|string|regex:/^\d{4,15}$/',
@@ -41,13 +44,6 @@ class OrderAddRequest extends FormRequest
         }
 
         return $rules;
-    }
-
-    protected function prepareForValidation(): void
-    {
-        $this->merge([
-            'userId' => $this->route('userId'),
-        ]);
     }
 
     public function messages(): array

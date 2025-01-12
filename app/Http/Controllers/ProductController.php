@@ -8,21 +8,21 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 
 class ProductController
 {
-    public function __construct(private ProductService $productResourceService)
+    public function __construct(private ProductService $productService)
     {}
 
     public function index(ProductIndexRequest $request): JsonResponse
     {
-        $products = $this->productResourceService->getProducts($request);
+        $products = $this->productService->getProducts($request);
 
         return response()
             ->json($products)
             ->setEncodingOptions(JSON_UNESCAPED_UNICODE);
     }
 
-    public function get(string $id): JsonResponse
+    public function show(string $id): JsonResponse
     {
-        $product = $this->productResourceService->getProduct($id);
+        $product = $this->productService->getProduct($id);
 
         return response()
             ->json($product)

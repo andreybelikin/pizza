@@ -13,7 +13,7 @@ class UserController
     public function __construct(private readonly UserService $userService)
     {}
 
-    public function get(string $userId): JsonResponse
+    public function show(string $userId): JsonResponse
     {
         $user = $this->userService->getUser($userId);
 
@@ -22,7 +22,7 @@ class UserController
             ->setEncodingOptions(JSON_UNESCAPED_UNICODE);
     }
 
-    public function update(UserUpdateRequest $request, $userId): JsonResponse
+    public function update(UserUpdateRequest $request, string $userId): JsonResponse
     {
         $updatedUser = $this->userService->updateUser($request, $userId);
 
@@ -31,7 +31,7 @@ class UserController
             ->setEncodingOptions(JSON_UNESCAPED_UNICODE);
     }
 
-    public function delete(Request $request, string $userId): Response
+    public function destroy(Request $request, string $userId): Response
     {
         $this->userService->deleteUser($request, $userId);
 

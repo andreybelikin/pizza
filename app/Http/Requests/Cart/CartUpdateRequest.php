@@ -24,7 +24,10 @@ class CartUpdateRequest extends FormRequest
      */
     public function rules(): array
     {
+        $this->merge(['userId' => $this->route('userId')]);
+
         return [
+            'userId' => 'required|integer',
             'products' => 'required|array|min:1',
             'products.*.id' => 'required|integer|exists:products,id|distinct',
             'products.*.quantity' => 'required|integer',

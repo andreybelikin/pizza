@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Order;
 
 use App\Enums\ProductType;
 use Illuminate\Foundation\Http\FormRequest;
@@ -23,6 +23,10 @@ class OrderUpdateRequest extends FormRequest
      */
     public function rules(): array
     {
+        $this->merge([
+            'orderId' => $this->route('orderId'),
+        ]);
+
         return [
             'orderId' => 'required|integer',
             'phone' => 'required_without_all:name,address,status,orderProducts|string|regex:/^\d{4,15}$/|',
@@ -70,12 +74,5 @@ class OrderUpdateRequest extends FormRequest
             'orderProducts.*.price.integer' => 'orderProducts.price must be an integer',
             '*.required_without_all' => 'At least one field is required',
         ];
-    }
-
-    protected function prepareForValidation(): void
-    {
-        $this->merge([
-            'orderId' => $this->route('orderId'),
-        ]);
     }
 }

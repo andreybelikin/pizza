@@ -8,9 +8,6 @@ use Tests\TestCase;
 
 class RefreshTest extends TestCase
 {
-    private const USER_CONTROLLER_ROUTE = '/api/auth/refresh';
-    private const ADMIN_CONTROLLER_ROUTE = '/api/admin/auth/refresh';
-
     #[DataProvider('contextDataProvider')]
     public function testRefreshShouldSuccess(string $route)
     {
@@ -69,10 +66,10 @@ class RefreshTest extends TestCase
     {
         return [
             'user' => [
-                'route' => self::USER_CONTROLLER_ROUTE,
+                'route' => route('auth.refresh'),
             ],
             'admin' => [
-                'route' => self::ADMIN_CONTROLLER_ROUTE,
+                'route' => route('admin.auth.refresh'),
             ]
         ];
     }

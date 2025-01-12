@@ -9,12 +9,12 @@ use Illuminate\Http\Response;
 
 class AdminUserController
 {
-    public function __construct(private readonly UserAdminService $userResourceAdminService)
+    public function __construct(private readonly UserAdminService $userAdminService)
     {}
 
-    public function get(string $userId): JsonResponse
+    public function show(string $userId): JsonResponse
     {
-        $user = $this->userResourceAdminService->getUser($userId);
+        $user = $this->userAdminService->getUser($userId);
 
         return response()
             ->json($user)
@@ -23,16 +23,16 @@ class AdminUserController
 
     public function update(UserUpdateRequest $request, string $userId): JsonResponse
     {
-        $updatedUser = $this->userResourceAdminService->updateUser($request, $userId);
+        $updatedUser = $this->userAdminService->updateUser($request, $userId);
 
         return response()
             ->json($updatedUser)
             ->setEncodingOptions(JSON_UNESCAPED_UNICODE);
     }
 
-    public function delete(string $userId): Response
+    public function destroy(string $userId): Response
     {
-        $this->userResourceAdminService->deleteUser($userId);
+        $this->userAdminService->deleteUser($userId);
 
         return response('');
     }

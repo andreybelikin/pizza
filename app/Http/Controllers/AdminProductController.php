@@ -11,30 +11,30 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 
 class AdminProductController
 {
-    public function __construct(private ProductAdminService $productResourceAdminService)
+    public function __construct(private ProductAdminService $productAdminService)
     {}
 
     public function index(ProductIndexRequest $request): JsonResponse
     {
-        $products = $this->productResourceAdminService->getProducts($request);
+        $products = $this->productAdminService->getProducts($request);
 
         return response()
             ->json($products)
             ->setEncodingOptions(JSON_UNESCAPED_UNICODE);
     }
 
-    public function get(string $id): JsonResponse
+    public function show(string $id): JsonResponse
     {
-        $product = $this->productResourceAdminService->getProduct($id);
+        $product = $this->productAdminService->getProduct($id);
 
         return response()
             ->json($product)
             ->setEncodingOptions(JSON_UNESCAPED_UNICODE);
     }
 
-    public function add(ProductAddRequest $request): JsonResponse
+    public function store(ProductAddRequest $request): JsonResponse
     {
-        $createdProduct = $this->productResourceAdminService->addProduct($request);
+        $createdProduct = $this->productAdminService->addProduct($request);
 
         return response()
             ->json($createdProduct)
@@ -43,16 +43,16 @@ class AdminProductController
 
     public function update(ProductUpdateRequest $request): JsonResponse
     {
-        $updatedProduct = $this->productResourceAdminService->updateProduct($request);
+        $updatedProduct = $this->productAdminService->updateProduct($request);
 
         return response()
             ->json($updatedProduct)
             ->setEncodingOptions(JSON_UNESCAPED_UNICODE);
     }
 
-    public function delete(string $id): Response
+    public function destroy(string $id): Response
     {
-        $this->productResourceAdminService->deleteProduct($id);
+        $this->productAdminService->deleteProduct($id);
 
         return response('');
     }

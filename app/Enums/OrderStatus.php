@@ -3,8 +3,8 @@
 namespace App\Enums;
 enum OrderStatus: string
 {
-    case DELIVERED = 'delivered';
-    case CREATED = 'created';
+    case Delivered = 'delivered';
+    case Created = 'created';
 
     public static function getStatuses(): array
     {

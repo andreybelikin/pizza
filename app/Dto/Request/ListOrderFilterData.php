@@ -2,7 +2,7 @@
 
 namespace App\Dto\Request;
 
-use App\Http\Requests\OrdersRequest;
+use App\Http\Requests\Order\OrdersRequest;
 
 readonly class ListOrderFilterData
 {

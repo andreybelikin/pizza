@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\OrderAddRequest;
+use App\Http\Requests\Order\OrderAddRequest;
 use App\Services\Resource\OrderService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -10,19 +10,19 @@ use Symfony\Component\HttpFoundation\Response;
 class OrderController
 {
     public function __construct(
-        private OrderService $orderResourceService
+        private OrderService $orderService
     ) {}
 
     public function index(string $userId): JsonResponse
     {
-        $orders = $this->orderResourceService->getOrders($userId);
+        $orders = $this->orderService->getOrders($userId);
 
         return response()->json($orders);
     }
 
     public function get(string $orderId): JsonResponse
     {
-        $order = $this->orderResourceService->getOrder($orderId);
+        $order = $this->orderService->getOrder($orderId);
 
         return response()
             ->json($order)
@@ -31,7 +31,7 @@ class OrderController
 
     public function add(OrderAddRequest $request, string $userId): JsonResponse
     {
-        $order = $this->orderResourceService->addOrder($request, $userId);
+        $order = $this->orderService->addOrder($request, $userId);
 
         return response()
             ->json($order, Response::HTTP_CREATED)

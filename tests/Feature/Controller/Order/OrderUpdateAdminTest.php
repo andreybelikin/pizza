@@ -8,8 +8,6 @@ use Tests\TestCase;
 
 class OrderUpdateAdminTest extends TestCase
 {
-    private const ADMIN_CONTROLLER_ROUTE = 'api/admin/orders/{orderId}';
-
     public function testAddOrderUpdateByAdminSuccess(): void
     {
         $admin = $this->getAdminUser();
@@ -23,14 +21,14 @@ class OrderUpdateAdminTest extends TestCase
             'price' => 3200,
         ]);
         $orderData = [
-            'status' => OrderStatus::DELIVERED,
+            'status' => OrderStatus::Delivered,
             'phone' => '89996668877',
             'address' => 'test address',
             'name' => 'test name',
             'orderProducts' => $orderProductsData,
         ];
         $response = $this->putJson(
-            str_replace('{orderId}', $order->id, self::ADMIN_CONTROLLER_ROUTE),
+            route('admin.orders.update', ['orderId' => $order->id]),
             $orderData,
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($admin)]
         );
@@ -62,14 +60,14 @@ class OrderUpdateAdminTest extends TestCase
             'price' => 3200,
         ]);
         $orderData = [
-            'status' => OrderStatus::DELIVERED,
+            'status' => OrderStatus::Delivered,
             'phone' => '89996668877',
             'address' => 'test address',
             'name' => 'test name',
             'orderProducts' => $orderProductsData,
         ];
         $response = $this->putJson(
-            str_replace('{orderId}', $order->id, self::ADMIN_CONTROLLER_ROUTE),
+            route('admin.orders.update', ['orderId' => $order->id]),
             $orderData,
             ['authorization' => 'Bearer ' . $this->getInvalidToken()]
         );
@@ -92,14 +90,14 @@ class OrderUpdateAdminTest extends TestCase
             'price' => 3200,
         ]);
         $orderData = [
-            'status' => OrderStatus::DELIVERED,
+            'status' => OrderStatus::Delivered,
             'phone' => '89996668877',
             'address' => 'test address',
             'name' => 'test name',
             'orderProducts' => $orderProductsData,
         ];
         $response = $this->putJson(
-            str_replace('{orderId}', 999999, self::ADMIN_CONTROLLER_ROUTE),
+            route('admin.orders.update', ['orderId' => 999999]),
             $orderData,
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($admin)]
         );

@@ -2,13 +2,13 @@
 
 namespace Tests\Feature\Controller\Auth;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class RegisterTest extends TestCase
 {
-    private const USER_CONTROLLER_ROUTE = '/api/auth/register';
-
-    public function testRegisterShouldSuccess(): void
+    #[DataProvider('contextDataProvider')]
+    public function testRegisterShouldSuccess(string $route): void
     {
         $registerData = [
             'name' => 'andrey',
@@ -20,7 +20,7 @@ class RegisterTest extends TestCase
             'default_address' => 'г. Москва',
         ];
         $response = $this->postJson(
-            self::USER_CONTROLLER_ROUTE,
+            $route,
             $registerData
         );
         $response->assertOk();
@@ -35,7 +35,8 @@ class RegisterTest extends TestCase
         $response->assertJson($expectedData);
     }
 
-    public function testRegisterWithInvalidDataShouldSuccess(): void
+    #[DataProvider('contextDataProvider')]
+    public function testRegisterWithInvalidDataShouldSuccess(string $route): void
     {
         $registerData = [
             'name' => 'andrey',
@@ -45,13 +46,14 @@ class RegisterTest extends TestCase
             'password_confirmation' => 'keK48!>O04780',
         ];
         $response = $this->postJson(
-            self::USER_CONTROLLER_ROUTE,
+            $route,
             $registerData
         );
         $response->assertUnprocessable();
     }
 
-    public function testRegisterWithExistedPhoneEmailShouldFail(): void
+    #[DataProvider('contextDataProvider')]
+    public function testRegisterWithExistedPhoneEmailShouldFail(string $route): void
     {
         $user = $this->createUser();
         $registerData = [
@@ -64,9 +66,21 @@ class RegisterTest extends TestCase
             'default_address' => 'г. Москва',
         ];
         $response = $this->postJson(
-            self::USER_CONTROLLER_ROUTE,
+            $route,
             $registerData
         );
         $response->assertUnprocessable();
+    }
+
+    public static function contextDataProvider(): array
+    {
+        return [
+            'user' => [
+                'route' => route('auth.register'),
+            ],
+            'admin' => [
+                'route' => route('admin.auth.register'),
+            ]
+        ];
     }
 }

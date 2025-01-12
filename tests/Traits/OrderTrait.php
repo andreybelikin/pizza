@@ -43,7 +43,7 @@ trait OrderTrait
             'name' => 'testOrderName',
             'phone' => '89956485254',
             'address' => 'testOrderAddress',
-            'status' => OrderStatus::DELIVERED->value,
+            'status' => OrderStatus::Delivered->value,
             'total' => 250000 - 35000
         ];
 

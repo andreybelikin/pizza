@@ -17,70 +17,56 @@ use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AdminAuthController;
 
 Route::controller(AuthController::class)->group(function () {
-    Route::post('/auth/login', 'login');
-    Route::post('/auth/logout', 'logout')->middleware(EnsureTokensAreValid::class);
-    Route::post('/auth/refresh', 'refresh')->middleware(EnsureRefreshTokenIsValid::class);
-    Route::post('/auth/register', 'register');
+    Route::post('/auth/login', 'login')->name('auth.login');
+    Route::post('/auth/logout', 'logout')->middleware(EnsureTokensAreValid::class)->name('auth.logout');
+    Route::post('/auth/refresh', 'refresh')->middleware(EnsureRefreshTokenIsValid::class)->name('auth.refresh');
+    Route::post('/auth/register', 'register')->name('auth.register');
 });
 
-Route::controller(AdminAuthController::class)->group(function () {
-    Route::post('/admin/auth/login', 'login');
-    Route::post('/admin/auth/logout', 'logout')->middleware(EnsureTokensAreValid::class);
-    Route::post('/admin/auth/refresh', 'refresh')->middleware(EnsureRefreshTokenIsValid::class);
-})->middleware(EnsureUserIsAdmin::class);
+Route::group([
+    'prefix' => 'admin',
+    'as' => 'admin.',
+    'controller' => AdminAuthController::class,
+    'middleware' => EnsureUserIsAdmin::class,
+], function () {
+    Route::post('/auth/login', 'login')->name('auth.login');
+    Route::post('/auth/logout', 'logout')->middleware(EnsureTokensAreValid::class)->name('auth.logout');
+    Route::post('/auth/refresh', 'refresh')->middleware(EnsureRefreshTokenIsValid::class)->name('auth.refresh');
+    Route::post('/auth/register', 'register')->name('auth.register');
+});
 
-Route::middleware(EnsureAccessTokenIsValid::class)->group(function () {
-    Route::middleware(EnsureUserIsAdmin::class)->group(function () {
-        Route::controller(AdminOrderController::class)->group(function () {
-            Route::get('/admin/orders', 'index');
-            Route::get('/admin/orders/{orderId}', 'get');
-            Route::post('/admin/users/{userId}/orders', 'add');
-            Route::put('/admin/orders/{orderId}', 'update');
-        });
+Route::group([
+    'prefix' => 'admin',
+    'as' => 'admin.',
+    'middleware' => [EnsureAccessTokenIsValid::class, EnsureUserIsAdmin::class],
+], function () {
+    Route::apiResource('orders', AdminOrderController::class)->only(['index', 'show', 'update']);
+    Route::post('/users/{userId}/orders', [AdminOrderController::class, 'store'])->name('users.orders.store');
 
-        Route::controller(AdminCartController::class)->group(function () {
-            Route::get('/admin/users/{userId}/carts', 'get');
-            Route::put('/admin/users/{userId}/carts', 'update');
-            Route::post('/admin/products/', 'add');
-            Route::delete('/admin/users/{userId}/carts', 'delete');
-        });
-
-        Route::controller(AdminProductController::class)->group(function () {
-            Route::get('/admin/products/', 'index');
-            Route::get('/admin/products/{id}', 'get');
-            Route::post('/admin/products/', 'add');
-            Route::put('/admin/products/{id}', 'update');
-            Route::delete('/admin/products/{id}','delete');
-        });
-
-        Route::controller(AdminUserController::class)->group(function () {
-            Route::get('/admin/users/{userId}', 'get');
-            Route::put('/admin/users/{userId}', 'update');
-            Route::delete('/admin/users/{userId}', 'delete');
-        });
+    Route::controller(AdminCartController::class)->group(function () {
+        Route::get('/users/{userId}/cart', 'show')->name('users.cart.get');
+        Route::put('/users/{userId}/cart', 'update')->name('users.cart.update');
+        Route::delete('/users/{userId}/cart', 'destroy')->name('users.cart.destroy');
     });
 
+    Route::apiResource('products', AdminProductController::class);
+    Route::apiResource('users', AdminUserController::class)->only(['show', 'update', 'destroy']);
+});
+
+Route::middleware(EnsureAccessTokenIsValid::class)->group(function () {
     Route::controller(OrderController::class)->group(function () {
-        Route::get('/users/{userId}/orders', 'index');
-        Route::get('/orders/{orderId}', 'get');
-        Route::post('/users/{userId}/orders', 'add');
+        Route::get('/users/{userId}/orders', 'index')->name('users.orders.index');
+        Route::get('/orders/{orderId}', 'show')->name('users.orders.show');
+        Route::post('/users/{userId}/orders', 'store')->name('users.orders.store');
     });
 
     Route::controller(CartController::class)->group(function () {
-        Route::get('/users/{userId}/carts', 'get');
-        Route::put('/users/{userId}/carts', 'update');
-        Route::delete('/users/{userId}/carts', 'delete');
+        Route::get('/users/{userId}/cart', 'show')->name('users.cart.show');
+        Route::put('/users/{userId}/cart', 'update')->name('users.cart.update');
+        Route::delete('/users/{userId}/cart', 'destroy')->name('users.cart.destroy');
     });
 
-    Route::controller(UserController::class)->group(function () {
-        Route::get('/users/{userId}', 'get');
-        Route::put('/users/{userId}', 'update');
-        Route::delete('/users/{userId}', 'delete');
-    });
-
-    Route::controller(ProductController::class)->group(function () {
-        Route::get('/products/', 'index');
-        Route::get('/products/{id}', 'get');
-    });
+    Route::apiResource('users', UserController::class)->only(['show', 'update', 'destroy']);
+    Route::apiResource('products', ProductController::class)->only(['show', 'index']);
 });
 

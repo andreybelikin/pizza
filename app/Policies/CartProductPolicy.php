@@ -34,6 +34,6 @@ class CartProductPolicy
 
     private function isOwner(User $authorizedUser, string $userId): bool
     {
-        return $authorizedUser->getKey() === (int)$userId;
+        return $authorizedUser->getKey() == $userId;
     }
 }

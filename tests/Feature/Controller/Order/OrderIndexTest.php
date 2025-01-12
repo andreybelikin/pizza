@@ -18,7 +18,7 @@ class OrderIndexTest extends TestCase
         $user = $this->createUser();
         $expectedResult = $this->createOrder($user);
         $response = $this->getJson(
-            str_replace('{userId}', $user->getKey(), self::USER_CONTROLLER_ROUTE),
+            route('users.orders.index', ['userId' => $user->getKey()]),
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
 
@@ -31,7 +31,7 @@ class OrderIndexTest extends TestCase
     {
         $user = $this->createUser();
         $response = $this->getJson(
-            str_replace('{userId}', $user->getKey(), self::USER_CONTROLLER_ROUTE),
+            route('users.orders.index', ['userId' => $user->getKey()]),
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
         $expectedPagination = [
@@ -50,7 +50,7 @@ class OrderIndexTest extends TestCase
     public function testGetUserOrdersWithInvalidTokenShouldFail(): void
     {
         $response = $this->getJson(
-            str_replace('{userId}', $this->getUser()->getKey(), self::USER_CONTROLLER_ROUTE),
+            route('users.orders.index', ['userId' => $this->getUser()->getKey()]),
             ['authorization' => 'Bearer ' . $this->getInvalidToken()]
         );
 
@@ -62,7 +62,7 @@ class OrderIndexTest extends TestCase
         $user = $this->getUser();
         $anotherUser = $this->getAnotherUser();
         $response = $this->getJson(
-            str_replace('{userId}', $anotherUser->getKey(), self::USER_CONTROLLER_ROUTE),
+            route('users.orders.index', ['userId' => $anotherUser->getKey()]),
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
 

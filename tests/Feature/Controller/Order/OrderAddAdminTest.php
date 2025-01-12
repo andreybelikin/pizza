@@ -8,8 +8,6 @@ use Tests\TestCase;
 
 class OrderAddAdminTest extends TestCase
 {
-    private const ADMIN_CONTROLLER_ROUTE = 'api/admin/users/{userId}/orders';
-
     public function testAddOrderByAdminSuccess(): void
     {
         $admin = $this->getAdminUser();
@@ -17,7 +15,7 @@ class OrderAddAdminTest extends TestCase
         $products = $this->getProductsForNewOrder();
         $orderData = [
             'userId' => $anotherUser->id,
-            'status' => OrderStatus::CREATED,
+            'status' => OrderStatus::Created,
             'phone' => '89996668877',
             'address' => 'test address',
             'name' => 'test name',
@@ -27,7 +25,7 @@ class OrderAddAdminTest extends TestCase
             ])->toArray(),
         ];
         $response = $this->postJson(
-            str_replace('{userId}', $anotherUser->getKey(), self::ADMIN_CONTROLLER_ROUTE),
+            route('admin.users.orders.store', ['userId' => $anotherUser->getKey()]),
             $orderData,
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($admin)]
         );
@@ -47,7 +45,7 @@ class OrderAddAdminTest extends TestCase
                 'name' => 'test name',
                 'phone' => '89996668877',
                 'address' => 'test address',
-                'status' => OrderStatus::CREATED,
+                'status' => OrderStatus::Created,
                 'total' => $productsTotalSum,
             ],
             'orderProducts' => $expectedProducts->toArray(),
@@ -65,7 +63,7 @@ class OrderAddAdminTest extends TestCase
         $anotherUser = $this->getAnotherUser();
         $products = $this->getProductsForNewOrder();
         $orderData = [
-            'status' => OrderStatus::CREATED,
+            'status' => OrderStatus::Created,
             'phone' => '89996668877',
             'address' => 'test address',
             'name' => 'test name',
@@ -75,7 +73,7 @@ class OrderAddAdminTest extends TestCase
             ])->toArray(),
         ];
         $response = $this->postJson(
-            str_replace('{userId}', $anotherUser->getKey(), self::ADMIN_CONTROLLER_ROUTE),
+            route('admin.users.orders.store', ['userId' => $anotherUser->getKey()]),
             $orderData,
             ['authorization' => 'Bearer ' . $this->getInvalidToken()]
         );
@@ -88,14 +86,14 @@ class OrderAddAdminTest extends TestCase
         $admin = $this->getAdminUser();
         $anotherUser = $this->getAnotherUser();
         $orderData = [
-            'status' => OrderStatus::CREATED,
+            'status' => OrderStatus::Created,
             'phone' => '89996668877',
             'address' => 'test address',
             'name' => 'test name',
             'orderProducts' => [],
         ];
         $response = $this->postJson(
-            str_replace('{userId}', $anotherUser->getKey(), self::ADMIN_CONTROLLER_ROUTE),
+            route('admin.users.orders.store', ['userId' => $anotherUser->getKey()]),
             $orderData,
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($admin)]
         );

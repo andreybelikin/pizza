@@ -31,8 +31,8 @@ class ProductIndexRequest extends FormRequest
             'title' => 'nullable|string|max:50',
             'description' => 'nullable|string|max:250',
             'type' => ['nullable', new Enum(ProductType::class)],
-            'minPrice' => 'nullable|integer|string',
-            'maxPrice' => 'nullable|integer|string',
+            'minPrice' => 'nullable|integer',
+            'maxPrice' => 'nullable|integer',
         ];
     }
 

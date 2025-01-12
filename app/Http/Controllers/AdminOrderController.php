@@ -2,39 +2,39 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\OrderAddRequest;
-use App\Http\Requests\OrdersRequest;
-use App\Http\Requests\OrderUpdateRequest;
+use App\Http\Requests\Order\OrderAddRequest;
+use App\Http\Requests\Order\OrdersRequest;
+use App\Http\Requests\Order\OrderUpdateRequest;
 use App\Services\Resource\OrderAdminService;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 class AdminOrderController
 {
-    public function __construct(private OrderAdminService $orderResourceAdminService)
+    public function __construct(private OrderAdminService $orderAdminService)
     {}
 
     public function index(OrdersRequest $request): JsonResponse
     {
-        $orders = $this->orderResourceAdminService->getOrders($request);
+        $orders = $this->orderAdminService->getOrders($request);
 
         return response()
             ->json($orders)
             ->setEncodingOptions(JSON_UNESCAPED_UNICODE);
     }
 
-    public function get(string $orderId): JsonResponse
+    public function show(string $orderId): JsonResponse
     {
-        $order = $this->orderResourceAdminService->getOrder($orderId);
+        $order = $this->orderAdminService->getOrder($orderId);
 
         return response()
             ->json($order)
             ->setEncodingOptions(JSON_UNESCAPED_UNICODE);
     }
 
-    public function add(OrderAddRequest $request): JsonResponse
+    public function store(OrderAddRequest $request): JsonResponse
     {
-        $order = $this->orderResourceAdminService->addOrder($request);
+        $order = $this->orderAdminService->addOrder($request);
 
         return response()
             ->json($order, Response::HTTP_CREATED)
@@ -43,7 +43,7 @@ class AdminOrderController
 
     public function update(OrderUpdateRequest $request): JsonResponse
     {
-        $order = $this->orderResourceAdminService->updateOrder($request);
+        $order = $this->orderAdminService->updateOrder($request);
 
         return response()
             ->json($order)

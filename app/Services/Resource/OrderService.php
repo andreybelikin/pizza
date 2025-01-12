@@ -4,14 +4,14 @@ namespace App\Services\Resource;
 
 use App\Dto\OrderProductData;
 use App\Dto\Request\NewOrderData;
-use App\Http\Requests\OrderAddRequest;
+use App\Http\Requests\Order\OrderAddRequest;
 use App\Http\Resources\OrderResource;
 use App\Http\Resources\OrdersCollection;
 use App\Models\Order;
 use App\Services\DBTransactionService;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Support\Facades\Gate;
 
 class OrderService
 {

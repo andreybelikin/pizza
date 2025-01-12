@@ -3,7 +3,7 @@
 namespace App\Dto\Request;
 
 use App\Dto\OrderProductData;
-use App\Http\Requests\OrderUpdateRequest;
+use App\Http\Requests\Order\OrderUpdateRequest;
 use Illuminate\Support\Collection;
 
 readonly class UpdateOrderData

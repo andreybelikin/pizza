@@ -6,15 +6,13 @@ use Tests\TestCase;
 
 class OrderGetAdmin extends TestCase
 {
-    private const ADMIN_CONTROLLER_ROUTE = 'api/admin/orders/{orderId}';
-
     public function testGetOrderByAdminSuccess(): void
     {
         $user = $this->getAdminUser();
         $anotherUser = $this->createUser();
         $expectedResult = $this->createOrder($anotherUser);
         $response = $this->getJson(
-            str_replace('{orderId}', $expectedResult['data']['id'], self::ADMIN_CONTROLLER_ROUTE),
+            route('admin.orders.show', ['orderId' => $expectedResult['data']['id']]),
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
 
@@ -26,7 +24,7 @@ class OrderGetAdmin extends TestCase
     {
         $user = $this->getAdminUser();
         $response = $this->getJson(
-            str_replace('{orderId}', 99999, self::ADMIN_CONTROLLER_ROUTE),
+            route('admin.orders.show', ['orderId' => 99999]),
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
 
@@ -36,9 +34,9 @@ class OrderGetAdmin extends TestCase
     public function testGetOrderByAdminWithInvalidCredentials(): void
     {
         $user = $this->getAdminUser();
-        $orderId = $this->getUserOrderId($user);
+        $orderId = $this->getUserOrder($user)->id;
         $response = $this->getJson(
-            str_replace('{orderId}', $orderId, self::ADMIN_CONTROLLER_ROUTE),
+            route('admin.orders.show', ['orderId' => $orderId]),
             ['authorization' => 'Bearer ' . $this->getInvalidToken()]
         );
 

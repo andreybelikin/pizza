@@ -8,8 +8,6 @@ use Tests\TestCase;
 
 class OrderAddTest extends TestCase
 {
-    private const USER_CONTROLLER_ROUTE = 'api/users/{userId}/orders';
-
     public function testAddOrderSuccess(): void
     {
         $user = $this->createUser();
@@ -17,13 +15,13 @@ class OrderAddTest extends TestCase
         $this->createUserCartProducts($user, $products->toArray());
         $orderData = [
             'userId' => $user->id,
-            'status' => OrderStatus::CREATED,
+            'status' => OrderStatus::Created,
             'phone' => '89996668877',
             'address' => 'test address',
             'name' => 'test name',
         ];
         $response = $this->postJson(
-            str_replace('{userId}', $user->getKey(), self::USER_CONTROLLER_ROUTE),
+            route('users.orders.store', ['userId' => $user->getKey()]),
             $orderData,
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
@@ -43,7 +41,7 @@ class OrderAddTest extends TestCase
                 'name' => 'test name',
                 'phone' => '89996668877',
                 'address' => 'test address',
-                'status' => OrderStatus::CREATED,
+                'status' => OrderStatus::Created,
                 'total' => $productsTotalSum,
             ],
             'orderProducts' => $expectedProducts->toArray(),
@@ -62,13 +60,13 @@ class OrderAddTest extends TestCase
         $products = $this->getProductsForNewOrder();
         $this->createUserCartProducts($user, $products->toArray());
         $orderData = [
-            'status' => OrderStatus::CREATED,
+            'status' => OrderStatus::Created,
             'phone' => '89996668877',
             'address' => 'test address',
             'name' => 'test name',
         ];
         $response = $this->postJson(
-            str_replace('{userId}', $user->getKey(), self::USER_CONTROLLER_ROUTE),
+            route('users.orders.store', ['userId' => $user->getKey()]),
             $orderData,
             ['authorization' => 'Bearer ' . $this->getInvalidToken()]
         );
@@ -83,13 +81,13 @@ class OrderAddTest extends TestCase
         $products = $this->getProductsForNewOrder();
         $this->createUserCartProducts($user, $products->toArray());
         $orderData = [
-            'status' => OrderStatus::CREATED,
+            'status' => OrderStatus::Created,
             'phone' => '89996668877',
             'address' => 'test address',
             'name' => 'test name',
         ];
         $response = $this->postJson(
-            str_replace('{userId}', $anotherUser->getKey(), self::USER_CONTROLLER_ROUTE),
+            route('users.orders.store', ['userId' => $anotherUser->getKey()]),
             $orderData,
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );

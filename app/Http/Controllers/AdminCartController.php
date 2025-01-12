@@ -10,30 +10,30 @@ use Illuminate\Http\Response;
 class AdminCartController
 {
     public function __construct(
-        private CartService $cartResourceService
+        private CartService $cartService
     ) {}
 
-    public function get(string $userId): JsonResponse
+    public function show(string $userId): JsonResponse
     {
-        $cart = $this->cartResourceService->getCart($userId);
+        $cart = $this->cartService->getCart($userId);
 
         return response()
             ->json($cart)
             ->setEncodingOptions(JSON_UNESCAPED_UNICODE);
     }
 
-    public function update(CartUpdateRequest $request, string $userId): JsonResponse
+    public function update(CartUpdateRequest $request): JsonResponse
     {
-        $cart = $this->cartResourceService->updateCart($request, $userId);
+        $cart = $this->cartService->updateCart($request);
 
         return response()
             ->json($cart)
             ->setEncodingOptions(JSON_UNESCAPED_UNICODE);
     }
 
-    public function delete(string $userId): Response
+    public function destroy(string $userId): Response
     {
-        $this->cartResourceService->deleteCart($userId);
+        $this->cartService->deleteCart($userId);
 
         return response('');
     }

@@ -17,12 +17,12 @@ class OrderPolicy
 
     public function index(User $authorizedUser, string $userId): bool
     {
-        return $authorizedUser->id === (int)$userId;
+        return $authorizedUser->id == $userId;
     }
 
     public function add(User $authorizedUser, string $userId): bool
     {
-        return $authorizedUser->id === (int)$userId;
+        return $authorizedUser->id == $userId;
     }
 
     private function isOwner(User $authorizedUser, Order $order): bool
