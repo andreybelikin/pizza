@@ -27,12 +27,14 @@ Route::group([
     'prefix' => 'admin',
     'as' => 'admin.',
     'controller' => AdminAuthController::class,
-    'middleware' => EnsureUserIsAdmin::class,
 ], function () {
     Route::post('/auth/login', 'login')->name('auth.login');
-    Route::post('/auth/logout', 'logout')->middleware(EnsureTokensAreValid::class)->name('auth.logout');
-    Route::post('/auth/refresh', 'refresh')->middleware(EnsureRefreshTokenIsValid::class)->name('auth.refresh');
-    Route::post('/auth/register', 'register')->name('auth.register');
+    Route::post('/auth/logout', 'logout')
+        ->middleware([EnsureTokensAreValid::class, EnsureUserIsAdmin::class])
+        ->name('auth.logout');
+    Route::post('/auth/refresh', 'refresh')
+        ->middleware([EnsureTokensAreValid::class, EnsureUserIsAdmin::class])
+        ->name('auth.refresh');
 });
 
 Route::group([
@@ -44,7 +46,7 @@ Route::group([
     Route::post('/users/{userId}/orders', [AdminOrderController::class, 'store'])->name('users.orders.store');
 
     Route::controller(AdminCartController::class)->group(function () {
-        Route::get('/users/{userId}/cart', 'show')->name('users.cart.get');
+        Route::get('/users/{userId}/cart', 'show')->name('users.cart.show');
         Route::put('/users/{userId}/cart', 'update')->name('users.cart.update');
         Route::delete('/users/{userId}/cart', 'destroy')->name('users.cart.destroy');
     });

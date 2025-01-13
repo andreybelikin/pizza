@@ -13,12 +13,12 @@ use Tests\Traits\UserTrait;
 class UserDeleteTest extends TestCase
 {
     #[DataProvider('contextDataProvider')]
-    public function testDeleteUserShouldSuccess(\Closure $user, Closure $route): void
+    public function testDeleteUserShouldSuccess(\Closure $user, string $route): void
     {
         $user = $user($this);
 
         $response = $this->deleteJson(
-            $route($user->getKey()),
+            route($route, ['user' => $user->id]),
             [],
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
@@ -32,7 +32,7 @@ class UserDeleteTest extends TestCase
         $anotherUser = $this->getAnotherUser();
 
         $response = $this->deleteJson(
-            route('admin.users.destroy', ['id' => $anotherUser->getKey()]),
+            route('admin.users.destroy', ['user' => $anotherUser->getKey()]),
             [],
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
@@ -47,7 +47,7 @@ class UserDeleteTest extends TestCase
         $anotherUser = $this->getAnotherUser();
 
         $response = $this->deleteJson(
-            route('users.destroy', ['id' => $anotherUser->getKey()]),
+            route('users.destroy', ['user' => $anotherUser->getKey()]),
             [],
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
@@ -56,12 +56,12 @@ class UserDeleteTest extends TestCase
     }
 
     #[DataProvider('contextDataProvider')]
-    public function testDeleteNonExistentUserShouldFail(\Closure $user, \Closure $route): void
+    public function testDeleteNonExistentUserShouldFail(\Closure $user, string $route): void
     {
         $user = $user($this);
 
         $response = $this->deleteJson(
-            $route(999999),
+            route($route, 9999),
             [],
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
@@ -70,11 +70,11 @@ class UserDeleteTest extends TestCase
     }
 
     #[DataProvider('contextDataProvider')]
-    public function testDeleteUserWithInvalidTokenShouldFail(\Closure $user, \Closure $route): void
+    public function testDeleteUserWithInvalidTokenShouldFail(\Closure $user, string $route): void
     {
         $user = $user($this);
         $response = $this->deleteJson(
-            $route($user->getKey()),
+            route($route, ['user' => $user->getKey()]),
             [],
             ['authorization' => 'Bearer ' . $this->getInvalidToken()]
         );
@@ -87,11 +87,11 @@ class UserDeleteTest extends TestCase
         return [
             'user' => [
                 'user' => fn ($self) => $self->getUser(),
-                'route' => fn (int $userId) => route('users.destroy', ['userId' => $userId]),
+                'route' => 'users.destroy',
             ],
             'admin' => [
                 'user' => fn ($self) => $self->getAdminUser(),
-                'route' => fn (int $userId) => route('admin.users.destroy', ['userId' => $userId]),
+                'route' => 'admin.users.destroy',
             ]
         ];
     }

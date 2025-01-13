@@ -8,7 +8,7 @@ use Tests\TestCase;
 class UserUpdateTest extends TestCase
 {
     #[DataProvider('contextDataProvider')]
-    public function testUpdateUserShouldSuccess(\Closure $user, \Closure $route): void
+    public function testUpdateUserShouldSuccess(\Closure $user, string $route): void
     {
         $user = $user($this);
         $updateUserData = [
@@ -20,7 +20,7 @@ class UserUpdateTest extends TestCase
         ];
 
         $response = $this->putJson(
-            $route($user->getKey()),
+            route($route, ['user' => $user->getKey()]),
             $updateUserData,
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
@@ -45,7 +45,7 @@ class UserUpdateTest extends TestCase
         ];
 
         $response = $this->putJson(
-            route('admin.users.update', $anotherUser->getKey()),
+            route('admin.users.update', ['user' => $anotherUser->getKey()]),
             $updateUserData,
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
@@ -71,7 +71,7 @@ class UserUpdateTest extends TestCase
         ];
 
         $response = $this->putJson(
-            route('users.update', $anotherUser->getKey()),
+            route('users.update', ['user' => $anotherUser->getKey()]),
             $updateUserData,
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
@@ -80,7 +80,7 @@ class UserUpdateTest extends TestCase
     }
 
     #[DataProvider('contextDataProvider')]
-    public function testUpdateUserWithInvalidDataShouldFail(\Closure $user, \Closure $route)
+    public function testUpdateUserWithInvalidDataShouldFail(\Closure $user, string $route)
     {
         $user = $user($this);
         $updateUserData = [
@@ -92,7 +92,7 @@ class UserUpdateTest extends TestCase
         ];
 
         $response = $this->putJson(
-            $route($user->getKey()),
+            route($route, ['user' => $user->getKey()]),
             $updateUserData,
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
@@ -101,7 +101,7 @@ class UserUpdateTest extends TestCase
     }
 
     #[DataProvider('contextDataProvider')]
-    public function testUpdateNonExistentUserShouldFail(\Closure $user, \Closure $route)
+    public function testUpdateNonExistentUserShouldFail(\Closure $user, string $route)
     {
         $user = $user($this);
         $updateUserData = [
@@ -113,7 +113,7 @@ class UserUpdateTest extends TestCase
         ];
 
         $response = $this->putJson(
-            $route(99999),
+            route($route, ['user' => 9999]),
             $updateUserData,
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
@@ -123,7 +123,7 @@ class UserUpdateTest extends TestCase
 
 
     #[DataProvider('contextDataProvider')]
-    public function testUpdateUserWithInvalidTokenShouldFail(\Closure $user, \Closure $route)
+    public function testUpdateUserWithInvalidTokenShouldFail(\Closure $user, string $route)
     {
         $user = $user($this);
         $updateUserData = [
@@ -135,7 +135,7 @@ class UserUpdateTest extends TestCase
         ];
 
         $response = $this->putJson(
-            $route($user->getKey()),
+            route($route, ['user' => $user->getKey()]),
             $updateUserData,
             ['authorization' => 'Bearer ' . $this->getInvalidToken()]
         );
@@ -148,11 +148,11 @@ class UserUpdateTest extends TestCase
         return [
             'user' => [
                 'user' => fn ($self) => $self->getUser(),
-                'route' => fn (int $userId) => route('users.update', ['userId' => $userId]),
+                'route' => 'users.update',
             ],
             'admin' => [
                 'user' => fn ($self) => $self->getAdminUser(),
-                'route' => fn (int $userId) => route('admin.users.update', ['userId' => $userId]),
+                'route' => 'admin.users.update',
             ]
         ];
     }

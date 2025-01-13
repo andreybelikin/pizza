@@ -24,7 +24,7 @@ class OrderUpdateRequest extends FormRequest
     public function rules(): array
     {
         $this->merge([
-            'orderId' => $this->route('orderId'),
+            'orderId' => $this->route('order'),
         ]);
 
         return [

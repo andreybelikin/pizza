@@ -17,7 +17,7 @@ readonly class UpdateProductData
     public static function fromRequest(ProductUpdateRequest $request): self
     {
         return new self(
-            id: $request->route('id') ? (int)$request->route('id') : null,
+            id: $request->route('product') ? (int)$request->route('product') : null,
             title: $request->get('title'),
             description: $request->get('description'),
             type: $request->get('type'),

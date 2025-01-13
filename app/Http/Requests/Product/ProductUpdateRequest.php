@@ -26,6 +26,10 @@ class ProductUpdateRequest extends FormRequest
      */
     public function rules(): array
     {
+        $this->merge([
+            'id' => $this->route('product'),
+        ]);
+
         return [
             'id' => 'required|string|max:36',
             'title' => 'required_without_all:description,type,address,price|string|max:50|',
@@ -33,13 +37,6 @@ class ProductUpdateRequest extends FormRequest
             'type' => ['required_without_all:title,description,type,address,price', new Enum(ProductType::class)],
             'price' => 'required_without_all:title,description,type,address|integer',
         ];
-    }
-
-    protected function prepareForValidation(): void
-    {
-        $this->merge([
-            'id' => $this->route('id'),
-        ]);
     }
 
     public function messages(): array

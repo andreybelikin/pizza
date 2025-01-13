@@ -19,6 +19,6 @@ class TokenException extends \Exception
     {
         $responseDto = new TokenExceptionResponseDto($this->message);
 
-        return response()->json($responseDto->toArray(), $this->status ?? $responseDto::STATUS);
+        return response()->json($responseDto->toArray(), $responseDto::STATUS);
     }
 }

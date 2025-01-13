@@ -12,7 +12,7 @@ class ProductDeleteTest extends TestCase
         $product = $this->getRandomProduct();
 
         $response = $this->deleteJson(
-            route('admin.products.destroy', ['id' => $product->id]),
+            route('admin.products.destroy', ['product' => $product->id]),
             [],
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($adminUser)]
         );
@@ -26,7 +26,7 @@ class ProductDeleteTest extends TestCase
         $product = $this->getRandomProduct();
 
         $response = $this->deleteJson(
-            route('admin.products.destroy', ['id' => $product->id]),
+            route('admin.products.destroy', ['product' => $product->id]),
             [],
             ['authorization' => 'Bearer ' . $this->getInvalidToken()]
         );
@@ -38,7 +38,7 @@ class ProductDeleteTest extends TestCase
     {
         $adminUser = $this->getAdminUser();
         $response = $this->deleteJson(
-            route('admin.products.destroy', ['id' => rand(1000, 2000)]),
+            route('admin.products.destroy', ['product' => rand(1000, 2000)]),
             [],
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($adminUser)]
         );

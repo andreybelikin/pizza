@@ -28,7 +28,7 @@ class OrderUpdateAdminTest extends TestCase
             'orderProducts' => $orderProductsData,
         ];
         $response = $this->putJson(
-            route('admin.orders.update', ['orderId' => $order->id]),
+            route('admin.orders.update', ['order' => $order->id]),
             $orderData,
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($admin)]
         );
@@ -67,7 +67,7 @@ class OrderUpdateAdminTest extends TestCase
             'orderProducts' => $orderProductsData,
         ];
         $response = $this->putJson(
-            route('admin.orders.update', ['orderId' => $order->id]),
+            route('admin.orders.update', ['order' => $order->id]),
             $orderData,
             ['authorization' => 'Bearer ' . $this->getInvalidToken()]
         );
@@ -97,7 +97,7 @@ class OrderUpdateAdminTest extends TestCase
             'orderProducts' => $orderProductsData,
         ];
         $response = $this->putJson(
-            route('admin.orders.update', ['orderId' => 999999]),
+            route('admin.orders.update', ['order' => 999999]),
             $orderData,
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($admin)]
         );

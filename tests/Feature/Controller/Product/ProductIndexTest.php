@@ -8,7 +8,7 @@ use Tests\TestCase;
 class ProductIndexTest extends TestCase
 {
     #[DataProvider('contextDataProvider')]
-    public function testGetProductsWithoutFiltersShouldSuccess(\Closure $user, \Closure $route): void
+    public function testGetProductsWithoutFiltersShouldSuccess(\Closure $user, string $route): void
     {
         $expectedResult['data'] = $this->getProducts();
         $expectedResult['pagination'] = [
@@ -18,7 +18,7 @@ class ProductIndexTest extends TestCase
         ];
 
         $response = $this->getJson(
-            $route(),
+            route($route),
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user($this))]
         );
 
@@ -27,7 +27,7 @@ class ProductIndexTest extends TestCase
     }
 
     #[DataProvider('contextDataProvider')]
-    public function testGetProductsWithFiltersShouldSuccess(\Closure $user, \Closure $route): void
+    public function testGetProductsWithFiltersShouldSuccess(\Closure $user, string $route): void
     {
         $filters = [
             'title' => 'testProduct',
@@ -64,7 +64,7 @@ class ProductIndexTest extends TestCase
         ];
 
         $response = $this->getJson(
-            $route($filters),
+            route($route, $filters),
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user($this))]
         );
 
@@ -73,10 +73,10 @@ class ProductIndexTest extends TestCase
     }
 
     #[DataProvider('contextDataProvider')]
-    public function testGetProductsWithNotValidFiltersShouldFail(\Closure $user, \Closure $route): void
+    public function testGetProductsWithNotValidFiltersShouldFail(\Closure $user, string $route): void
     {
         $response = $this->getJson(
-            $route(['type' => 'fish']),
+            route($route, ['type' => 'fish']),
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user($this))]
         );
 
@@ -84,10 +84,10 @@ class ProductIndexTest extends TestCase
     }
 
     #[DataProvider('contextDataProvider')]
-    public function testGetProductsWithInvalidTokenShouldFail(\Closure $user, \Closure $route): void
+    public function testGetProductsWithInvalidTokenShouldFail(\Closure $user, string $route): void
     {
         $response = $this->getJson(
-            $route(['type' => 'fish']),
+            route($route, ['type' => 'fish']),
             ['authorization' => 'Bearer ' . $this->getInvalidToken()]
         );
 
@@ -99,11 +99,11 @@ class ProductIndexTest extends TestCase
         return [
             'user' => [
                 'user' => fn ($self) => $self->getUser(),
-                'route' => fn (array $filters = []) => route('products.index', $filters)
+                'route' => 'products.index',
             ],
             'admin' => [
                 'user' => fn ($self) => $self->getAdminUser(),
-                'route' => fn (array $filters = []) => route('admin.products.index', $filters)
+                'route' => 'admin.products.index',
             ]
         ];
     }

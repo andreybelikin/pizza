@@ -36,7 +36,7 @@ class CartUpdateTest extends TestCase
         $expectedResponse = $this->getExpectedResponse($updateRequest);
 
         $response = $this->putJson(
-            route('admin.users.cart.update', ['userId' => $user->getKey()]),
+            route('admin.users.cart.update', ['userId' => $anotherUser->getKey()]),
             $updateRequest,
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
@@ -46,14 +46,14 @@ class CartUpdateTest extends TestCase
     }
 
     #[DataProvider('contextDataProvider')]
-    public function testUpdateCartWithInvalidTokenShouldFail(\Closure $user, \Closure $route): void
+    public function testUpdateCartWithInvalidTokenShouldFail(\Closure $user, string $route): void
     {
         $user = $user($this);
         $this->createCartProducts($user);
         $updateRequest = $this->getCartUpdateRequest($user, 3);
 
         $response = $this->putJson(
-            $route($user->getKey()),
+            route($route, ['userId' => $user->getKey()]),
             $updateRequest,
             ['authorization' => 'Bearer ' . $this->getInvalidToken()]
         );
@@ -78,14 +78,14 @@ class CartUpdateTest extends TestCase
     }
 
     #[DataProvider('contextDataProvider')]
-    public function testUpdateCartWithViolatedLimitsShouldFail(\Closure $user, \Closure $route): void
+    public function testUpdateCartWithViolatedLimitsShouldFail(\Closure $user, string $route): void
     {
         $user = $user($this);
         $this->createCartProducts($user);
         $updateRequest = $this->getCartUpdateRequest($user, 25);
 
         $response = $this->putJson(
-            $route($user->getKey()),
+            route($route, ['userId' => $user->getKey()]),
             $updateRequest,
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
@@ -126,7 +126,7 @@ class CartUpdateTest extends TestCase
                 'id' => $requestProduct['id'],
                 'quantity' => $requestProduct['quantity'],
                 'title' => $product['title'],
-                'price' => floor($product['price']),
+                'price' => $product['price'],
                 'totalPrice' => $product['price'] * $requestProduct['quantity'],
             ];
         }, $cartUpdateRequest['products']);
@@ -142,11 +142,11 @@ class CartUpdateTest extends TestCase
         return [
             'user' => [
                 'user' => fn ($self) => $self->getUser(),
-                'route' => fn (int $userId) => route('users.cart.destroy', ['userId' => $userId])
+                'route' => 'users.cart.update',
             ],
             'admin' => [
                 'user' => fn ($self) => $self->getAdminUser(),
-                'route' => fn (int $userId) => route('admin.users.cart.destroy', ['userId' => $userId])
+                'route' => 'admin.users.cart.update',
             ]
         ];
     }

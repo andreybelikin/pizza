@@ -8,12 +8,12 @@ use Tests\TestCase;
 class ProductGetTest extends TestCase
 {
     #[DataProvider('contextDataProvider')]
-    public function testGetProductShouldSuccess(\Closure $user, \Closure $route): void
+    public function testGetProductShouldSuccess(\Closure $user, string $route): void
     {
         $expectedProduct = $this->createProduct();
 
         $response = $this->getJson(
-            $route($expectedProduct->id),
+            route($route, ['product' => $expectedProduct->id]),
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user($this))]
         );
 
@@ -27,10 +27,10 @@ class ProductGetTest extends TestCase
     }
 
     #[DataProvider('contextDataProvider')]
-    public function testGetNonExistentProductShouldFail(\Closure $user, \Closure $route): void
+    public function testGetNonExistentProductShouldFail(\Closure $user, string $route): void
     {
         $response = $this->getJson(
-            $route(9999999),
+            route($route, ['product' => 99999]),
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user($this))]
         );
 
@@ -38,12 +38,12 @@ class ProductGetTest extends TestCase
     }
 
     #[DataProvider('contextDataProvider')]
-    public function testGetProductWithInvalidTokenShouldFail(\Closure $user, \Closure $route): void
+    public function testGetProductWithInvalidTokenShouldFail(\Closure $user, string $route): void
     {
         $expectedProduct = $this->createProduct();
 
         $response = $this->getJson(
-            $route($expectedProduct->id),
+            route($route, ['product' => $expectedProduct->id]),
             ['authorization' => 'Bearer ' . $this->getInvalidToken()]
         );
 
@@ -55,11 +55,11 @@ class ProductGetTest extends TestCase
         return [
             'user' => [
                 'user' => fn ($self) => $self->getUser(),
-                'route' => fn (int $productId) => route('products.show', ['id' => $productId])
+                'route' => 'products.show',
             ],
             'admin' => [
                 'user' => fn ($self) => $self->getAdminUser(),
-                'route' => fn (int $productId) => route('admin.products.show', ['id' => $productId])
+                'route' => 'admin.products.show',
             ]
         ];
     }

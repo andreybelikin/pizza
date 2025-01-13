@@ -2,7 +2,7 @@
 
 namespace App\Dto\Response\Middleware;
 
-use Illuminate\Http\Response;
+use Symfony\Component\HttpFoundation\Response;
 
 class TokenExceptionResponseDto
 {

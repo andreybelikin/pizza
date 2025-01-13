@@ -2,13 +2,11 @@
 
 namespace Tests\Feature\Controller\Auth;
 
-use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class RegisterTest extends TestCase
 {
-    #[DataProvider('contextDataProvider')]
-    public function testRegisterShouldSuccess(string $route): void
+    public function testRegisterShouldSuccess(): void
     {
         $registerData = [
             'name' => 'andrey',
@@ -20,7 +18,7 @@ class RegisterTest extends TestCase
             'default_address' => 'г. Москва',
         ];
         $response = $this->postJson(
-            $route,
+            route('auth.register'),
             $registerData
         );
         $response->assertOk();
@@ -35,8 +33,7 @@ class RegisterTest extends TestCase
         $response->assertJson($expectedData);
     }
 
-    #[DataProvider('contextDataProvider')]
-    public function testRegisterWithInvalidDataShouldSuccess(string $route): void
+    public function testRegisterWithInvalidDataShouldSuccess(): void
     {
         $registerData = [
             'name' => 'andrey',
@@ -46,14 +43,13 @@ class RegisterTest extends TestCase
             'password_confirmation' => 'keK48!>O04780',
         ];
         $response = $this->postJson(
-            $route,
+            route('auth.register'),
             $registerData
         );
         $response->assertUnprocessable();
     }
 
-    #[DataProvider('contextDataProvider')]
-    public function testRegisterWithExistedPhoneEmailShouldFail(string $route): void
+    public function testRegisterWithExistedPhoneEmailShouldFail(): void
     {
         $user = $this->createUser();
         $registerData = [
@@ -66,21 +62,9 @@ class RegisterTest extends TestCase
             'default_address' => 'г. Москва',
         ];
         $response = $this->postJson(
-            $route,
+            route('auth.register'),
             $registerData
         );
         $response->assertUnprocessable();
-    }
-
-    public static function contextDataProvider(): array
-    {
-        return [
-            'user' => [
-                'route' => route('auth.register'),
-            ],
-            'admin' => [
-                'route' => route('admin.auth.register'),
-            ]
-        ];
     }
 }

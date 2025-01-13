@@ -25,6 +25,10 @@ class UserUpdateRequest extends FormRequest
      */
     public function rules(): array
     {
+        $this->merge([
+            'userId' => $this->route('user'),
+        ]);
+
         return [
             'userId' => 'required|string|max:36',
             'name' => 'string|max:50',
@@ -48,13 +52,6 @@ class UserUpdateRequest extends FormRequest
                 $validator->errors()->add('fields', 'At least one field must be provided.');
             }
         });
-    }
-
-    protected function prepareForValidation(): void
-    {
-        $this->merge([
-            'userId' => $this->route('userId'),
-        ]);
     }
 
     public function messages(): array

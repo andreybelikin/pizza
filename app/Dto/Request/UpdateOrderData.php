@@ -24,7 +24,7 @@ readonly class UpdateOrderData
         ?Collection $orderProducts,
     ): self {
         return new self(
-            id: $request->route('orderId'),
+            id: $request->route('order'),
             name: $request->get('name') ?? null,
             phone: $request->get('phone') ?? null,
             address: $request->get('address') ?? null,

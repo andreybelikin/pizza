@@ -8,12 +8,12 @@ use Tests\TestCase;
 class UserGetTest extends TestCase
 {
     #[DataProvider('contextDataProvider')]
-    public function testGetUserShouldSuccess(\Closure $user, \Closure $route): void
+    public function testGetUserShouldSuccess(\Closure $user, string $route): void
     {
         $user = $user($this);
 
         $response = $this->getJson(
-            $route($user->getKey()),
+            route($route, ['user' => $user->getKey()]),
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
 
@@ -33,7 +33,7 @@ class UserGetTest extends TestCase
         $anotherUser = $this->getAnotherUser();
 
         $response = $this->getJson(
-            route('admin.users.show', ['userId' => $anotherUser->getKey()]),
+            route('admin.users.show', ['user' => $anotherUser->getKey()]),
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
 
@@ -48,12 +48,12 @@ class UserGetTest extends TestCase
     }
 
     #[DataProvider('contextDataProvider')]
-    public function testGetNonExistentUserShouldFail(\Closure $user, \Closure $route)
+    public function testGetNonExistentUserShouldFail(\Closure $user, string $route)
     {
         $user = $user($this);
 
         $response = $this->getJson(
-            $route(9999),
+            route($route, ['user' => 9999]),
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
 
@@ -66,7 +66,7 @@ class UserGetTest extends TestCase
         $anotherUser = $this->getAnotherUser();
 
         $response = $this->getJson(
-            route('users.show', ['userId' => $anotherUser->getKey()]),
+            route('users.show', ['user' => $anotherUser->getKey()]),
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
 
@@ -74,12 +74,12 @@ class UserGetTest extends TestCase
     }
 
     #[DataProvider('contextDataProvider')]
-    public function testUserWithInvalidTokenShouldFail(\Closure $user, \Closure $route)
+    public function testUserWithInvalidTokenShouldFail(\Closure $user, string $route)
     {
         $user = $user($this);
 
         $response = $this->getJson(
-            $route($user->getKey()),
+            route($route, ['user' => $user->getKey()]),
             ['authorization' => 'Bearer ' . $this->getInvalidToken()]
         );
 
@@ -91,11 +91,11 @@ class UserGetTest extends TestCase
         return [
             'user' => [
                 'user' => fn ($self) => $self->getUser(),
-                'route' => fn (int $userId) => route('users.show', ['userId' => $userId]),
+                'route' => 'users.show',
             ],
             'admin' => [
                 'user' => fn ($self) => $self->getAdminUser(),
-                'route' => fn (int $userId) => route('admin.users.show', ['userId' => $userId]),
+                'route' => 'admin.users.show',
             ]
         ];
     }

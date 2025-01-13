@@ -16,7 +16,7 @@ class LoginTest extends TestCase
         ];
         $user = $this->createUserWithCredentials($credentials);
 
-        $response = $this->postJson($route, $credentials);
+        $response = $this->postJson(route($route), $credentials);
         $accessToken = $response->decodeResponseJson()['accessToken'];
         $refreshToken = $response->decodeResponseJson()['refreshToken'];
 
@@ -34,7 +34,7 @@ class LoginTest extends TestCase
             'email' => 2233,
             'password' => 'keK48!>O04780',
         ];
-        $response = $this->postJson($route, $credentials);
+        $response = $this->postJson(route($route), $credentials);
 
         $response->assertUnprocessable();
     }
@@ -52,7 +52,7 @@ class LoginTest extends TestCase
         ];
         $user = $this->createUserWithCredentials($initialCredentials);
 
-        $response = $this->postJson($route, $mismatchedCredentials);
+        $response = $this->postJson(route($route), $mismatchedCredentials);
         $response->assertUnauthorized();
     }
 
@@ -60,10 +60,10 @@ class LoginTest extends TestCase
     {
         return [
             'user' => [
-                'route' => route('auth.login'),
+                'route' => 'auth.login',
             ],
             'admin' => [
-                'route' => route('admin.auth.login'),
+                'route' => 'admin.auth.login',
             ]
         ];
     }

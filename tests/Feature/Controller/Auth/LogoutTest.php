@@ -8,13 +8,14 @@ use Tests\TestCase;
 class LogoutTest extends TestCase
 {
     #[DataProvider('contextDataProvider')]
-    public function testLogoutShouldSuccess(string $route): void
+    public function testLogoutShouldSuccess(\Closure $user, string $route): void
     {
-        $user = $this->getUser();
+        $user = $user($this);
         $accessToken = $this->getUserAccessToken($user);
         $refreshToken = $this->getRefreshToken($user->id);
+
         $logoutResponse = $this->postJson(
-            $route,
+            route($route),
             [],
             [
                 'authorization' => 'Bearer ' . $accessToken,
@@ -24,7 +25,7 @@ class LogoutTest extends TestCase
         $logoutResponse->assertOk();
 
         $ensureLogoutResponse = $this->postJson(
-            $route,
+            route($route),
             [],
             [
                 'authorization' => 'Bearer ' . $accessToken,
@@ -35,16 +36,16 @@ class LogoutTest extends TestCase
     }
 
     #[DataProvider('contextDataProvider')]
-    public function testLogoutWithDeletedUserShouldFail(string $route): void
+    public function testLogoutWithDeletedUserShouldFail(\Closure $user, string $route): void
     {
-        $user = $this->getUser();
+        $user = $user($this);
         $accessToken = $this->getUserAccessToken($user);
         $refreshToken = $this->getRefreshToken($user->id);
 
         $user->delete();
 
         $logoutResponse = $this->postJson(
-            $route,
+            route($route),
             [],
             [
                 'authorization' => 'Bearer ' . $accessToken,
@@ -55,14 +56,14 @@ class LogoutTest extends TestCase
     }
 
     #[DataProvider('contextDataProvider')]
-    public function testLogoutWithInvalidTokenShouldFail(string $route): void
+    public function testLogoutWithInvalidTokenShouldFail(\Closure $user, string $route): void
     {
-        $user = $this->getUser();
+        $user = $user($this);
         $accessToken = $this->getInvalidToken();
         $refreshToken = $this->getRefreshToken($user->id);
 
         $logoutResponse = $this->postJson(
-            $route,
+            route($route),
             [],
             [
                 'authorization' => 'Bearer ' . $accessToken,
@@ -76,10 +77,12 @@ class LogoutTest extends TestCase
     {
         return [
             'user' => [
-                'route' => route('auth.logout'),
+                'user' => fn($self) => $self->getUser(),
+                'route' => 'auth.logout',
             ],
             'admin' => [
-                'route' => route('admin.auth.logout'),
+                'user' => fn ($self) => $self->getAdminUser(),
+                'route' => 'admin.auth.logout',
             ]
         ];
     }

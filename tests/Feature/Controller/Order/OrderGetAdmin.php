@@ -12,7 +12,7 @@ class OrderGetAdmin extends TestCase
         $anotherUser = $this->createUser();
         $expectedResult = $this->createOrder($anotherUser);
         $response = $this->getJson(
-            route('admin.orders.show', ['orderId' => $expectedResult['data']['id']]),
+            route('admin.orders.show', ['order' => $expectedResult['data']['id']]),
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
 
@@ -24,7 +24,7 @@ class OrderGetAdmin extends TestCase
     {
         $user = $this->getAdminUser();
         $response = $this->getJson(
-            route('admin.orders.show', ['orderId' => 99999]),
+            route('admin.orders.show', ['order' => 99999]),
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
 
@@ -36,7 +36,7 @@ class OrderGetAdmin extends TestCase
         $user = $this->getAdminUser();
         $orderId = $this->getUserOrder($user)->id;
         $response = $this->getJson(
-            route('admin.orders.show', ['orderId' => $orderId]),
+            route('admin.orders.show', ['order' => $orderId]),
             ['authorization' => 'Bearer ' . $this->getInvalidToken()]
         );
 

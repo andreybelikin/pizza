@@ -9,14 +9,14 @@ use Tests\TestCase;
 class RefreshTest extends TestCase
 {
     #[DataProvider('contextDataProvider')]
-    public function testRefreshShouldSuccess(string $route)
+    public function testRefreshShouldSuccess(\Closure $user, string $route)
     {
-        $user = $this->getUser();
+        $user = $user($this);
         $oldAccessToken = $this->getUserAccessToken($user);
         $oldRefreshToken = $this->getRefreshToken($user->id);
 
         $refreshResponse = $this->postJson(
-            $route,
+            route($route),
             [],
             [
                 'authorization' => 'Bearer ' . $oldAccessToken,
@@ -28,7 +28,7 @@ class RefreshTest extends TestCase
         static::assertEquals(2, count(DB::table('token_blacklist')->get()));
 
         $ensureUnauthorizedResponse = $this->postJson(
-            $route,
+            route($route),
             [],
             [
                 'authorization' => 'Bearer ' . $oldAccessToken,
@@ -38,7 +38,7 @@ class RefreshTest extends TestCase
         $ensureUnauthorizedResponse->assertUnauthorized();
 
         $ensureOkResponse = $this->postJson(
-            $route,
+            route($route),
             [],
             [
                 'authorization' => 'Bearer ' . $newTokens['accessToken'],
@@ -49,11 +49,11 @@ class RefreshTest extends TestCase
     }
 
     #[DataProvider('contextDataProvider')]
-    public function testRefreshWithEmptyTokenShouldFail(string $route)
+    public function testRefreshWithEmptyTokenShouldFail(\Closure $user, string $route)
     {
-        $user = $this->getUser();
+        $user = $user($this);
         $refreshResponse = $this->postJson(
-            $route,
+            route($route),
             [],
             [
                 'authorization' => 'Bearer ' . $this->getUserAccessToken($user),
@@ -66,10 +66,12 @@ class RefreshTest extends TestCase
     {
         return [
             'user' => [
-                'route' => route('auth.refresh'),
+                'user' => fn($self) => $self->getUser(),
+                'route' => 'auth.refresh',
             ],
             'admin' => [
-                'route' => route('admin.auth.refresh'),
+                'user' => fn ($self) => $self->getAdminUser(),
+                'route' => 'admin.auth.refresh',
             ]
         ];
     }

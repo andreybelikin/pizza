@@ -3,6 +3,7 @@
 namespace Tests\Traits;
 
 use App\Enums\Limit\CartProductLimit;
+use App\Enums\ProductType;
 use App\Models\Product;
 use App\Models\User;
 
@@ -45,7 +46,7 @@ trait CartTrait
             $user->products()->detach();
         }
 
-        $quantityCount = 3;
+        $quantityCount = 2;
         $productsWithLimitedType = [];
 
         foreach (CartProductLimit::getLimits() as $limit) {

@@ -39,13 +39,13 @@ class CartDestroyTest extends TestCase
     }
 
     #[DataProvider('contextDataProvider')]
-    public function testDeleteCartWithInvalidTokenShouldFail(\Closure $user, \Closure $route): void
+    public function testDeleteCartWithInvalidTokenShouldFail(\Closure $user, string $route): void
     {
         $user = $user($this);
         $this->createCartProducts($user);
 
         $response = $this->deleteJson(
-            $route($user->getKey()),
+            route($route, ['userId' => $user->getKey()]),
             [],
             ['authorization' => 'Bearer ' . $this->getInvalidToken()]
         );
@@ -60,7 +60,7 @@ class CartDestroyTest extends TestCase
         $this->createCartProducts($anotherUser);
 
         $response = $this->deleteJson(
-            route('users.cart.destroy', ['userId' => $user->getKey()]),
+            route('users.cart.destroy', ['userId' => $anotherUser->getKey()]),
             [],
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
@@ -73,11 +73,11 @@ class CartDestroyTest extends TestCase
         return [
             'user' => [
                 'user' => fn ($self) => $self->getUser(),
-                'route' => fn (int $userId) => route('users.cart.destroy', ['userId' => $userId])
+                'route' => 'users.cart.destroy',
             ],
             'admin' => [
                 'user' => fn ($self) => $self->getAdminUser(),
-                'route' => fn (int $userId) => route('admin.users.cart.destroy', ['userId' => $userId])
+                'route' => 'admin.users.cart.destroy',
             ]
         ];
     }

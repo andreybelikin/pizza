@@ -20,7 +20,7 @@ class OrderController
         return response()->json($orders);
     }
 
-    public function get(string $orderId): JsonResponse
+    public function show(string $orderId): JsonResponse
     {
         $order = $this->orderService->getOrder($orderId);
 
@@ -29,7 +29,7 @@ class OrderController
             ->setEncodingOptions(JSON_UNESCAPED_UNICODE);
     }
 
-    public function add(OrderAddRequest $request, string $userId): JsonResponse
+    public function store(OrderAddRequest $request, string $userId): JsonResponse
     {
         $order = $this->orderService->addOrder($request, $userId);
 

@@ -19,6 +19,7 @@ class EnsureTokensAreValid
     public function handle(Request $request, Closure $next): Response
     {
         $tokens = TokensData::fromRequest($request);
+
         try {
             $this->requestTokenService->checkTokensPair($tokens);
 

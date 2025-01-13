@@ -18,7 +18,7 @@ class ProductUpdateTest extends TestCase
         ];
 
         $response = $this->putJson(
-            route('admin.products.update', ['id' => $product->id]),
+            route('admin.products.update', ['product' => $product->id]),
             $productPropsToUpdate,
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($adminUser)]
         );
@@ -34,7 +34,7 @@ class ProductUpdateTest extends TestCase
         $product = $this->getRandomProduct();
 
         $response = $this->putJson(
-            route('admin.products.update', ['id' => $product->id]),
+            route('admin.products.update', ['product' => $product->id]),
             ['title' => 'Пицца века'],
             ['authorization' => 'Bearer ' . $this->getInvalidToken()]
         );
@@ -46,7 +46,7 @@ class ProductUpdateTest extends TestCase
     {
         $adminUser = $this->getAdminUser();
         $response = $this->putJson(
-            route('admin.products.update', ['id' => 99999]),
+            route('admin.products.update', ['product' => 99999]),
             ['title' => 'Пицца века'],
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($adminUser)]
         );
@@ -60,7 +60,7 @@ class ProductUpdateTest extends TestCase
         $product = $this->getRandomProduct();
 
         $response = $this->putJson(
-            route('admin.products.update', ['id' => $product->id]),
+            route('admin.products.update', ['product' => $product->id]),
             [],
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($adminUser)]
         );

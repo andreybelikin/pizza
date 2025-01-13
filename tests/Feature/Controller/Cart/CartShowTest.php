@@ -12,7 +12,7 @@ class CartShowTest extends TestCase
         $user = $this->getUser();
         $expectedCart = $this->getCart($user);
         $response = $this->getJson(
-            route('user.cart.show', ['userId' => $user->getKey()]),
+            route('users.cart.show', ['userId' => $user->getKey()]),
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
 
@@ -27,7 +27,7 @@ class CartShowTest extends TestCase
         $expectedCart = $this->getCart($anotherUser);
 
         $response = $this->getJson(
-            route('admin.user.cart.show', ['userId' => $anotherUser->getKey()]),
+            route('admin.users.cart.show', ['userId' => $anotherUser->getKey()]),
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
 
@@ -36,12 +36,12 @@ class CartShowTest extends TestCase
     }
 
     #[DataProvider('contextDataProvider')]
-    public function testGetCartWithInvalidTokenShouldFail(\Closure $user, \Closure $route): void
+    public function testGetCartWithInvalidTokenShouldFail(\Closure $user, string $route): void
     {
         $user = $user($this);
 
         $response = $this->getJson(
-            $route($user->getKey()),
+            route($route, ['userId' => $user->getKey()]),
             ['authorization' => 'Bearer ' . $this->getInvalidToken()]
         );
 
@@ -54,7 +54,7 @@ class CartShowTest extends TestCase
         $anotherUser = $this->getAnotherUser();
 
         $response = $this->getJson(
-            route('user.cart.show', ['userId' => $anotherUser->getKey()]),
+            route('users.cart.show', ['userId' => $anotherUser->getKey()]),
             ['authorization' => 'Bearer ' . $this->getUserAccessToken($user)]
         );
 
@@ -66,11 +66,11 @@ class CartShowTest extends TestCase
         return [
             'user' => [
                 'user' => fn ($self) => $self->getUser(),
-                'route' => fn (int $userId) => route('users.cart.show', ['userId' => $userId])
+                'route' => 'users.cart.show',
             ],
             'admin' => [
                 'user' => fn ($self) => $self->getAdminUser(),
-                'route' => fn (int $userId) => route('admin.users.cart.show', ['userId' => $userId])
+                'route' => 'admin.users.cart.show',
             ]
         ];
     }
